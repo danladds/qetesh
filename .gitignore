@@ -2,6 +2,7 @@
 ##############
 
 # Yes, .c, as it's a compiled product from valac
+# #
 .c
 
 # Geany editor
