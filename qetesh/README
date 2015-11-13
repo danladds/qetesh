@@ -1,0 +1,6 @@
+
+qetesh is the server program for the Qetesh web framework. It runs as a standalone, lightweight HTTP server. It automatically loads the appropriate library file(s) for a given application, along with HTML content (views). It provides runtime access to the Qetesh Framework, which in turn provides a high level interface for developing fast, robust web applications with rapid development and deployment.
+
+Qetesh is written entirely in Vala and released under the GPL3.
+
+Qetesh was created by Dan Ladds <dan@el-topo.co.uk>
