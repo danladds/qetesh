@@ -328,6 +328,11 @@ namespace Qetesh.Data {
 			return dn;
 		}
 		
+		public void ExposeType (bool exposeAll, string[] whitelist = []) {
+			
+			
+		}
+		
 		public class DataNode {
 			
 			public string Name { get; set; }

@@ -1,0 +1,1 @@
+/usr/local/share/qetesh/frontend/js/qetesh.js

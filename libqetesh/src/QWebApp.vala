@@ -79,5 +79,10 @@ namespace Qetesh {
 			
 			return node;
 		}
+		
+		protected WriteMessage(string message, QErrorClass errorClass = ErrorManager.QErrorClass.MODULE_CRITICAL, string? modName = null) {
+			
+			appContext.Server.Err.WriteMessage(message, errorClass, modName);
+		}
 	}
 }

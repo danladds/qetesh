@@ -152,6 +152,10 @@ namespace Qetesh {
 		~AppModule() {
 			module = null;
 		}
+		
+		public void ExposeData (Gee.List<DataObject> data) {
+			
+		}
 	}
 
 	/**
