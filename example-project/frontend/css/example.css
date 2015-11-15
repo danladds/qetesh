@@ -1,0 +1,317 @@
+/*
+   Example Application CSS
+   
+   Copyright 2015 Dan Ladds <Dan@el-topo.co.uk>
+   
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2 of the License, or
+   (at your option) any later version.
+   
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+   
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software
+   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+   MA 02110-1301, USA.
+   
+   
+*/
+
+
+
+/* RESET */
+/* ----------------------------------------- */
+
+/**
+ * Eric Meyer's Reset Stylesheet
+ *
+ * v2.0
+ * 2011-01-26
+ * Author: Eric Meyer - http://meyerweb.com/eric/tools/css/reset/
+ */
+
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed, 
+figure, figcaption, footer, header, hgroup, 
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	font-size: 100%;
+	font: inherit;
+	vertical-align: baseline;
+}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure, 
+footer, header, hgroup, menu, nav, section {
+	display: block;
+}
+body {
+	line-height: 1;
+}
+ol, ul {
+	list-style: none;
+}
+blockquote, q {
+	quotes: none;
+}
+blockquote:before, blockquote:after,
+q:before, q:after {
+	content: '';
+	content: none;
+}
+table {
+	border-collapse: collapse;
+	border-spacing: 0;
+}
+
+
+/* ==|== non-semantic helper classes ======================================== */
+
+.ir { display: block; border: 0; text-indent: -999em; overflow: hidden; background-color: transparent; background-repeat: no-repeat; text-align: left; direction: ltr; *line-height: 0; }
+.ir br { display: none; }
+.hidden { display: none !important; visibility: hidden; }
+.visuallyhidden { border: 0; clip: rect(0 0 0 0); height: 1px; margin: -1px; overflow: hidden; padding: 0; position: absolute; width: 1px; }
+.visuallyhidden.focusable:active, .visuallyhidden.focusable:focus { clip: auto; height: auto; margin: 0; overflow: visible; position: static; width: auto; }
+.invisible { visibility: hidden; }
+.clearfix { overflow: visible; width: 100%; }
+.clearfix:before, .clearfix:after { content: ""; display: table; }
+.clearfix:after { clear: both; }
+.clearfix { *zoom: 1; }
+
+/* ==|== print styles ======================================================= */
+
+@media print {
+  * { background: transparent !important; color: black !important; box-shadow:none !important; text-shadow: none !important; filter:none !important; -ms-filter: none !important; }
+  a, a:visited { text-decoration: none; }
+  a[href]:after { content: " (" attr(href) ")"; }
+    abbr[title]:after { content: " (" attr(title) ")"; }
+  .ir a:after, a[href^="javascript:"]:after, a[href^="#"]:after { content: ""; }
+    pre, blockquote { border: 1px solid #999; page-break-inside: avoid; }
+  thead { display: table-header-group; }
+   tr, img { page-break-inside: avoid; }
+  img { max-width: 100% !important; }
+    @page { margin: 0.5cm; }
+  p, h2, h3 { orphans: 3; widows: 3; }
+    h2, h3 { page-break-after: avoid; }
+	}
+
+
+
+/******************
+ * Example CSS  *************************************
+ *****************/
+
+@import url(http://fonts.googleapis.com/css?family=Open+Sans:400,700);
+
+/* --- Window Structure --- */
+html { width: 100%; height: 100%; font-family: 'Open Sans', sans-serif; }
+
+body {
+  width: 100%; height: 98%; padding-bottom: -1px;
+  background-color: black; background-image: repeating-linear-gradient(45deg, transparent, transparent 3px, rgba(255,255,255,.15) 6px, rgba(255,255,255,.15) 12px);
+}
+
+div#superwrapper { width: 98%; height: 99%; margin-top: 1%; margin-left: 1%;
+}
+div#wrapper { width: 100%; height: 92%; background-color: white;
+	margin-top: 0px; margin-bottom: 0px; overflow-y: scroll; overflow-x: hide;
+	border: 3px black solid;
+}
+
+div#menu-wrapper { height: 7%; background-color: #005980; 
+	border-radius: 1em 1em 0px 0px;
+}
+
+div#view-pane { margin: 2em; }
+
+/* --- Core Styles --- */
+h2 { font-size: 1.6em; margin-top: 0px; width: 99%; border-bottom: 0.2em solid #006130; padding-bottom: 0.2em; background-color: #A8F3A8; padding: 0.5em;
+background-image: repeating-linear-gradient(45deg, transparent, transparent 3px, rgba(255,255,255,.45) 6px, rgba(255,255,255,.15) 6px);
+
+}
+
+/* --- Contacts List --- */
+.boxlist li {
+	display: block;   background-color: #80D8FF;
+
+	border: 4px solid #006161; margin-top: 1em; margin-right: 1em; padding: 1em;
+	float: left;
+	border-radius: 1em;
+	background-image: repeating-linear-gradient(45deg, transparent, transparent 3px, rgba(255,255,255,.15) 6px, rgba(255,255,255,.15) 12px);
+}
+
+.boxlist h3 { 
+	font-size: 1.4em;
+	padding-bottom: 0.5em;
+	border-bottom: 1px #D1F1FF solid;
+	margin-bottom: 0.5em;
+}
+
+/* --- Forms --- */
+.std-wrap { font-size: 0.9em; }
+.std-wrap ul li { margin-top: 0.2em; }
+
+.std-wrap input[type=text] {
+  padding: 0.4em; border: 1px dashed #ccc; margin-top: 0.5em;
+}
+input[type=text].consec { border-left: none; }
+
+.block-list li { padding: 1em; border: 1px dashed #ddd; margin-top: 1em; width: 40%; margin-left: 0px; }
+
+/* --- Buttons --- */
+.btn, .block-list li.btn {  height: 2em; width: 2em; background-size: 100%; overflow: hidden; padding: 0px; border: none; margin-top: 0px;
+  cursor: pointer; line-height: 100em;
+}
+
+.btn-lrg-txt {
+  color: white; font-weight: bold;
+  height: 2.2em; width: 8em; background-size: auto 80%; overflow: hidden;
+  cursor: pointer; font-size: 1.4em;
+  margin-top: 1em;
+  padding-left: 2em; padding-top: 0.2em;
+  border: 0px white solid; border-radius: 0.5em;
+  background-color: #00B2FF; background-repeat: no-repeat;
+  background-position: 6% 35%;
+  text-transform: uppercase;
+}
+
+/* --- Messages --- */
+.js-sorry { color: #888; font-size: 1.4em; margin-top: 40%; margin-left: 35%; width: 30%; }
+
+
+/* --- Top Menu --- */
+#top-menu {
+	height: 90%;	
+}
+
+#top-menu ul { width: 100%; height: 100%; }
+#top-menu ul li {
+	width: 20%; float: left; display: block; padding-left: 2%;
+	color: #005980; font-size: 1.2em; margin-right: 1%;
+	border: 3px solid black;
+	border-bottom: none;
+	border-radius: 1em 1em 0px 0px;
+	background-color: white;
+	cursor: pointer;
+	background-color: #80D8FF; 
+	background-image: repeating-linear-gradient(45deg, transparent, transparent 3px, rgba(255,255,255,.45) 6px, rgba(255,255,255,.15) 6px);
+	font-weight: bold;
+}
+
+#top-menu ul li:hover {
+	background-color: #FF4D00;
+	color: black;
+	border-color: transparent;
+}
+
+#top-menu ul li a {
+	display: block;
+	padding-top: 8%;
+	padding-bottom: 8%;
+	color: inherit;
+	text-decoration: none;
+	outline: none;
+}
+
+/* ================ Specific Elements ================= */
+
+/* --- Dashboard --- */
+#dashboard-tasklist {
+	width: 20em;
+	float: right;
+	border-radius: 1em;
+	border: 4px solid #006161;
+	padding: 1em;
+	margin-top: 1em;
+}
+
+#dashboard-tasklist h3 { 
+	font-size: 1.4em;
+	padding-bottom: 0.5em;
+	border-bottom: 1px #D1F1FF solid;
+	margin-bottom: 0.5em;
+}
+
+#dash-runs li {
+	width: 30em;
+}
+
+.progress {
+	width: 100$;
+	height: 1.5em;
+	background-color: #CFF8FF;
+	margin-top: 1em; margin-bottom: 1em;
+}
+
+.progress-bar {
+	height: 100%;
+	background-color: #FF4D00; 
+	background-image: repeating-linear-gradient(45deg, transparent, transparent 3px, rgba(255,255,255,.45) 6px, rgba(255,255,255,.15) 6px);
+}
+
+/* --- Contacts List --- */
+#contacts-list li {
+	height: 5em; width: 15em;
+}
+
+#contacts-list h3 { 
+	
+}
+
+#people-order {
+	-moz-appearance: none;
+	-webkit-appearance: none;
+	appearance: none;
+	border: 2px solid #005980;
+	padding-left: 0.5em;
+
+	font-size: 1.2em; color: #ddd;
+	background-color: #4A90D9;
+	color: white;
+	width: 13.5em;
+	cursor: pointer;
+	border-radius: 1em 1em 1em 1em;
+	outline: none;
+}
+
+#people-order:focus {
+	border-radius: 1em 1em 0px 0px;
+}
+
+#people-order option {
+	-moz-appearance: none;
+    -webkit-appearance: none;
+    appearance: none;
+	background-color: #300061;
+	border-bottom: 1px solid #D1F1FF;
+	padding: 0.5em; 
+	cursor: pointer;
+}
+
+#people-order option:checked {
+	background-color: #4A90D9;
+}
+
+.big-search  {
+	
+	font-size: 1.2em; margin-top: 1em;
+	background-color: #D1F1FF; border: 2px solid #005980;
+	border-radius: 1em; padding: 0.5em 1em;
+	width: 28em;
+}
+
+

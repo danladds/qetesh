@@ -1,5 +1,5 @@
 /*
- * QExample.vala
+ * Invoice.vala
  * 
  * Copyright 2015 Dan Ladds <Dan@el-topo.co.uk>
  * 
@@ -25,32 +25,31 @@
 using Qetesh;
 using Qetesh.Data;
 
-Type mod_init (WebAppContext ctx) {
-	
-	return typeof(ExampleLoader);
-}
+namespace QExample.Data {
 
-public class ExampleLoader : QPlugin, Object {
-
-	public QWebApp GetModObject (WebAppContext ctx) {
+	public class Invoice : DataObject<Invoice> {
 		
-		return new QExample.QExample(ctx);
-	}
-}
-
-namespace QExample {
-
-	public class QExample : QWebApp {
+		public int Id { get; set; }
+		public Invoice FromInvoice { get; set; }
+		public string Surname { get; set; }
+		public DateTime Issued { get; set; }
+		public int Total { get; set; }
 		
-		public QExample(WebAppContext ctx) {
+		public Person (QDatabaseConn dbh) {
 			
-			base(ctx);
-			
-			WriteMessage("QExample is go!", ErrorManager.QErrorClass.MODULE_DEBUG, "QExample");
-			
-			
-			RootNode["invoice"] = new InvoiceNode();
+				// Call base first!
+				base(dbh);
+				
+				TableName = "invoiceitem";
+				
+				Link("FromInvoice", "id");
 		}
+		
+		public override string NameTransform(string fieldName) {
+			
+			return fieldName.down();
+		}
+		
 	}
-
 }
+
