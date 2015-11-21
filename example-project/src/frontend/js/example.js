@@ -1,18 +1,25 @@
+"use strict";
+
 qsh.Ready(function(data) {
 	
 	qsh.View('list.html', function(view, data) {
 		
-		var invoice = new data.Invoice();
-		view.Bind(invoice.LoadAll());
+		var invoice = data.Invoice();
+		invoice.LoadAll(function(invoices) {
+			
+			view.Bind(invoices);
+		});
 	});
 	
 	qsh.View('record.html', function(view, data, id) {
 	
-		var invoice = new data.Invoice();
+		var invoice = data.Invoice();
 		invoice.Id = id;
-		invoice.Load();
+		invoice.Load(function () {
+			
+			view.Bind(invoice);
+		});
 		
-		view.Bind(invoice);
 	});
 	
 });

@@ -31,9 +31,8 @@ namespace QExample.Data {
 		
 		public int Id { get; set; }
 		public Invoice FromInvoice { get; set; }
-		public string Surname { get; set; }
-		public DateTime Issued { get; set; }
-		public int Total { get; set; }
+		public string Description { get; set; }
+		public int Price { get; set; }
 		
 		public Person (QDatabaseConn dbh) {
 			
