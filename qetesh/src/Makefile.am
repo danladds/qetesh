@@ -24,6 +24,4 @@ qetesh_LDFLAGS = \
 qetesh_LDADD = $(QETESH_LIBS)
 
 sysconf_DATA = qetesh.conf
-
-nobase_dist_pkgdata_DATA = frontend/js/qetesh.js
  

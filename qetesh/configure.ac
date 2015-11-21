@@ -1,4 +1,4 @@
-AC_INIT(qetesh, 0.2, dan@danladds.com)
+AC_INIT(qetesh, 0.3, dan@danladds.com)
 
 dnl Keep the project dir clean
 AC_CONFIG_AUX_DIR(config)
