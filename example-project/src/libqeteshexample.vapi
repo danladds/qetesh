@@ -25,7 +25,8 @@ namespace QExample {
 	}
 	[CCode (cheader_filename = "QExample.h")]
 	public class InvoiceNode : Qetesh.QWebNode {
-		public InvoiceNode (string path = "");
+		public InvoiceNode ();
+		public override void OnBind ();
 	}
 	[CCode (cheader_filename = "QExample.h")]
 	public class QExample : Qetesh.QWebApp {

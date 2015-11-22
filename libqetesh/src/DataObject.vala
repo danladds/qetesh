@@ -95,6 +95,10 @@ namespace Qetesh.Data {
 			db = dbh;
 			IdMap = new Gee.HashMap<string, int>();
 			
+			// Defaults
+			TableName = this.get_type().to_string();
+			PKeyName = "Id";
+			
 			// List of linked objects (i.e. joins in SQL)
 			ClassParents = new Gee.LinkedList<InheritInfo>();
 			Links = new Gee.LinkedList<LinkInfo>();
@@ -106,11 +110,6 @@ namespace Qetesh.Data {
 		
 		public void Delete() {
 			
-		}
-		
-		public void Discard() {
-			
-			// Discard changes before they are saved; kill object
 		}
 		
 		public Gee.LinkedList<TImp> Children { 
@@ -132,6 +131,137 @@ namespace Qetesh.Data {
 		private Gee.LinkedList<TImp> parents;
 		private Gee.LinkedList<TImp> children;
 		
+		private string getPKeyStr() {
+			
+			return getPropStr(PKeyName);
+		}
+		
+		private void setPKeyStr(string val) {
+			
+			setPropStr(PKeyName, val);
+			
+		}
+		
+		private string getPropStr(string propName) {
+			
+			var classObj = (ObjectClass) this.get_type().class_ref();
+			
+			var propSpec = classObj.find_property(propName);
+			
+			if (propSpec == null) return "";
+			
+			return _getPropStr(propName, propSpec.value_type);
+		}
+		
+		private void setPropStr(string propName, string val) {
+			
+			var classObj = (ObjectClass) this.get_type().class_ref();
+			
+			var propSpec = classObj.find_property(propName);
+			
+			if (propSpec == null) return;
+			
+			_setPropStr(propName, val, propSpec.value_type);
+		}
+		
+		private string _getPropStr(string pName, Type propertyType) {
+			
+			string strVal = "";
+			
+			if (propertyType == typeof(string)) {
+				var val = Value(typeof(string));
+				this.get_property(pName, ref val);
+				strVal = val.get_string();
+			}
+			
+			else if (propertyType == typeof(int)) {
+				var val = Value(typeof(int));
+				this.get_property(pName, ref val);
+				strVal = val.get_int().to_string();
+			}
+			
+			else if (propertyType == typeof(bool)) {
+				var val = Value(typeof(bool));
+				this.get_property(pName, ref val);
+				strVal = val.get_boolean().to_string();
+			}
+			
+			else if (propertyType == typeof(float)) {
+				var val = Value(typeof(float));
+				this.get_property(pName, ref val);
+				strVal = val.get_float().to_string();
+			}
+			
+			else if (propertyType == typeof(double)) {
+				var val = Value(typeof(double));
+				this.get_property(pName, ref val);
+				strVal = val.get_double().to_string();
+			}
+			
+			else {
+				
+				if (propertyType.is_a(typeof(DataObject))) {
+					
+					// Don't lazy load
+					// for automatic iterations
+					// Risk of creating an infinite loop
+					// if database references loop
+					// Just provide ID instead
+					// Client application can load by 
+					// trivial access, or using lambda
+					
+				}
+			}
+			
+			return strVal;
+		}
+		
+		private void _setPropStr(string pName, string inVal, Type propertyType) {
+			
+			if (propertyType == typeof(string)) {
+				var val = Value(typeof(string));
+				val.set_string(inVal);
+				this.set_property(pName, val);
+			}
+			
+			else if (propertyType == typeof(int)) {
+				var val = Value(typeof(int));
+				val.set_int(int.parse(inVal));
+				this.set_property(pName, val);
+			}
+			
+			else if (propertyType == typeof(bool)) {
+				var val = Value(typeof(bool));
+				val.set_boolean(bool.parse(inVal));
+				this.set_property(pName, val);
+			}
+			
+			else if (propertyType == typeof(float)) {
+				var val = Value(typeof(float));
+				val.set_float((float) double.parse(inVal));
+				this.set_property(pName, val);
+			}
+			
+			else if (propertyType == typeof(double)) {
+				var val = Value(typeof(double));
+				val.set_double(double.parse(inVal));
+				this.set_property(pName, val);
+			}
+			
+			else if (propertyType.is_a(typeof(DateTime))) {
+				
+				// Todo: handle
+			}
+			
+			else {
+				
+				if (propertyType.is_a(typeof(DataObject))) {
+					
+					
+				}
+			}
+		}
+		
 		//public static Gee.ArrayList<DataObject> ReadTree() {
 		//	
 		//}
@@ -143,7 +273,7 @@ namespace Qetesh.Data {
 		
 		// TODO: Latch onto Notify signal
 		
-		public Gee.LinkedList<TImp> LoadAll() throws Qetesh.Data.QDBError {
+		public Gee.LinkedList<DataObject> LoadAll() throws Qetesh.Data.QDBError {
 			
 			Gee.LinkedList<DataObject> returnList;
 			
@@ -157,6 +287,23 @@ namespace Qetesh.Data {
 		public void Load() {
 			
 			
+			
+			string sql = "SELECT * FROM %s WHERE `%s`.`%s` = \"%s\"".printf(
+				QueryTarget,
+				TableName,
+				NameTransform(PKeyName),
+				getPropStr(PKeyName)
+			);
+			
+			var result = db.Q(sql);
+			
+			if (result.size == 0) {
+				
+				// Todo: throw exception
+			}
+			
+			// Map into self
+			MapObject(result[0]);
 		}
 		
 		public Gee.LinkedList<DataObject> MapObjectList(Gee.LinkedList<Gee.TreeMap<string?, string?>> rows) {
@@ -204,48 +351,7 @@ namespace Qetesh.Data {
 				
 				if (datum.has_key(tName)) {
 						
-					if (propertyType == typeof(string)) {
-						var val = Value(typeof(string));
-						val.set_string(datum[tName]);
-						this.set_property(pName, val);
-					}
-					
-					else if (propertyType == typeof(int)) {
-						var val = Value(typeof(int));
-						val.set_int(int.parse(datum[tName]));
-						this.set_property(pName, val);
-					}
-					
-					else if (propertyType == typeof(bool)) {
-						var val = Value(typeof(bool));
-						val.set_boolean(bool.parse(datum[tName]));
-						this.set_property(pName, val);
-					}
-					
-					else if (propertyType == typeof(float)) {
-						var val = Value(typeof(float));
-						val.set_float((float) double.parse(datum[tName]));
-						this.set_property(pName, val);
-					}
-					
-					else if (propertyType == typeof(double)) {
-						var val = Value(typeof(double));
-						val.set_double(double.parse(datum[tName]));
-						this.set_property(pName, val);
-					}
-					
-					else if (propertyType.is_a(typeof(DateTime))) {
-						
-						// Todo: handle
-					}
-					
-					else {
-						
-						if (propertyType.is_a(typeof(DataObject))) {
-							
-							IdMap.set(tName, int.parse(datum[tName]));
-						}
-					}
+					_setPropStr(pName, datum[tName], propertyType);
 					
 				}
 			}
@@ -282,55 +388,10 @@ namespace Qetesh.Data {
 				Type propertyType = prop.value_type;
 				
 				var childNode = new DataNode(pName);
-				childNode.Val = "null";
-				
-				if (propertyType == typeof(string)) {
-						var val = Value(typeof(string));
-						this.get_property(pName, ref val);
-						childNode.Val = val.get_string();
-					}
+				childNode.Val = _getPropStr(pName, propertyType);
 					
-					else if (propertyType == typeof(int)) {
-						var val = Value(typeof(int));
-						this.get_property(pName, ref val);
-						childNode.Val = val.get_int().to_string();
-					}
-					
-					else if (propertyType == typeof(bool)) {
-						var val = Value(typeof(bool));
-						this.get_property(pName, ref val);
-						childNode.Val = val.get_boolean().to_string();
-					}
-					
-					else if (propertyType == typeof(float)) {
-						var val = Value(typeof(float));
-						this.get_property(pName, ref val);
-						childNode.Val = val.get_float().to_string();
-					}
-					
-					else if (propertyType == typeof(double)) {
-						var val = Value(typeof(double));
-						this.get_property(pName, ref val);
-						childNode.Val = val.get_double().to_string();
-					}
-					
-					else {
-						
-						if (propertyType.is_a(typeof(DataObject))) {
-							
-							// Don't lazy load
-							// for automatic iterations
-							// Risk of creating an infinite loop
-							// if database references loop
-							// Just provide ID instead
-							// Client application can load by 
-							// trivial access, or using lambda
-							
-						}
-					}
-					
-					dn.Children.add(childNode);
-				}
+				dn.Children.add(childNode);
+			}
 			
 			transform(dn);
 			

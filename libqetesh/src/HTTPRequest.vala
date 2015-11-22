@@ -93,6 +93,9 @@ namespace Qetesh {
 		// The response to the request
 		public HTTPResponse HResponse { get; private set; }
 		
+		/// Inbound DataTree from JS or API access
+		public Data.DataObject.DataNode DataTree { get; private set; }
+		
 		/**
 		 * Recieve a new request
 		 * 

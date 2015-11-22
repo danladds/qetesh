@@ -322,6 +322,50 @@ typedef struct _QeteshHTMLElementClass QeteshHTMLElementClass;
 typedef struct _QeteshHTMLElementPrivate QeteshHTMLElementPrivate;
 typedef struct _QeteshQWebNodePrivate QeteshQWebNodePrivate;
 
+#define QETESH_QWEB_NODE_TYPE_MANIFEST_OBJECT (qetesh_qweb_node_manifest_object_get_type ())
+#define QETESH_QWEB_NODE_MANIFEST_OBJECT(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), QETESH_QWEB_NODE_TYPE_MANIFEST_OBJECT, QeteshQWebNodeManifestObject))
+#define QETESH_QWEB_NODE_MANIFEST_OBJECT_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), QETESH_QWEB_NODE_TYPE_MANIFEST_OBJECT, QeteshQWebNodeManifestObjectClass))
+#define QETESH_QWEB_NODE_IS_MANIFEST_OBJECT(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), QETESH_QWEB_NODE_TYPE_MANIFEST_OBJECT))
+#define QETESH_QWEB_NODE_IS_MANIFEST_OBJECT_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), QETESH_QWEB_NODE_TYPE_MANIFEST_OBJECT))
+#define QETESH_QWEB_NODE_MANIFEST_OBJECT_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), QETESH_QWEB_NODE_TYPE_MANIFEST_OBJECT, QeteshQWebNodeManifestObjectClass))
+
+typedef struct _QeteshQWebNodeManifestObject QeteshQWebNodeManifestObject;
+typedef struct _QeteshQWebNodeManifestObjectClass QeteshQWebNodeManifestObjectClass;
+
+#define QETESH_QWEB_NODE_TYPE_MANIFEST_WALKER (qetesh_qweb_node_manifest_walker_get_type ())
+#define QETESH_QWEB_NODE_MANIFEST_WALKER(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), QETESH_QWEB_NODE_TYPE_MANIFEST_WALKER, QeteshQWebNodeManifestWalker))
+#define QETESH_QWEB_NODE_MANIFEST_WALKER_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), QETESH_QWEB_NODE_TYPE_MANIFEST_WALKER, QeteshQWebNodeManifestWalkerClass))
+#define QETESH_QWEB_NODE_IS_MANIFEST_WALKER(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), QETESH_QWEB_NODE_TYPE_MANIFEST_WALKER))
+#define QETESH_QWEB_NODE_IS_MANIFEST_WALKER_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), QETESH_QWEB_NODE_TYPE_MANIFEST_WALKER))
+#define QETESH_QWEB_NODE_MANIFEST_WALKER_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), QETESH_QWEB_NODE_TYPE_MANIFEST_WALKER, QeteshQWebNodeManifestWalkerClass))
+
+typedef struct _QeteshQWebNodeManifestWalker QeteshQWebNodeManifestWalker;
+typedef struct _QeteshQWebNodeManifestWalkerClass QeteshQWebNodeManifestWalkerClass;
+typedef struct _QeteshQWebNodeManifestWalkerPrivate QeteshQWebNodeManifestWalkerPrivate;
+typedef struct _QeteshQWebNodeManifestObjectPrivate QeteshQWebNodeManifestObjectPrivate;
+
+#define QETESH_QWEB_NODE_MANIFEST_OBJECT_TYPE_MANIFEST_METHOD (qetesh_qweb_node_manifest_object_manifest_method_get_type ())
+#define QETESH_QWEB_NODE_MANIFEST_OBJECT_MANIFEST_METHOD(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), QETESH_QWEB_NODE_MANIFEST_OBJECT_TYPE_MANIFEST_METHOD, QeteshQWebNodeManifestObjectManifestMethod))
+#define QETESH_QWEB_NODE_MANIFEST_OBJECT_MANIFEST_METHOD_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), QETESH_QWEB_NODE_MANIFEST_OBJECT_TYPE_MANIFEST_METHOD, QeteshQWebNodeManifestObjectManifestMethodClass))
+#define QETESH_QWEB_NODE_MANIFEST_OBJECT_IS_MANIFEST_METHOD(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), QETESH_QWEB_NODE_MANIFEST_OBJECT_TYPE_MANIFEST_METHOD))
+#define QETESH_QWEB_NODE_MANIFEST_OBJECT_IS_MANIFEST_METHOD_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), QETESH_QWEB_NODE_MANIFEST_OBJECT_TYPE_MANIFEST_METHOD))
+#define QETESH_QWEB_NODE_MANIFEST_OBJECT_MANIFEST_METHOD_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), QETESH_QWEB_NODE_MANIFEST_OBJECT_TYPE_MANIFEST_METHOD, QeteshQWebNodeManifestObjectManifestMethodClass))
+
+typedef struct _QeteshQWebNodeManifestObjectManifestMethod QeteshQWebNodeManifestObjectManifestMethod;
+typedef struct _QeteshQWebNodeManifestObjectManifestMethodClass QeteshQWebNodeManifestObjectManifestMethodClass;
+typedef struct _QeteshQWebNodeManifestObjectManifestMethodPrivate QeteshQWebNodeManifestObjectManifestMethodPrivate;
+
+#define QETESH_TYPE_QMANIFEST (qetesh_qmanifest_get_type ())
+#define QETESH_QMANIFEST(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), QETESH_TYPE_QMANIFEST, QeteshQManifest))
+#define QETESH_QMANIFEST_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), QETESH_TYPE_QMANIFEST, QeteshQManifestClass))
+#define QETESH_IS_QMANIFEST(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), QETESH_TYPE_QMANIFEST))
+#define QETESH_IS_QMANIFEST_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), QETESH_TYPE_QMANIFEST))
+#define QETESH_QMANIFEST_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), QETESH_TYPE_QMANIFEST, QeteshQManifestClass))
+
+typedef struct _QeteshQManifest QeteshQManifest;
+typedef struct _QeteshQManifestClass QeteshQManifestClass;
+typedef struct _QeteshQManifestPrivate QeteshQManifestPrivate;
+
 struct _QeteshWebserverlibqetesh {
 	GTypeInstance parent_instance;
 	volatile int ref_count;
@@ -655,10 +699,57 @@ struct _QeteshQWebNode {
 	GObject parent_instance;
 	QeteshQWebNodePrivate * priv;
 	GeeMap* Children;
+	QeteshQWebNode* Parent;
+	QeteshQWebNodeManifestObject* Manifest;
 };
 
 struct _QeteshQWebNodeClass {
 	GObjectClass parent_class;
+	void (*OnBind) (QeteshQWebNode* self);
+};
+
+typedef QeteshDataDataObject* (*QeteshQWebNodeGetNextDataObject) (QeteshHTTPRequest* req, void* user_data);
+struct _QeteshQWebNodeManifestWalker {
+	GTypeInstance parent_instance;
+	volatile int ref_count;
+	QeteshQWebNodeManifestWalkerPrivate * priv;
+};
+
+struct _QeteshQWebNodeManifestWalkerClass {
+	GTypeClass parent_class;
+	void (*finalize) (QeteshQWebNodeManifestWalker *self);
+};
+
+struct _QeteshQWebNodeManifestObject {
+	GTypeInstance parent_instance;
+	volatile int ref_count;
+	QeteshQWebNodeManifestObjectPrivate * priv;
+	GeeLinkedList* Methods;
+};
+
+struct _QeteshQWebNodeManifestObjectClass {
+	GTypeClass parent_class;
+	void (*finalize) (QeteshQWebNodeManifestObject *self);
+};
+
+struct _QeteshQWebNodeManifestObjectManifestMethod {
+	GTypeInstance parent_instance;
+	volatile int ref_count;
+	QeteshQWebNodeManifestObjectManifestMethodPrivate * priv;
+};
+
+struct _QeteshQWebNodeManifestObjectManifestMethodClass {
+	GTypeClass parent_class;
+	void (*finalize) (QeteshQWebNodeManifestObjectManifestMethod *self);
+};
+
+struct _QeteshQManifest {
+	QeteshQWebNode parent_instance;
+	QeteshQManifestPrivate * priv;
+};
+
+struct _QeteshQManifestClass {
+	QeteshQWebNodeClass parent_class;
 };
 
 
@@ -812,6 +903,7 @@ const gchar* qetesh_http_request_get_Host (QeteshHTTPRequest* self);
 const gchar* qetesh_http_request_get_UserAgent (QeteshHTTPRequest* self);
 GeeMap* qetesh_http_request_get_Headers (QeteshHTTPRequest* self);
 QeteshHTTPResponse* qetesh_http_request_get_HResponse (QeteshHTTPRequest* self);
+QeteshDataDataObjectDataNode* qetesh_http_request_get_DataTree (QeteshHTTPRequest* self);
 gpointer qetesh_data_qdatabase_conn_ref (gpointer instance);
 void qetesh_data_qdatabase_conn_unref (gpointer instance);
 GParamSpec* qetesh_data_param_spec_qdatabase_conn (const gchar* name, const gchar* nick, const gchar* blurb, GType object_type, GParamFlags flags);
@@ -823,7 +915,6 @@ QeteshDataDataObject* qetesh_data_data_object_new (GType timp_type, GBoxedCopyFu
 QeteshDataDataObject* qetesh_data_data_object_construct (GType object_type, GType timp_type, GBoxedCopyFunc timp_dup_func, GDestroyNotify timp_destroy_func, QeteshDataQDatabaseConn* dbh);
 void qetesh_data_data_object_Create (QeteshDataDataObject* self);
 void qetesh_data_data_object_Delete (QeteshDataDataObject* self);
-void qetesh_data_data_object_Discard (QeteshDataDataObject* self);
 GQuark qetesh_data_qdb_error_quark (void);
 GeeLinkedList* qetesh_data_data_object_LoadAll (QeteshDataDataObject* self, GError** error);
 void qetesh_data_data_object_Load (QeteshDataDataObject* self);
@@ -912,14 +1003,59 @@ void qetesh_html_element_set_Val (QeteshHTMLElement* self, const gchar* value);
 gint qetesh_html_element_get_size (QeteshHTMLElement* self);
 const gchar* qetesh_html_element_get_Selector (QeteshHTMLElement* self);
 void qetesh_html_element_set_Selector (QeteshHTMLElement* self, const gchar* value);
+gpointer qetesh_qweb_node_manifest_object_ref (gpointer instance);
+void qetesh_qweb_node_manifest_object_unref (gpointer instance);
+GParamSpec* qetesh_qweb_node_param_spec_manifest_object (const gchar* name, const gchar* nick, const gchar* blurb, GType object_type, GParamFlags flags);
+void qetesh_qweb_node_value_set_manifest_object (GValue* value, gpointer v_object);
+void qetesh_qweb_node_value_take_manifest_object (GValue* value, gpointer v_object);
+gpointer qetesh_qweb_node_value_get_manifest_object (const GValue* value);
+GType qetesh_qweb_node_manifest_object_get_type (void) G_GNUC_CONST;
 QeteshQWebNode* qetesh_qweb_node_get (QeteshQWebNode* self, const gchar* subpath);
 void qetesh_qweb_node_set (QeteshQWebNode* self, const gchar* subpath, QeteshQWebNode* node);
+void qetesh_qweb_node_OnBind (QeteshQWebNode* self);
 QeteshQWebNode* qetesh_qweb_node_new (const gchar* path);
 QeteshQWebNode* qetesh_qweb_node_construct (GType object_type, const gchar* path);
-void qetesh_qweb_node_ExposeType (QeteshQWebNode* self, GType t);
+gchar* qetesh_qweb_node_GetFullPath (QeteshQWebNode* self);
+void qetesh_qweb_node_ExposeCrud (QeteshQWebNode* self, const gchar* typeName, QeteshQWebNodeGetNextDataObject newDo, void* newDo_target);
+gpointer qetesh_qweb_node_manifest_walker_ref (gpointer instance);
+void qetesh_qweb_node_manifest_walker_unref (gpointer instance);
+GParamSpec* qetesh_qweb_node_param_spec_manifest_walker (const gchar* name, const gchar* nick, const gchar* blurb, GType object_type, GParamFlags flags);
+void qetesh_qweb_node_value_set_manifest_walker (GValue* value, gpointer v_object);
+void qetesh_qweb_node_value_take_manifest_walker (GValue* value, gpointer v_object);
+gpointer qetesh_qweb_node_value_get_manifest_walker (const GValue* value);
+GType qetesh_qweb_node_manifest_walker_get_type (void) G_GNUC_CONST;
+void qetesh_qweb_node_WalkManifests (QeteshQWebNode* self, QeteshQWebNodeManifestWalker* walker);
 gint qetesh_qweb_node_get_size (QeteshQWebNode* self);
 const gchar* qetesh_qweb_node_get_Path (QeteshQWebNode* self);
 void qetesh_qweb_node_set_Path (QeteshQWebNode* self, const gchar* value);
+QeteshQWebNodeManifestWalker* qetesh_qweb_node_manifest_walker_new (QeteshDataDataObjectDataNode* rNode);
+QeteshQWebNodeManifestWalker* qetesh_qweb_node_manifest_walker_construct (GType object_type, QeteshDataDataObjectDataNode* rNode);
+QeteshDataDataObjectDataNode* qetesh_qweb_node_manifest_walker_AddObject (QeteshQWebNodeManifestWalker* self, const gchar* tName);
+gpointer qetesh_qweb_node_manifest_object_manifest_method_ref (gpointer instance);
+void qetesh_qweb_node_manifest_object_manifest_method_unref (gpointer instance);
+GParamSpec* qetesh_qweb_node_manifest_object_param_spec_manifest_method (const gchar* name, const gchar* nick, const gchar* blurb, GType object_type, GParamFlags flags);
+void qetesh_qweb_node_manifest_object_value_set_manifest_method (GValue* value, gpointer v_object);
+void qetesh_qweb_node_manifest_object_value_take_manifest_method (GValue* value, gpointer v_object);
+gpointer qetesh_qweb_node_manifest_object_value_get_manifest_method (const GValue* value);
+GType qetesh_qweb_node_manifest_object_manifest_method_get_type (void) G_GNUC_CONST;
+QeteshQWebNodeManifestObject* qetesh_qweb_node_manifest_object_new (const gchar* typeName);
+QeteshQWebNodeManifestObject* qetesh_qweb_node_manifest_object_construct (GType object_type, const gchar* typeName);
+QeteshQWebNodeManifestObjectManifestMethod* qetesh_qweb_node_manifest_object_Method (QeteshQWebNodeManifestObject* self, const gchar* mName, QeteshQWebNode* node);
+const gchar* qetesh_qweb_node_manifest_object_get_TypeName (QeteshQWebNodeManifestObject* self);
+QeteshQWebNodeManifestObjectManifestMethod* qetesh_qweb_node_manifest_object_manifest_method_new (const gchar* name, const gchar* path);
+QeteshQWebNodeManifestObjectManifestMethod* qetesh_qweb_node_manifest_object_manifest_method_construct (GType object_type, const gchar* name, const gchar* path);
+QeteshDataDataObjectDataNode* qetesh_qweb_node_manifest_object_manifest_method_GetDescriptor (QeteshQWebNodeManifestObjectManifestMethod* self);
+void qetesh_qweb_node_manifest_object_manifest_method_GET (QeteshQWebNodeManifestObjectManifestMethod* self);
+void qetesh_qweb_node_manifest_object_manifest_method_POST (QeteshQWebNodeManifestObjectManifestMethod* self);
+void qetesh_qweb_node_manifest_object_manifest_method_PUT (QeteshQWebNodeManifestObjectManifestMethod* self);
+const gchar* qetesh_qweb_node_manifest_object_manifest_method_get_Name (QeteshQWebNodeManifestObjectManifestMethod* self);
+void qetesh_qweb_node_manifest_object_manifest_method_set_Name (QeteshQWebNodeManifestObjectManifestMethod* self, const gchar* value);
+const gchar* qetesh_qweb_node_manifest_object_manifest_method_get_NodePath (QeteshQWebNodeManifestObjectManifestMethod* self);
+void qetesh_qweb_node_manifest_object_manifest_method_set_NodePath (QeteshQWebNodeManifestObjectManifestMethod* self, const gchar* value);
+const gchar* qetesh_qweb_node_manifest_object_manifest_method_get_HttpMethod (QeteshQWebNodeManifestObjectManifestMethod* self);
+GType qetesh_qmanifest_get_type (void) G_GNUC_CONST;
+QeteshQManifest* qetesh_qmanifest_new (void);
+QeteshQManifest* qetesh_qmanifest_construct (GType object_type);
 
 
 G_END_DECLS

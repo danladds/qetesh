@@ -1,7 +1,7 @@
 /*
- * InvoiceNode.vala
+ * QWebNode.vala
  * 
- * Copyright 2015 Dan Ladds <Dan@el-topo.co.uk>
+ * Copyright 2014 Dan Ladds <Dan@el-topo.co.uk>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,21 +21,44 @@
  * 
  */
 
-
-using Qetesh;
+using Gee;
 using Qetesh.Data;
-using QExample.Data;
 
-namespace QExample {
-	
-	public class InvoiceNode : QWebNode {
+namespace Qetesh {
+
+	/**
+	 * Manifest for client side code
+	 * Also potentially useful for API users
+	 * 
+	**/
+	public class QManifest : QWebNode {
+		
+		private DataObject.DataNode ManifestRoot;
+		
+		public QManifest() {
+			
+			base();
+			
+			ManifestRoot = new DataObject.DataNode("Manifest");
+		}
 		
 		public override void OnBind() {
 			
-			ExposeCrud("Invoice", (req) => {
+			// Build manifest tree
+			var rootNode =  Parent; 
+			ManifestRoot.IsArray = false;
+			
+			var walker = new ManifestWalker(ManifestRoot);
+			
+			rootNode.WalkManifests(walker);
+			
+			GET.connect((req) => {
 				
-				return new Invoice(req.Data.GetConnection("example"));
+				// Just send the tree at request time
+				req.HResponse.DataTree.IsArray = false;
+				req.HResponse.DataTree.Children.add(ManifestRoot);
+				
 			});
 		}
-	} 
+	}
 }

@@ -38,10 +38,9 @@ namespace Qetesh {
 			public void Create ();
 			public Qetesh.Data.DataObject CreateObject (Gee.TreeMap<string?,string?> datum);
 			public void Delete ();
-			public void Discard ();
 			public void LazyLink (string localProp, string remoteProp = "");
 			public void Load ();
-			public Gee.LinkedList<TImp> LoadAll () throws Qetesh.Data.QDBError;
+			public Gee.LinkedList<Qetesh.Data.DataObject> LoadAll () throws Qetesh.Data.QDBError;
 			public void MapObject (Gee.TreeMap<string?,string?> datum);
 			public Gee.LinkedList<Qetesh.Data.DataObject> MapObjectList (Gee.LinkedList<Gee.TreeMap<string?,string?>> rows);
 			protected virtual string NameTransform (string fieldName);
@@ -208,6 +207,7 @@ namespace Qetesh {
 		public void Route (Qetesh.WebAppContext cxt, Qetesh.HTTPResponse resp);
 		public Qetesh.WebAppContext AppContext { get; private set; }
 		public Qetesh.Data.DataManager Data { get; private set; }
+		public Qetesh.Data.DataObject.DataNode DataTree { get; private set; }
 		public string FullPath { get; private set; }
 		public Qetesh.HTTPResponse HResponse { get; private set; }
 		public Gee.Map<string,string> Headers { get; private set; }
@@ -256,6 +256,11 @@ namespace Qetesh {
 		public signal void EventFire (Qetesh.QEvent ev);
 	}
 	[CCode (cheader_filename = "libqetesh.h")]
+	public class QManifest : Qetesh.QWebNode {
+		public QManifest ();
+		public override void OnBind ();
+	}
+	[CCode (cheader_filename = "libqetesh.h")]
 	public class QWebApp : GLib.Object {
 		protected Qetesh.QWebNode RootNode;
 		protected Qetesh.WebAppContext appContext;
@@ -264,9 +269,35 @@ namespace Qetesh {
 	}
 	[CCode (cheader_filename = "libqetesh.h")]
 	public class QWebNode : GLib.Object {
+		public class ManifestObject {
+			public class ManifestMethod {
+				public ManifestMethod (string name, string path);
+				public void GET ();
+				public Qetesh.Data.DataObject.DataNode GetDescriptor ();
+				public void POST ();
+				public void PUT ();
+				public string HttpMethod { get; private set; }
+				public string Name { get; set; }
+				public string NodePath { get; set; }
+			}
+			public Gee.LinkedList<Qetesh.QWebNode.ManifestObject.ManifestMethod> Methods;
+			public ManifestObject (string typeName);
+			public Qetesh.QWebNode.ManifestObject.ManifestMethod Method (string mName, Qetesh.QWebNode node);
+			public string TypeName { get; private set; }
+		}
+		public class ManifestWalker {
+			public ManifestWalker (Qetesh.Data.DataObject.DataNode rNode);
+			public Qetesh.Data.DataObject.DataNode AddObject (string tName);
+		}
+		protected delegate Qetesh.Data.DataObject GetNextDataObject (Qetesh.HTTPRequest req);
 		public Gee.Map<string,Qetesh.QWebNode> Children;
+		public Qetesh.QWebNode.ManifestObject Manifest;
+		public Qetesh.QWebNode? Parent;
 		protected QWebNode (string path = "");
-		protected void ExposeType (GLib.Type t);
+		protected void ExposeCrud (string typeName, Qetesh.QWebNode.GetNextDataObject newDo);
+		public string GetFullPath ();
+		public virtual void OnBind ();
+		public void WalkManifests (Qetesh.QWebNode.ManifestWalker walker);
 		public new Qetesh.QWebNode? @get (string subpath);
 		public new void @set (string subpath, Qetesh.QWebNode node);
 		public string Path { get; set; }

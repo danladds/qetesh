@@ -5,7 +5,8 @@
 # #
 **/*.c
 
-**/.stamp-t
+**/*.stamp-t
+**/*.stamp
 **/*.swp
 
 # Geany editor

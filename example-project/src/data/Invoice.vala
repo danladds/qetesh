@@ -42,8 +42,6 @@ namespace QExample.Data {
 				base(dbh);
 				
 				TableName = "invoice";
-				
-				LazyLink("Items", "FromInvoice");
 		}
 		
 		public override string NameTransform(string fieldName) {

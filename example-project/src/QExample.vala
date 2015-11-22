@@ -50,6 +50,7 @@ namespace QExample {
 			
 			
 			RootNode["invoice"] = new InvoiceNode();
+			RootNode["manifest"] = new QManifest();
 		}
 	}
 
