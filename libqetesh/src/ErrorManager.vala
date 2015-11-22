@@ -41,9 +41,7 @@ namespace Qetesh {
 			QETESH_CRITICAL,
 			QETESH_DEBUG,
 			QETESH_WARNING,
-			QETESH_BEST_PRACTICE,
 			QETESH_INTERNAL,
-			QETESH_INTERNAL_DEV,
 			MODULE_ERROR,
 			MODULE_CRITICAL,
 			MODULE_DEBUG,
@@ -63,9 +61,6 @@ namespace Qetesh {
 
 					case QETESH_WARNING:
 						return "Warning";
-						
-					case QETESH_BEST_PRACTICE:
-						return "Best Practice";
 
 					case MODULE_ERROR:
 						return "Module Error";

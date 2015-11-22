@@ -68,24 +68,41 @@ namespace Qetesh {
 		/// POST request event
 		public signal void POST(HTTPRequest req);
 		
+		/// PUT request event
+		public signal void PUT(HTTPRequest req);
+		
 		protected QWebNode (string path = "") {
 			
 			Children = new HashMap<string, QWebNode>();
 			Path = path;
 		}
 		
-		protected SupplyModel(DataObject model, DataObject.DataNodeTransform tr) {
+		protected void ExposeType (Type t) {
 			
-			request.HResponse.DataTree.Children.add(model.ToNode(tr));
-		}
-		
-		protected SupplyModels(Gee.LinkedList<DataObject> models, 
-			DataObject.DataNodeTransform tr ) {
 			
-			foreach (var model in models) {
+			// Need to update JS manifest
+			
+			// Read list
+			GET.connect((conn) => {
 				
-				SupplyModel(model, tr);
-			}
+			});
+			
+			// Manifest.Add(c, this.GET);
+			
+			// Create new
+			POST.connect((conn) => {
+				
+			});
+			
+			// Read single
+			this["$n"].GET.connect((conn) => {
+				
+			});
+			
+			// Update single
+			this["$n"].PUT.connect((conn) => {
+				
+			});
 		}
 		
 	}

@@ -4,7 +4,7 @@ AM_CPPFLAGS = \
     -DPACKAGE_LOCALE_DIR=\""$(localedir)"\" \
     -DPACKAGE_SRC_DIR=\""$(srcdir)"\" \
     -DPACKAGE_DATA_DIR=\""$(pkgdatadir)"\" \
-    $(GROMETRIC_CPPFLAGS)
+    $(QETESH_EXAMPLE_CPPFLAGS)
 
 AM_CFLAGS =\
      -Wall\
@@ -30,6 +30,7 @@ jsdir = $(pkgdatadir)/js
 cssdir = $(pkgdatadir)/css
 tpldir = $(pkgdatadir)/tpl
 htmldir = $(pkgdatadir)
+qconfdir = $(sysconfdir)/qetesh.conf.d
 
 dist_html_DATA = \
 	frontend/index.html
@@ -43,3 +44,6 @@ dist_css_DATA = \
 dist_tpl_DATA = \
 	frontend/tpl/list.html \
 	frontend/tpl/record.html
+
+dist_qconf_DATA = \
+	qexample.conf

@@ -40,6 +40,7 @@ namespace Qetesh {
 		private const string DLISTEN_ADDR = "0.0.0.0";
 		private const string DCACHE_DIR = "/tmp/qetesh";
 		public const string DCONFIG_FILE = "/usr/local/etc/qetesh.conf";
+		public const string DCONFIG_DIR = "/usr/local/etc/qetesh.conf.d";
 		private const string DLOG_FILE = "/var/log/qetesh.log";
 		
 		private WebServerContext context;
@@ -108,8 +109,9 @@ namespace Qetesh {
 			}
 		}
 		
-		/// Full path to config file
+		/// Full path to config files
 		private string filePath;
+		public string dirPath;
 		
 		// Central server config
 		
@@ -137,7 +139,7 @@ namespace Qetesh {
 		 * 
 		 * @param path Full file path to config file
 		**/ 
-		public ConfigFile(WebServerContext sc, string path = DCONFIG_FILE) {
+		public ConfigFile(WebServerContext sc) {
 			
 			context = sc;
 			
@@ -151,7 +153,9 @@ namespace Qetesh {
 			Modules = new Gee.LinkedList<ModConfig?>();
 			Databases = new Gee.LinkedList<DBConfig?>();
 			
-			filePath = path;
+			filePath = DCONFIG_FILE;
+			dirPath = DCONFIG_DIR;
+			
 			ReParse();
 		}
 		
@@ -161,13 +165,34 @@ namespace Qetesh {
 		**/
 		public void ReParse() {
 			
+			// Main config
 			try {
 				var confFile = File.new_for_path(filePath);
 				var parser = new ConfigFileParser(new DataInputStream(confFile.read()), context);
 				parser.ReadInto(this);
+				
 			}
 			catch (Error e) {
 				context.Err.WriteMessage("Unable to open config file: %s".printf(filePath), ErrorManager.QErrorClass.QETESH_WARNING);
+			}
+			
+			// .d
+			try {
+				string name;
+				var confDir = Dir.open(dirPath);
+				
+				while((name = confDir.read_name()) != null) {
+					
+					string fullName = Path.build_filename(dirPath, name);
+					
+					var confFile = File.new_for_path(fullName);
+					var parser = new ConfigFileParser(new DataInputStream(confFile.read()), context);
+					parser.ReadInto(this);
+				}
+				
+			}
+			catch (Error e) {
+				context.Err.WriteMessage("Unable to open config.d file: %s".printf(filePath), ErrorManager.QErrorClass.QETESH_WARNING);
 			}
 		}
 	}

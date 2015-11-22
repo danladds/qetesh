@@ -20,14 +20,14 @@ namespace Qetesh {
 				public string Name { get; set; }
 				public string Val { get; set; }
 			}
-			public class LinkInfo {
+			public class InheritInfo {
 				public enum LinkJoinType {
 					LEFT,
 					INNER,
 					OUTER,
 					RIGHT
 				}
-				public LinkInfo ();
+				public InheritInfo ();
 				public string LocalTableKey { get; set; }
 				public string LocalTableName { get; set; }
 				public string ParentTableKey { get; set; }
@@ -39,13 +39,15 @@ namespace Qetesh {
 			public Qetesh.Data.DataObject CreateObject (Gee.TreeMap<string?,string?> datum);
 			public void Delete ();
 			public void Discard ();
+			public void LazyLink (string localProp, string remoteProp = "");
+			public void Load ();
 			public Gee.LinkedList<TImp> LoadAll () throws Qetesh.Data.QDBError;
 			public void MapObject (Gee.TreeMap<string?,string?> datum);
 			public Gee.LinkedList<Qetesh.Data.DataObject> MapObjectList (Gee.LinkedList<Gee.TreeMap<string?,string?>> rows);
 			protected virtual string NameTransform (string fieldName);
 			public Qetesh.Data.DataObject.DataNode ToNode (Qetesh.Data.DataObject.DataNodeTransform transform);
 			public Gee.LinkedList<TImp> Children { get; }
-			protected Gee.LinkedList<Qetesh.Data.DataObject.LinkInfo> Links { get; private set; }
+			protected string PKeyName { get; set; }
 			public Gee.LinkedList<TImp> Parents { get; }
 			protected string QueryTarget { get; private set; }
 			protected string TableName { get; set; }
@@ -107,6 +109,7 @@ namespace Qetesh {
 	[CCode (cheader_filename = "libqetesh.h")]
 	public class AppModule : GLib.Object {
 		public AppModule (string modPath, string nick, string loader, Qetesh.WebServerContext sc) throws Qetesh.Errors.QModuleError;
+		public void ExposeData (Gee.List<Qetesh.Data.DataObject> data);
 		public Qetesh.QWebApp GetApp () throws Qetesh.Errors.QModuleError;
 		public void Handle (Qetesh.HTTPRequest req);
 		public Qetesh.WebAppContext Context { get; private set; }
@@ -134,8 +137,10 @@ namespace Qetesh {
 			public string Nick;
 			public ModConfig ();
 		}
+		public string dirPath;
+		public const string DCONFIG_DIR;
 		public const string DCONFIG_FILE;
-		public ConfigFile (Qetesh.WebServerContext sc, string path = DCONFIG_FILE);
+		public ConfigFile (Qetesh.WebServerContext sc);
 		public void ReParse ();
 		public Gee.LinkedList<Qetesh.ConfigFile.DBConfig?> Databases { get; private set; }
 		public string ListenAddr { get; set; }
@@ -157,9 +162,7 @@ namespace Qetesh {
 			QETESH_CRITICAL,
 			QETESH_DEBUG,
 			QETESH_WARNING,
-			QETESH_BEST_PRACTICE,
 			QETESH_INTERNAL,
-			QETESH_INTERNAL_DEV,
 			MODULE_ERROR,
 			MODULE_CRITICAL,
 			MODULE_DEBUG,
@@ -257,17 +260,20 @@ namespace Qetesh {
 		protected Qetesh.QWebNode RootNode;
 		protected Qetesh.WebAppContext appContext;
 		public QWebApp (Qetesh.WebAppContext ctx);
+		protected void WriteMessage (string message, Qetesh.ErrorManager.QErrorClass errorClass = ErrorManager.QErrorClass.MODULE_CRITICAL, string? modName = null);
 	}
 	[CCode (cheader_filename = "libqetesh.h")]
 	public class QWebNode : GLib.Object {
 		public Gee.Map<string,Qetesh.QWebNode> Children;
 		protected QWebNode (string path = "");
+		protected void ExposeType (GLib.Type t);
 		public new Qetesh.QWebNode? @get (string subpath);
 		public new void @set (string subpath, Qetesh.QWebNode node);
 		public string Path { get; set; }
 		public int size { get; }
 		public signal void GET (Qetesh.HTTPRequest req);
 		public signal void POST (Qetesh.HTTPRequest req);
+		public signal void PUT (Qetesh.HTTPRequest req);
 	}
 	[CCode (cheader_filename = "libqetesh.h")]
 	public class WebAppContext : GLib.Object {

@@ -150,6 +150,16 @@ typedef struct _QeteshHTTPRequestClass QeteshHTTPRequestClass;
 typedef struct _QeteshQWebApp QeteshQWebApp;
 typedef struct _QeteshQWebAppClass QeteshQWebAppClass;
 
+#define QETESH_DATA_TYPE_DATA_OBJECT (qetesh_data_data_object_get_type ())
+#define QETESH_DATA_DATA_OBJECT(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), QETESH_DATA_TYPE_DATA_OBJECT, QeteshDataDataObject))
+#define QETESH_DATA_DATA_OBJECT_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), QETESH_DATA_TYPE_DATA_OBJECT, QeteshDataDataObjectClass))
+#define QETESH_DATA_IS_DATA_OBJECT(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), QETESH_DATA_TYPE_DATA_OBJECT))
+#define QETESH_DATA_IS_DATA_OBJECT_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), QETESH_DATA_TYPE_DATA_OBJECT))
+#define QETESH_DATA_DATA_OBJECT_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), QETESH_DATA_TYPE_DATA_OBJECT, QeteshDataDataObjectClass))
+
+typedef struct _QeteshDataDataObject QeteshDataDataObject;
+typedef struct _QeteshDataDataObjectClass QeteshDataDataObjectClass;
+
 #define QETESH_TYPE_QPLUGIN (qetesh_qplugin_get_type ())
 #define QETESH_QPLUGIN(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), QETESH_TYPE_QPLUGIN, QeteshQPlugin))
 #define QETESH_IS_QPLUGIN(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), QETESH_TYPE_QPLUGIN))
@@ -226,16 +236,6 @@ typedef struct _QeteshHTTPRequestPrivate QeteshHTTPRequestPrivate;
 
 typedef struct _QeteshDataDataManager QeteshDataDataManager;
 typedef struct _QeteshDataDataManagerClass QeteshDataDataManagerClass;
-
-#define QETESH_DATA_TYPE_DATA_OBJECT (qetesh_data_data_object_get_type ())
-#define QETESH_DATA_DATA_OBJECT(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), QETESH_DATA_TYPE_DATA_OBJECT, QeteshDataDataObject))
-#define QETESH_DATA_DATA_OBJECT_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), QETESH_DATA_TYPE_DATA_OBJECT, QeteshDataDataObjectClass))
-#define QETESH_DATA_IS_DATA_OBJECT(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), QETESH_DATA_TYPE_DATA_OBJECT))
-#define QETESH_DATA_IS_DATA_OBJECT_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), QETESH_DATA_TYPE_DATA_OBJECT))
-#define QETESH_DATA_DATA_OBJECT_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), QETESH_DATA_TYPE_DATA_OBJECT, QeteshDataDataObjectClass))
-
-typedef struct _QeteshDataDataObject QeteshDataDataObject;
-typedef struct _QeteshDataDataObjectClass QeteshDataDataObjectClass;
 typedef struct _QeteshDataDataObjectPrivate QeteshDataDataObjectPrivate;
 
 #define QETESH_DATA_TYPE_QDATABASE_CONN (qetesh_data_qdatabase_conn_get_type ())
@@ -247,20 +247,20 @@ typedef struct _QeteshDataDataObjectPrivate QeteshDataDataObjectPrivate;
 
 typedef struct _QeteshDataQDatabaseConn QeteshDataQDatabaseConn;
 typedef struct _QeteshDataQDatabaseConnClass QeteshDataQDatabaseConnClass;
-
-#define QETESH_DATA_DATA_OBJECT_TYPE_LINK_INFO (qetesh_data_data_object_link_info_get_type ())
-#define QETESH_DATA_DATA_OBJECT_LINK_INFO(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), QETESH_DATA_DATA_OBJECT_TYPE_LINK_INFO, QeteshDataDataObjectLinkInfo))
-#define QETESH_DATA_DATA_OBJECT_LINK_INFO_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), QETESH_DATA_DATA_OBJECT_TYPE_LINK_INFO, QeteshDataDataObjectLinkInfoClass))
-#define QETESH_DATA_DATA_OBJECT_IS_LINK_INFO(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), QETESH_DATA_DATA_OBJECT_TYPE_LINK_INFO))
-#define QETESH_DATA_DATA_OBJECT_IS_LINK_INFO_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), QETESH_DATA_DATA_OBJECT_TYPE_LINK_INFO))
-#define QETESH_DATA_DATA_OBJECT_LINK_INFO_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), QETESH_DATA_DATA_OBJECT_TYPE_LINK_INFO, QeteshDataDataObjectLinkInfoClass))
-
-typedef struct _QeteshDataDataObjectLinkInfo QeteshDataDataObjectLinkInfo;
-typedef struct _QeteshDataDataObjectLinkInfoClass QeteshDataDataObjectLinkInfoClass;
 typedef struct _QeteshDataDataObjectDataNodePrivate QeteshDataDataObjectDataNodePrivate;
-typedef struct _QeteshDataDataObjectLinkInfoPrivate QeteshDataDataObjectLinkInfoPrivate;
 
-#define QETESH_DATA_DATA_OBJECT_LINK_INFO_TYPE_LINK_JOIN_TYPE (qetesh_data_data_object_link_info_link_join_type_get_type ())
+#define QETESH_DATA_DATA_OBJECT_TYPE_INHERIT_INFO (qetesh_data_data_object_inherit_info_get_type ())
+#define QETESH_DATA_DATA_OBJECT_INHERIT_INFO(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), QETESH_DATA_DATA_OBJECT_TYPE_INHERIT_INFO, QeteshDataDataObjectInheritInfo))
+#define QETESH_DATA_DATA_OBJECT_INHERIT_INFO_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), QETESH_DATA_DATA_OBJECT_TYPE_INHERIT_INFO, QeteshDataDataObjectInheritInfoClass))
+#define QETESH_DATA_DATA_OBJECT_IS_INHERIT_INFO(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), QETESH_DATA_DATA_OBJECT_TYPE_INHERIT_INFO))
+#define QETESH_DATA_DATA_OBJECT_IS_INHERIT_INFO_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), QETESH_DATA_DATA_OBJECT_TYPE_INHERIT_INFO))
+#define QETESH_DATA_DATA_OBJECT_INHERIT_INFO_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), QETESH_DATA_DATA_OBJECT_TYPE_INHERIT_INFO, QeteshDataDataObjectInheritInfoClass))
+
+typedef struct _QeteshDataDataObjectInheritInfo QeteshDataDataObjectInheritInfo;
+typedef struct _QeteshDataDataObjectInheritInfoClass QeteshDataDataObjectInheritInfoClass;
+typedef struct _QeteshDataDataObjectInheritInfoPrivate QeteshDataDataObjectInheritInfoPrivate;
+
+#define QETESH_DATA_DATA_OBJECT_INHERIT_INFO_TYPE_LINK_JOIN_TYPE (qetesh_data_data_object_inherit_info_link_join_type_get_type ())
 
 #define QETESH_DATA_TYPE_DB_MANAGER (qetesh_data_db_manager_get_type ())
 #define QETESH_DATA_DB_MANAGER(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), QETESH_DATA_TYPE_DB_MANAGER, QeteshDataDBManager))
@@ -381,9 +381,7 @@ typedef enum  {
 	QETESH_ERROR_MANAGER_QERROR_CLASS_QETESH_CRITICAL,
 	QETESH_ERROR_MANAGER_QERROR_CLASS_QETESH_DEBUG,
 	QETESH_ERROR_MANAGER_QERROR_CLASS_QETESH_WARNING,
-	QETESH_ERROR_MANAGER_QERROR_CLASS_QETESH_BEST_PRACTICE,
 	QETESH_ERROR_MANAGER_QERROR_CLASS_QETESH_INTERNAL,
-	QETESH_ERROR_MANAGER_QERROR_CLASS_QETESH_INTERNAL_DEV,
 	QETESH_ERROR_MANAGER_QERROR_CLASS_MODULE_ERROR,
 	QETESH_ERROR_MANAGER_QERROR_CLASS_MODULE_CRITICAL,
 	QETESH_ERROR_MANAGER_QERROR_CLASS_MODULE_DEBUG,
@@ -422,6 +420,7 @@ struct _QeteshModuleManagerClass {
 struct _QeteshConfigFile {
 	GObject parent_instance;
 	QeteshConfigFilePrivate * priv;
+	gchar* dirPath;
 };
 
 struct _QeteshConfigFileClass {
@@ -541,23 +540,23 @@ struct _QeteshDataDataObjectDataNodeClass {
 	void (*finalize) (QeteshDataDataObjectDataNode *self);
 };
 
-struct _QeteshDataDataObjectLinkInfo {
+struct _QeteshDataDataObjectInheritInfo {
 	GTypeInstance parent_instance;
 	volatile int ref_count;
-	QeteshDataDataObjectLinkInfoPrivate * priv;
+	QeteshDataDataObjectInheritInfoPrivate * priv;
 };
 
-struct _QeteshDataDataObjectLinkInfoClass {
+struct _QeteshDataDataObjectInheritInfoClass {
 	GTypeClass parent_class;
-	void (*finalize) (QeteshDataDataObjectLinkInfo *self);
+	void (*finalize) (QeteshDataDataObjectInheritInfo *self);
 };
 
 typedef enum  {
-	QETESH_DATA_DATA_OBJECT_LINK_INFO_LINK_JOIN_TYPE_LEFT,
-	QETESH_DATA_DATA_OBJECT_LINK_INFO_LINK_JOIN_TYPE_INNER,
-	QETESH_DATA_DATA_OBJECT_LINK_INFO_LINK_JOIN_TYPE_OUTER,
-	QETESH_DATA_DATA_OBJECT_LINK_INFO_LINK_JOIN_TYPE_RIGHT
-} QeteshDataDataObjectLinkInfoLinkJoinType;
+	QETESH_DATA_DATA_OBJECT_INHERIT_INFO_LINK_JOIN_TYPE_LEFT,
+	QETESH_DATA_DATA_OBJECT_INHERIT_INFO_LINK_JOIN_TYPE_INNER,
+	QETESH_DATA_DATA_OBJECT_INHERIT_INFO_LINK_JOIN_TYPE_OUTER,
+	QETESH_DATA_DATA_OBJECT_INHERIT_INFO_LINK_JOIN_TYPE_RIGHT
+} QeteshDataDataObjectInheritInfoLinkJoinType;
 
 struct _QeteshDataDBManager {
 	GObject parent_instance;
@@ -732,6 +731,8 @@ GType qetesh_http_request_get_type (void) G_GNUC_CONST;
 void qetesh_app_module_Handle (QeteshAppModule* self, QeteshHTTPRequest* req);
 GType qetesh_qweb_app_get_type (void) G_GNUC_CONST;
 QeteshQWebApp* qetesh_app_module_GetApp (QeteshAppModule* self, GError** error);
+GType qetesh_data_data_object_get_type (void) G_GNUC_CONST;
+void qetesh_app_module_ExposeData (QeteshAppModule* self, GeeList* data);
 const gchar* qetesh_app_module_get_Nick (QeteshAppModule* self);
 QeteshQWebApp* qetesh_app_module_get_WebApp (QeteshAppModule* self);
 QeteshWebAppContext* qetesh_app_module_get_Context (QeteshAppModule* self);
@@ -744,8 +745,9 @@ void qetesh_module_manager_LoadModules (QeteshModuleManager* self);
 QeteshAppModule* qetesh_module_manager_GetHostModule (QeteshModuleManager* self, const gchar* host);
 GType qetesh_config_file_get_type (void) G_GNUC_CONST;
 #define QETESH_CONFIG_FILE_DCONFIG_FILE "/usr/local/etc/qetesh.conf"
-QeteshConfigFile* qetesh_config_file_new (QeteshWebServerContext* sc, const gchar* path);
-QeteshConfigFile* qetesh_config_file_construct (GType object_type, QeteshWebServerContext* sc, const gchar* path);
+#define QETESH_CONFIG_FILE_DCONFIG_DIR "/usr/local/etc/qetesh.conf.d"
+QeteshConfigFile* qetesh_config_file_new (QeteshWebServerContext* sc);
+QeteshConfigFile* qetesh_config_file_construct (GType object_type, QeteshWebServerContext* sc);
 void qetesh_config_file_ReParse (QeteshConfigFile* self);
 guint16 qetesh_config_file_get_ListenPort (QeteshConfigFile* self);
 void qetesh_config_file_set_ListenPort (QeteshConfigFile* self, guint16 value);
@@ -810,7 +812,6 @@ const gchar* qetesh_http_request_get_Host (QeteshHTTPRequest* self);
 const gchar* qetesh_http_request_get_UserAgent (QeteshHTTPRequest* self);
 GeeMap* qetesh_http_request_get_Headers (QeteshHTTPRequest* self);
 QeteshHTTPResponse* qetesh_http_request_get_HResponse (QeteshHTTPRequest* self);
-GType qetesh_data_data_object_get_type (void) G_GNUC_CONST;
 gpointer qetesh_data_qdatabase_conn_ref (gpointer instance);
 void qetesh_data_qdatabase_conn_unref (gpointer instance);
 GParamSpec* qetesh_data_param_spec_qdatabase_conn (const gchar* name, const gchar* nick, const gchar* blurb, GType object_type, GParamFlags flags);
@@ -825,21 +826,17 @@ void qetesh_data_data_object_Delete (QeteshDataDataObject* self);
 void qetesh_data_data_object_Discard (QeteshDataDataObject* self);
 GQuark qetesh_data_qdb_error_quark (void);
 GeeLinkedList* qetesh_data_data_object_LoadAll (QeteshDataDataObject* self, GError** error);
+void qetesh_data_data_object_Load (QeteshDataDataObject* self);
 GeeLinkedList* qetesh_data_data_object_MapObjectList (QeteshDataDataObject* self, GeeLinkedList* rows);
 QeteshDataDataObject* qetesh_data_data_object_CreateObject (QeteshDataDataObject* self, GeeTreeMap* datum);
 gchar* qetesh_data_data_object_NameTransform (QeteshDataDataObject* self, const gchar* fieldName);
 void qetesh_data_data_object_MapObject (QeteshDataDataObject* self, GeeTreeMap* datum);
 QeteshDataDataObjectDataNode* qetesh_data_data_object_ToNode (QeteshDataDataObject* self, QeteshDataDataObjectDataNodeTransform transform, void* transform_target);
+void qetesh_data_data_object_LazyLink (QeteshDataDataObject* self, const gchar* localProp, const gchar* remoteProp);
 const gchar* qetesh_data_data_object_get_TableName (QeteshDataDataObject* self);
 void qetesh_data_data_object_set_TableName (QeteshDataDataObject* self, const gchar* value);
-gpointer qetesh_data_data_object_link_info_ref (gpointer instance);
-void qetesh_data_data_object_link_info_unref (gpointer instance);
-GParamSpec* qetesh_data_data_object_param_spec_link_info (const gchar* name, const gchar* nick, const gchar* blurb, GType object_type, GParamFlags flags);
-void qetesh_data_data_object_value_set_link_info (GValue* value, gpointer v_object);
-void qetesh_data_data_object_value_take_link_info (GValue* value, gpointer v_object);
-gpointer qetesh_data_data_object_value_get_link_info (const GValue* value);
-GType qetesh_data_data_object_link_info_get_type (void) G_GNUC_CONST;
-GeeLinkedList* qetesh_data_data_object_get_Links (QeteshDataDataObject* self);
+const gchar* qetesh_data_data_object_get_PKeyName (QeteshDataDataObject* self);
+void qetesh_data_data_object_set_PKeyName (QeteshDataDataObject* self, const gchar* value);
 const gchar* qetesh_data_data_object_get_QueryTarget (QeteshDataDataObject* self);
 GeeLinkedList* qetesh_data_data_object_get_Children (QeteshDataDataObject* self);
 GeeLinkedList* qetesh_data_data_object_get_Parents (QeteshDataDataObject* self);
@@ -852,17 +849,24 @@ void qetesh_data_data_object_data_node_set_Val (QeteshDataDataObjectDataNode* se
 GeeLinkedList* qetesh_data_data_object_data_node_get_Children (QeteshDataDataObjectDataNode* self);
 gboolean qetesh_data_data_object_data_node_get_IsArray (QeteshDataDataObjectDataNode* self);
 void qetesh_data_data_object_data_node_set_IsArray (QeteshDataDataObjectDataNode* self, gboolean value);
-GType qetesh_data_data_object_link_info_link_join_type_get_type (void) G_GNUC_CONST;
-QeteshDataDataObjectLinkInfo* qetesh_data_data_object_link_info_new (void);
-QeteshDataDataObjectLinkInfo* qetesh_data_data_object_link_info_construct (GType object_type);
-const gchar* qetesh_data_data_object_link_info_get_ParentTableName (QeteshDataDataObjectLinkInfo* self);
-void qetesh_data_data_object_link_info_set_ParentTableName (QeteshDataDataObjectLinkInfo* self, const gchar* value);
-const gchar* qetesh_data_data_object_link_info_get_ParentTableKey (QeteshDataDataObjectLinkInfo* self);
-void qetesh_data_data_object_link_info_set_ParentTableKey (QeteshDataDataObjectLinkInfo* self, const gchar* value);
-const gchar* qetesh_data_data_object_link_info_get_LocalTableName (QeteshDataDataObjectLinkInfo* self);
-void qetesh_data_data_object_link_info_set_LocalTableName (QeteshDataDataObjectLinkInfo* self, const gchar* value);
-const gchar* qetesh_data_data_object_link_info_get_LocalTableKey (QeteshDataDataObjectLinkInfo* self);
-void qetesh_data_data_object_link_info_set_LocalTableKey (QeteshDataDataObjectLinkInfo* self, const gchar* value);
+gpointer qetesh_data_data_object_inherit_info_ref (gpointer instance);
+void qetesh_data_data_object_inherit_info_unref (gpointer instance);
+GParamSpec* qetesh_data_data_object_param_spec_inherit_info (const gchar* name, const gchar* nick, const gchar* blurb, GType object_type, GParamFlags flags);
+void qetesh_data_data_object_value_set_inherit_info (GValue* value, gpointer v_object);
+void qetesh_data_data_object_value_take_inherit_info (GValue* value, gpointer v_object);
+gpointer qetesh_data_data_object_value_get_inherit_info (const GValue* value);
+GType qetesh_data_data_object_inherit_info_get_type (void) G_GNUC_CONST;
+GType qetesh_data_data_object_inherit_info_link_join_type_get_type (void) G_GNUC_CONST;
+QeteshDataDataObjectInheritInfo* qetesh_data_data_object_inherit_info_new (void);
+QeteshDataDataObjectInheritInfo* qetesh_data_data_object_inherit_info_construct (GType object_type);
+const gchar* qetesh_data_data_object_inherit_info_get_ParentTableName (QeteshDataDataObjectInheritInfo* self);
+void qetesh_data_data_object_inherit_info_set_ParentTableName (QeteshDataDataObjectInheritInfo* self, const gchar* value);
+const gchar* qetesh_data_data_object_inherit_info_get_ParentTableKey (QeteshDataDataObjectInheritInfo* self);
+void qetesh_data_data_object_inherit_info_set_ParentTableKey (QeteshDataDataObjectInheritInfo* self, const gchar* value);
+const gchar* qetesh_data_data_object_inherit_info_get_LocalTableName (QeteshDataDataObjectInheritInfo* self);
+void qetesh_data_data_object_inherit_info_set_LocalTableName (QeteshDataDataObjectInheritInfo* self, const gchar* value);
+const gchar* qetesh_data_data_object_inherit_info_get_LocalTableKey (QeteshDataDataObjectInheritInfo* self);
+void qetesh_data_data_object_inherit_info_set_LocalTableKey (QeteshDataDataObjectInheritInfo* self, const gchar* value);
 GType qetesh_data_db_manager_get_type (void) G_GNUC_CONST;
 QeteshDataDBManager* qetesh_data_db_manager_new (QeteshWebServerContext* sc);
 QeteshDataDBManager* qetesh_data_db_manager_construct (GType object_type, QeteshWebServerContext* sc);
@@ -895,6 +899,7 @@ void qetesh_web_app_context_set_Server (QeteshWebAppContext* self, QeteshWebServ
 GType qetesh_qweb_node_get_type (void) G_GNUC_CONST;
 QeteshQWebApp* qetesh_qweb_app_new (QeteshWebAppContext* ctx);
 QeteshQWebApp* qetesh_qweb_app_construct (GType object_type, QeteshWebAppContext* ctx);
+void qetesh_qweb_app_WriteMessage (QeteshQWebApp* self, const gchar* message, QeteshErrorManagerQErrorClass errorClass, const gchar* modName);
 GType qetesh_html_element_get_type (void) G_GNUC_CONST;
 QeteshHTMLElement* qetesh_html_element_get (QeteshHTMLElement* self, const gchar* selector);
 QeteshHTMLElement* qetesh_html_element_Propogate (QeteshHTMLElement* self);
@@ -911,6 +916,7 @@ QeteshQWebNode* qetesh_qweb_node_get (QeteshQWebNode* self, const gchar* subpath
 void qetesh_qweb_node_set (QeteshQWebNode* self, const gchar* subpath, QeteshQWebNode* node);
 QeteshQWebNode* qetesh_qweb_node_new (const gchar* path);
 QeteshQWebNode* qetesh_qweb_node_construct (GType object_type, const gchar* path);
+void qetesh_qweb_node_ExposeType (QeteshQWebNode* self, GType t);
 gint qetesh_qweb_node_get_size (QeteshQWebNode* self);
 const gchar* qetesh_qweb_node_get_Path (QeteshQWebNode* self);
 void qetesh_qweb_node_set_Path (QeteshQWebNode* self, const gchar* value);

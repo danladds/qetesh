@@ -1,0 +1,12 @@
+[Unit]
+Description=Qetesh web application server
+
+[Service]
+ExecStart=@prefix@/bin/qetesh
+Restart=always
+IgnoreSIGPIPE=no
+StandardOutput=syslog
+StandardError=inherit
+
+[Install]
+Alias=qetesh.service

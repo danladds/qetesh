@@ -23,5 +23,8 @@ qetesh_LDFLAGS = \
 
 qetesh_LDADD = $(QETESH_LIBS)
 
-sysconf_DATA = qetesh.conf
- 
+dist_sysconf_DATA = qetesh.conf
+
+confdir = $(sysconfdir)/qetesh.conf.d
+
+dist_conf_DATA = qetesh.conf.d/qetesh-internal.conf

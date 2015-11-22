@@ -5,6 +5,9 @@
 # #
 **/*.c
 
+**/.stamp-t
+**/*.swp
+
 # Geany editor
 *.geany
 

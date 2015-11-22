@@ -36,7 +36,12 @@ namespace Qetesh.Data {
 		
 		protected string TableName { get; set; }
 		
-		protected Gee.LinkedList<LinkInfo> Links { get; private set; }
+		/// Primary key name
+		/// First field is used if not set
+		protected string PKeyName { get; set; }
+		
+		private Gee.LinkedList<InheritInfo> ClassParents { get; private set; }
+		private Gee.LinkedList<LinkInfo> Links { get; private set; }
 		
 		private string _queryTarget;
 		protected string QueryTarget { 
@@ -54,7 +59,7 @@ namespace Qetesh.Data {
 				tName.append_printf("`%s`", TableName);
 				
 				
-				foreach(LinkInfo li in Links) {
+				foreach(InheritInfo li in ClassParents) {
 					
 					tName.append_printf(
 						", `%s`", 						
@@ -64,7 +69,7 @@ namespace Qetesh.Data {
 				
 				tName.append(" WHERE 1");
 				
-				foreach(LinkInfo li in Links) {
+				foreach(InheritInfo li in ClassParents) {
 					
 					tName.append_printf(
 						" AND `%s`.`%s` = `%s`.`%s`",
@@ -90,9 +95,8 @@ namespace Qetesh.Data {
 			db = dbh;
 			IdMap = new Gee.HashMap<string, int>();
 			
-			// This can be added to by subclasses in their constructor
-			// Will get added in reverse order, as subclasses should
-			// be calling base() first
+			// List of linked objects (i.e. joins in SQL)
+			ClassParents = new Gee.LinkedList<InheritInfo>();
 			Links = new Gee.LinkedList<LinkInfo>();
 		}
 
@@ -148,6 +152,11 @@ namespace Qetesh.Data {
 			returnList = MapObjectList(db.Q(sql));
 			
 			return returnList;
+		}
+		
+		public void Load() {
+			
+			
 		}
 		
 		public Gee.LinkedList<DataObject> MapObjectList(Gee.LinkedList<Gee.TreeMap<string?, string?>> rows) {
@@ -328,9 +337,20 @@ namespace Qetesh.Data {
 			return dn;
 		}
 		
-		public void ExposeType (bool exposeAll, string[] whitelist = []) {
+		public void LazyLink(string localProp, string remoteProp = "") {
 			
+			var info = new LinkInfo();
+			info.Lazy = true;
+			info.LocalPropertyName = localProp;
+			info.LinkedProperyName = remoteProp;
+		}
+		
+		private class LinkInfo {
 			
+			public bool Lazy { get; set; }
+			public Type LinkedType { get; set; }
+			public string LocalPropertyName { get; set; }
+			public string LinkedProperyName { get; set; }
 		}
 		
 		public class DataNode {
@@ -348,7 +368,7 @@ namespace Qetesh.Data {
 			}
 		}
 		
-		public class LinkInfo {
+		public class InheritInfo {
 			
 			// Local table name is needed for cases
 			// of multiple generations, since TableName is
