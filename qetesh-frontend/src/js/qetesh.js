@@ -31,17 +31,19 @@
 var Qetesh = {
 
 
-	Settings : {
+	QConf : {
 		ServerUri : "/qfw",
 		ManifestUri: "/manifest"
 	},
 
 	Init : function () {
 		
+		var q = this;
+		
 		window.onload = function() {
 			
+			// Get manifest structure
 			var xh = new XMLHttpRequest();
-			var q = this;
 				
 			xh.onreadystatechange = function () {
 					
@@ -50,9 +52,11 @@ var Qetesh = {
 					q.__data = eval(xh.responseText);
 					q.__callReady();
 				}
+				
+				// Todo: error handling and other fun evening activities
 			};
 				
-			xh.open(this.Settings.ServerUri + this.Settings.ManifestUri);
+			xh.open("GET", q.QConf.ServerUri + q.QConf.ManifestUri, true);
 			xh.send();
 		}
 	},
@@ -80,13 +84,70 @@ var Qetesh = {
 	
 	Ready : function (func) {
 		
-		this.__data.push(func);
+		this.__ready.push(func);
 		
 	},
 	
-	HMTLView : {
+	ViewManage : function (paneId) {
+		
+		
+		return ViewManager.Create(paneId);
+	},
+	
+	ViewManager : {
+		
+		PaneId : '',
+		pane : null,
+		Views : [],
+		
+		
+		Create : function(paneId) {
+		
+			var obj = Object.create(this);
+			obj.Init(paneId);
 			
-		__templateUri : "",
+			return obj;
+		}, 
+		
+		Init : function (paneId) {
+			
+			this.PaneId = paneId;
+			this.pane = document.getElementById(paneId);
+		},
+		
+		View : function(name, tpl, defaultOperator) {
+			
+			var view = HTMLView.Create();
+			view.Name = name;
+			view.TplUri = tpl;
+			view.Operators.push(defaultOperator);
+			view.Manager = this;
+			
+			this.Views.push(view);
+			
+			return view;
+		},
+		
+		Show : function(name, clearcache = false, nocache = false) {
+			
+			var vc = this.Views.length;
+			for (var i = 0; i < vc; ++i) {
+				
+				if (this.Views[i].Name == name) this.Views[i].Show(name, clearcache, nocache);
+			}
+		}
+	},
+	
+	HMTLView : {
+		
+		Name : "",
+		TplUri : "",
+		Operators : [],
+		ActiveOperator : 0,
+		Manager : null,
+		
+		
+		__cache : "",
 		
 		Create : function() {
 		
@@ -100,9 +161,33 @@ var Qetesh = {
 			
 		},
 		
-		Bind : function (object) {
+		Show : function(name, clearcache = false, nocache = false) {
 			
-		}  
+			if (clearcache) this.__cache = "";
+			
+			if (!nocache && this.__cache != null && this.__cache != "") {
+				
+				pane.innerHTML = this.__cache;
+				this.Operators[this.ActiveOperator]();
+				return;
+			}
+			
+			var xh = new XMLHttpRequest();
+			var _view = this;
+				
+			xh.onreadystatechange = function () {
+					
+				if (xh.readystate == 4 && xh.status == 200) {
+					
+					_view.innerHTML = xh.responseText;
+					_view.Operators[this.ActiveOperator]();
+				}
+			};
+				
+			// TODO: use setting
+			xh.open("GET", '/tpl/' + this.TplUri, true);
+			xh.send();
+		}
 	},
 	
 	DataObject : {
@@ -127,4 +212,4 @@ var Qetesh = {
 	},
 };
 
-var _qsh = Qetesh.Create();
+var $_qetesh = Qetesh.Create();

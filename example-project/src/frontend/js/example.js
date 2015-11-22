@@ -1,8 +1,10 @@
 "use strict";
 
-qsh.Ready(function(data) {
+$_qetesh.Ready(function(q, data) {
 	
-	qsh.View('list.html', function(view, data) {
+	var viewPane = q.ViewManage('view-pane');
+	
+	viewPane.View('list', 'list.html', function(view, data) {
 		
 		var invoice = data.Invoice();
 		invoice.LoadAll(function(invoices) {
@@ -11,7 +13,7 @@ qsh.Ready(function(data) {
 		});
 	});
 	
-	qsh.View('record.html', function(view, data, id) {
+	viewPane.View('record', 'record.html', function(view, data, id) {
 	
 		var invoice = data.Invoice();
 		invoice.Id = id;
@@ -21,5 +23,9 @@ qsh.Ready(function(data) {
 		});
 		
 	});
+	
+	// Can define alternative functions for views, e.g. edit
+	
+	viewPane.Show('list');
 	
 });

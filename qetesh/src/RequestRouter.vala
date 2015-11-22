@@ -46,6 +46,7 @@ namespace Qetesh.WebServer {
 			// Drop privileges and taken on module user before dispatching
 			/// TODO: Obviously this breaks buildability on Windows
 			/// TODO: something about the module init stage
+			/// TODO: verify validity of drop
 			context.Err.WriteMessage("Dropping root", ErrorManager.QErrorClass.QETESH_DEBUG);
 			
 			Posix.setgid(mod.ExecGroup);
