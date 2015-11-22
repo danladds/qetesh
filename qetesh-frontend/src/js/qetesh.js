@@ -1,4 +1,4 @@
-/*
+/**
  * Qetesh Javascript
  * Framework + Bootstrap
  * 
@@ -20,7 +20,7 @@
  * MA 02110-1301, USA.
  * 
  * 
- */
+ **/
 
 "use strict";
 
@@ -32,7 +32,7 @@ var Qetesh = {
 
 
 	QConf : {
-		ServerUri : "/qfw",
+		ServerUri : "/qwf",
 		ManifestUri: "/manifest"
 	},
 
@@ -47,9 +47,9 @@ var Qetesh = {
 				
 			xh.onreadystatechange = function () {
 					
-				if (xh.readystate == 4 && xh.status == 200) {
+				if (xh.readyState == 4 && xh.status == 200) {
 					
-					q.__data = eval(xh.responseText);
+					q.__data = JSON.parse(xh.responseText);
 					q.__callReady();
 				}
 				
@@ -69,7 +69,12 @@ var Qetesh = {
 	
 	__callReady : function () {
 		
-		for(c in this.__ready) c(this.__data);
+		var len = this.__ready.length;
+		
+		for (var i = 0; i < len; ++i) {
+			
+			this.__ready[i](this);
+		}
 	},
 
 	Data : function() {},
@@ -91,7 +96,7 @@ var Qetesh = {
 	ViewManage : function (paneId) {
 		
 		
-		return ViewManager.Create(paneId);
+		return Qetesh.ViewManager.Create(paneId);
 	},
 	
 	ViewManager : {
@@ -117,7 +122,7 @@ var Qetesh = {
 		
 		View : function(name, tpl, defaultOperator) {
 			
-			var view = HTMLView.Create();
+			var view = Qetesh.HTMLView.Create();
 			view.Name = name;
 			view.TplUri = tpl;
 			view.Operators.push(defaultOperator);
@@ -138,7 +143,7 @@ var Qetesh = {
 		}
 	},
 	
-	HMTLView : {
+	HTMLView : {
 		
 		Name : "",
 		TplUri : "",
@@ -177,10 +182,10 @@ var Qetesh = {
 				
 			xh.onreadystatechange = function () {
 					
-				if (xh.readystate == 4 && xh.status == 200) {
+				if (xh.readyState == 4 && xh.status == 200) {
 					
 					_view.innerHTML = xh.responseText;
-					_view.Operators[this.ActiveOperator]();
+					_view.Operators[_view.ActiveOperator]();
 				}
 			};
 				

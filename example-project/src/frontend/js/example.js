@@ -1,12 +1,12 @@
 "use strict";
 
-$_qetesh.Ready(function(q, data) {
+$_qetesh.Ready(function(q) {
 	
 	var viewPane = q.ViewManage('view-pane');
 	
 	viewPane.View('list', 'list.html', function(view, data) {
 		
-		var invoice = data.Invoice();
+		var invoice = q.Data.Invoice();
 		invoice.LoadAll(function(invoices) {
 			
 			view.Bind(invoices);
@@ -15,7 +15,7 @@ $_qetesh.Ready(function(q, data) {
 	
 	viewPane.View('record', 'record.html', function(view, data, id) {
 	
-		var invoice = data.Invoice();
+		var invoice = q.Data.Invoice();
 		invoice.Id = id;
 		invoice.Load(function () {
 			
