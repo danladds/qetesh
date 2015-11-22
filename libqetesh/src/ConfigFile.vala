@@ -62,6 +62,12 @@ namespace Qetesh {
 			/// List of hosts (inc. subhosts) to respond on for module
 			public Gee.LinkedList<string> Hosts;
 			
+			/// User to run as 
+			public int ExecUser;
+			
+			/// Group to run as
+			public int ExecGroup;
+			
 			/**
 			 * Create a new, blank module config
 			**/

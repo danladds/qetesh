@@ -23,6 +23,16 @@
 
 namespace Qetesh {
 
+	/**
+	 * Reads a config file into a ConfigFile object
+	 * 
+	 * Dev note: although this could be automated further
+	 * by iterating through properties, like in DataObject,
+	 * for the sake of a little typing on the rare occasions that we
+	 * add or change a config parameter, manual scanning is more 
+	 * accurate and secure :)
+	 * 
+	**/
 	public class ConfigFileParser : GLib.Object {
 
 		private ConfigFile.ModConfig? currentMod = null;
@@ -139,6 +149,17 @@ namespace Qetesh {
 					
 				case "Host":
 					currentMod.Hosts.add(arg);
+					break;
+				
+				/// TODO: security validation here
+				/// It's unlikely, but a module could
+				/// attempt to undermine a server here
+				case "ExecUser":
+					currentMod.ExecUser = int.parse(arg);
+					break;
+					
+				case "ExecHost":
+					currentMod.ExecUser = int.parse(arg);
 					break;
 			}
 		}

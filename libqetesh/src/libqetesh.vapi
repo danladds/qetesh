@@ -107,11 +107,13 @@ namespace Qetesh {
 	}
 	[CCode (cheader_filename = "libqetesh.h")]
 	public class AppModule : GLib.Object {
-		public AppModule (string modPath, string nick, string loader, Qetesh.WebServerContext sc) throws Qetesh.Errors.QModuleError;
+		public AppModule (string modPath, string nick, string loader, Qetesh.WebServerContext sc, int execUser, int execGroup) throws Qetesh.Errors.QModuleError;
 		public void ExposeData (Gee.List<Qetesh.Data.DataObject> data);
 		public Qetesh.QWebApp GetApp () throws Qetesh.Errors.QModuleError;
 		public void Handle (Qetesh.HTTPRequest req);
 		public Qetesh.WebAppContext Context { get; private set; }
+		public int ExecGroup { get; private set; }
+		public int ExecUser { get; private set; }
 		public string Nick { get; private set; }
 		public Qetesh.QWebApp WebApp { get; private set; }
 		public signal void ApplicationStart ();
@@ -130,6 +132,8 @@ namespace Qetesh {
 			public DBConfig ();
 		}
 		public class ModConfig {
+			public int ExecGroup;
+			public int ExecUser;
 			public Gee.LinkedList<string> Hosts;
 			public string LibPath;
 			public string LoaderName;

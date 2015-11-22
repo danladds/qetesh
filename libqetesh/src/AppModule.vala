@@ -52,6 +52,9 @@ namespace Qetesh {
 		public WebAppContext Context { get; private set; }
 		
 		public signal void ApplicationStart();
+		
+		public int ExecUser { get; private set; }
+		public int ExecGroup { get; private set; }
 
 		/**
 		* Create a new AppModule and load the module
@@ -60,11 +63,14 @@ namespace Qetesh {
 		* @param module nickname, for identification
 		* @param loader name of the module loader class
 		**/
-		public AppModule (string modPath, string nick, string loader,  WebServerContext sc) throws Errors.QModuleError {
+		public AppModule (string modPath, string nick, string loader,  WebServerContext sc, int execUser, int execGroup) throws Errors.QModuleError {
 			
 			Nick = nick;
 			loaderName = loader;
 			path = modPath;
+			
+			ExecUser = execUser;
+			ExecGroup = execGroup;
 			
 			// Load the DLL
 			module = Module.open(path, ModuleFlags.BIND_LAZY);

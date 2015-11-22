@@ -479,6 +479,8 @@ struct _QeteshConfigFileModConfig {
 	gchar* LoaderName;
 	gchar* Nick;
 	GeeLinkedList* Hosts;
+	gint ExecUser;
+	gint ExecGroup;
 };
 
 struct _QeteshConfigFileModConfigClass {
@@ -816,8 +818,8 @@ void qetesh_error_manager_set_ErrToConsole (QeteshErrorManager* self, gboolean v
 GType qetesh_app_module_get_type (void) G_GNUC_CONST;
 GType qetesh_web_server_context_get_type (void) G_GNUC_CONST;
 GQuark qetesh_errors_qmodule_error_quark (void);
-QeteshAppModule* qetesh_app_module_new (const gchar* modPath, const gchar* nick, const gchar* loader, QeteshWebServerContext* sc, GError** error);
-QeteshAppModule* qetesh_app_module_construct (GType object_type, const gchar* modPath, const gchar* nick, const gchar* loader, QeteshWebServerContext* sc, GError** error);
+QeteshAppModule* qetesh_app_module_new (const gchar* modPath, const gchar* nick, const gchar* loader, QeteshWebServerContext* sc, gint execUser, gint execGroup, GError** error);
+QeteshAppModule* qetesh_app_module_construct (GType object_type, const gchar* modPath, const gchar* nick, const gchar* loader, QeteshWebServerContext* sc, gint execUser, gint execGroup, GError** error);
 GType qetesh_http_request_get_type (void) G_GNUC_CONST;
 void qetesh_app_module_Handle (QeteshAppModule* self, QeteshHTTPRequest* req);
 GType qetesh_qweb_app_get_type (void) G_GNUC_CONST;
@@ -827,6 +829,8 @@ void qetesh_app_module_ExposeData (QeteshAppModule* self, GeeList* data);
 const gchar* qetesh_app_module_get_Nick (QeteshAppModule* self);
 QeteshQWebApp* qetesh_app_module_get_WebApp (QeteshAppModule* self);
 QeteshWebAppContext* qetesh_app_module_get_Context (QeteshAppModule* self);
+gint qetesh_app_module_get_ExecUser (QeteshAppModule* self);
+gint qetesh_app_module_get_ExecGroup (QeteshAppModule* self);
 GType qetesh_qplugin_get_type (void) G_GNUC_CONST;
 QeteshQWebApp* qetesh_qplugin_GetModObject (QeteshQPlugin* self, QeteshWebAppContext* ctx);
 GType qetesh_module_manager_get_type (void) G_GNUC_CONST;

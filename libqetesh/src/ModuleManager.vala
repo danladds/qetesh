@@ -71,7 +71,10 @@ namespace Qetesh {
 				
 				context.Err.WriteMessage("Loading module: %s".printf(mod.Nick), ErrorManager.QErrorClass.QETESH_DEBUG);
 				
-				var loadedMod = new AppModule(mod.LibPath, mod.Nick, mod.LoaderName, context);
+				var loadedMod = new AppModule(
+					mod.LibPath, mod.Nick, mod.LoaderName, context,
+					mod.ExecUser, mod.ExecGroup
+				);
 				loadedModules.add(loadedMod);
 				
 				context.Err.WriteMessage("Loaded module: %s".printf(mod.Nick), ErrorManager.QErrorClass.QETESH_DEBUG);

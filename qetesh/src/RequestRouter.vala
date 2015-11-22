@@ -43,6 +43,14 @@ namespace Qetesh.WebServer {
 			// Get the appropriate module for the request
 			mod = context.Modules.GetHostModule(req.Host);
 			
+			// Drop privileges and taken on module user before dispatching
+			/// TODO: Obviously this breaks buildability on Windows
+			/// TODO: something about the module init stage
+			context.Err.WriteMessage("Dropping root", ErrorManager.QErrorClass.QETESH_DEBUG);
+			
+			Posix.setgid(mod.ExecGroup);
+			Posix.setuid(mod.ExecUser);
+			
 			if (mod != null) {
 
 				context.Err.WriteMessage("Sending request to module for handling", ErrorManager.QErrorClass.QETESH_DEBUG);
