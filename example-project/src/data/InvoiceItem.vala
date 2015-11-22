@@ -27,21 +27,21 @@ using Qetesh.Data;
 
 namespace QExample.Data {
 
-	public class Invoice : DataObject<Invoice> {
+	public class InvoiceItem : DataObject<Invoice> {
 		
 		public int Id { get; set; }
 		public Invoice FromInvoice { get; set; }
 		public string Description { get; set; }
 		public int Price { get; set; }
 		
-		public Person (QDatabaseConn dbh) {
+		public InvoiceItem (QDatabaseConn dbh) {
 			
 				// Call base first!
 				base(dbh);
 				
 				TableName = "invoiceitem";
 				
-				Link("FromInvoice", "id");
+				LazyLink("FromInvoice");
 		}
 		
 		public override string NameTransform(string fieldName) {

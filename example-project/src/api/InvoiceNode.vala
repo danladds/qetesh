@@ -26,14 +26,13 @@ using Qetesh;
 using Qetesh.Data;
 using QExample.Data;
 
-namespace GroMetric {
+namespace QExample {
 	
-	public class PersonNode : QWebNode {
+	public class InvoiceNode : QWebNode {
 		
-		public PersonNode (string path = "") {
+		public InvoiceNode (string path = "") {
 			
-			var p = new Person(request.Data.GetConnection("gm"));
-			Person.ExposeType(true, this);
+			ExposeType(typeof(Invoice));
 		}
 	} 
 }

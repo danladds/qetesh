@@ -3,3 +3,10 @@ The example project is developed with the following purposes in mind:
 1. To demonstrate the features of Qetesh in an appealing manner.
 2. To function as a how-to for all features through in-code documentation.
 3. To function as an implementation to develop Qetesh features with, and test the full pipeline.
+
+INSTALL:
+
+Install as usual, then point your web server to the files in /usr/local/share/qetesh-example
+You can copy the files to another location if you want to edit the project.
+The Qetesh module should install automatically. The settings may need to be edited for the database and hostname.
+The database dump can be found in ./db

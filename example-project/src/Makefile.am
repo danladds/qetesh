@@ -19,16 +19,20 @@ libqeteshexample_la_SOURCES =  \
     data/InvoiceItem.vala \
     api/InvoiceNode.vala
 
-libgrometric_la_VALAFLAGS = --pkg gio-unix-2.0 --pkg gio-2.0 --pkg glib-2.0 --pkg gobject-2.0 --pkg gee-0.8 --pkg libqetesh --target-glib=2.38 --library=libqeteshexample
+libqeteshexample_la_VALAFLAGS = --pkg gio-unix-2.0 --pkg gio-2.0 --pkg glib-2.0 --pkg gobject-2.0 --pkg gee-0.8 --pkg libqetesh --target-glib=2.38 --library=libqeteshexample
 
 libqeteshexample_la_LDFLAGS = \
     -Wl -avoid-version -module -shared  --export-dynamic
 
-libqeteshexample_la_LIBADD = $(GROMETRIC_LIBS)
+libqeteshexample_la_LIBADD = $(QETESH_EXAMPLE_LIBS)
 
 jsdir = $(pkgdatadir)/js
 cssdir = $(pkgdatadir)/css
 tpldir = $(pkgdatadir)/tpl
+htmldir = $(pkgdatadir)
+
+dist_html_DATA = \
+	frontend/index.html
 
 dist_js_DATA = \
 	frontend/js/example.js
@@ -37,5 +41,5 @@ dist_css_DATA = \
 	frontend/css/example.css
 	
 dist_tpl_DATA = \
-	tpl/list.html \
-	tpl/record.html
+	frontend/tpl/list.html \
+	frontend/tpl/record.html

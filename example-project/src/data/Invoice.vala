@@ -36,14 +36,14 @@ namespace QExample.Data {
 		public int Total { get; set; }
 		public Gee.LinkedList<InvoiceItem> Items { get; set; }
 		
-		public Person (QDatabaseConn dbh) {
+		public Invoice (QDatabaseConn dbh) {
 			
 				// Call base first!
 				base(dbh);
 				
 				TableName = "invoice";
 				
-				Link("Items", "frominvoice");
+				LazyLink("Items", "FromInvoice");
 		}
 		
 		public override string NameTransform(string fieldName) {
