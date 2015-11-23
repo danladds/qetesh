@@ -50,6 +50,9 @@ var Qetesh = {
 				if (xh.readyState == 4 && xh.status == 200) {
 					
 					q.__data = JSON.parse(xh.responseText);
+					
+					q.__makeProxyClasses();
+					
 					q.__callReady();
 				}
 				
@@ -77,9 +80,9 @@ var Qetesh = {
 		}
 	},
 
-	Data : function() {},
+	Data : {},
 	
-	Create : function() {
+	Obj : function() {
 		
 		var obj = Object.create(this);
 		obj.Init();
@@ -93,10 +96,49 @@ var Qetesh = {
 		
 	},
 	
+	__makeProxyClasses : function () {
+		
+		  for (var k in this.__data.Manifest) {
+			  
+			if( this.__data.Manifest.hasOwnProperty(k) ) {
+			
+				this.MakeProxyClass(k, this.__data.Manifest[k]);
+			} 
+		  } 
+	},
+	
+	MakeProxyClass : function (name, manifest) {
+		
+		var proxy = Qetesh.DataObject.Obj();
+		
+		proxy.Obj = function () {
+			
+			var obj = Object.create(proxy);
+				
+			return obj;
+		};
+		
+		for (var methodName in manifest) {
+			  
+			if(manifest.hasOwnProperty(methodName) ) {
+				
+				var methodDef = manifest[methodName];
+			
+				proxy[methodName] = function(callback) {
+					
+					alert('Proxy function call successful:');
+					callback("invoices");
+				}
+			} 
+		} 
+		
+		this.Data[name] = proxy;
+	},
+	
 	ViewManage : function (paneId) {
 		
 		
-		return Qetesh.ViewManager.Create(paneId);
+		return Qetesh.ViewManager.Obj(paneId);
 	},
 	
 	ViewManager : {
@@ -106,7 +148,7 @@ var Qetesh = {
 		Views : [],
 		
 		
-		Create : function(paneId) {
+		Obj : function(paneId) {
 		
 			var obj = Object.create(this);
 			obj.Init(paneId);
@@ -122,7 +164,7 @@ var Qetesh = {
 		
 		View : function(name, tpl, defaultOperator) {
 			
-			var view = Qetesh.HTMLView.Create();
+			var view = Qetesh.HTMLView.Obj();
 			view.Name = name;
 			view.TplUri = tpl;
 			view.Operators.push(defaultOperator);
@@ -154,7 +196,7 @@ var Qetesh = {
 		
 		__cache : "",
 		
-		Create : function() {
+		Obj : function() {
 		
 			var obj = Object.create(this);
 			obj.Init();
@@ -179,12 +221,13 @@ var Qetesh = {
 			
 			var xh = new XMLHttpRequest();
 			var _view = this;
+			var pane = this.Manager.pane;
 				
 			xh.onreadystatechange = function () {
 					
 				if (xh.readyState == 4 && xh.status == 200) {
 					
-					_view.innerHTML = xh.responseText;
+					pane.innerHTML = xh.responseText;
 					_view.Operators[_view.ActiveOperator]();
 				}
 			};
@@ -197,7 +240,7 @@ var Qetesh = {
 	
 	DataObject : {
 		
-		Create : function() {
+		Obj : function() {
 		
 			var obj = Object.create(this);
 			obj.Init();
@@ -217,4 +260,4 @@ var Qetesh = {
 	},
 };
 
-var $_qetesh = Qetesh.Create();
+var $_qetesh = Qetesh.Obj();

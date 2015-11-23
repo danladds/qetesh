@@ -6,16 +6,18 @@ $_qetesh.Ready(function(q) {
 	
 	viewPane.View('list', 'list.html', function(view, data) {
 		
-		var invoice = q.Data.Invoice();
+		var invoice = q.Data.Invoice.Obj();
 		invoice.LoadAll(function(invoices) {
 			
-			view.Bind(invoices);
+			alert('Callback');
+			//view.Bind(invoices);
 		});
 	});
 	
+	/*
 	viewPane.View('record', 'record.html', function(view, data, id) {
 	
-		var invoice = q.Data.Invoice();
+		var invoice = q.Data.Invoice.Create();
 		invoice.Id = id;
 		invoice.Load(function () {
 			
@@ -23,6 +25,7 @@ $_qetesh.Ready(function(q) {
 		});
 		
 	});
+	*/
 	
 	// Can define alternative functions for views, e.g. edit
 	
