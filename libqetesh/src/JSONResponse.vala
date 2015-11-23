@@ -107,7 +107,12 @@ namespace Qetesh {
 				}
 			}
 			else {
-				Content.append("\"\", ");
+				if (!parentIsArray) {
+					Content.append("\"\", ");
+				}
+				else {
+					Content.append("{ }");
+				}
 			}
 		}
 	}
