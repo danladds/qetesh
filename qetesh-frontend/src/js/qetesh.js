@@ -230,9 +230,15 @@ var Qetesh = {
 		
 		Init : function () {
 			
+			this.Operators = [];
+			
 		},
 		
-		Show : function(name, clearcache = false, nocache = false) {
+		// Args!
+		Show : function(name, params = {}, clearcache = false, nocache = false) {
+			
+			params._qclearcache = clearcache;
+			params._qnocache = nocache;
 			
 			if (clearcache) this.__cache = "";
 			
@@ -252,7 +258,7 @@ var Qetesh = {
 				if (xh.readyState == 4 && xh.status == 200) {
 					
 					pane.innerHTML = xh.responseText;
-					_view.Operators[_view.ActiveOperator](_view);
+					_view.Operators[_view.ActiveOperator](_view, params);
 				}
 			};
 				
@@ -263,6 +269,7 @@ var Qetesh = {
 		
 		Bind : function (data, selector) {
 			
+			var bind = Qetesh.HTMLElement.Obj();
 			var elem = this.Manager.pane.querySelector(selector);
 			var container = elem.parentNode;
 			
@@ -285,10 +292,24 @@ var Qetesh = {
 				e = this.__bindItem(item, e);
 				
 				container.appendChild(e);
+				bind.addElement(e);
 			}
 			
 			// Remove template item
 			container.removeChild(elem);
+			
+			return bind;
+			
+		},
+		
+		Element : function (selector) {
+			
+			var bind = Qetesh.HTMLElement.Obj();
+			var elem = this.Manager.pane.querySelector(selector);
+			elem._qdata = null;
+			bind.addElement(elem);
+			
+			return bind;
 		},
 		
 		__bindItem(data, elem) {
@@ -308,7 +329,56 @@ var Qetesh = {
 			
 			elem.innerHTML = content;
 			
+			// Link data and element
+			elem._qdata = data;
+			data.boundElement = elem;
+			
 			return elem;
+		}
+	},
+	
+	
+	// Represents one or more HTML elements
+	HTMLElement : {
+		
+		__elements : [],
+		
+		addElement : function(elem) {
+			
+			this.__elements.push(elem);
+		},
+		
+		Obj : function() {
+		
+			var obj = Object.create(this);
+			obj.Init();
+				
+			return obj;
+		}, 
+		
+		Init : function () {
+			
+		},
+		
+		Click : function (callback) {
+			
+			var len = this.__elements.length;
+			
+			
+			for (var i = 0; i < len; ++i) {
+				
+				var e = this.__elements[i];
+				
+				(function (elem, cb) { 
+					
+					elem.onclick = function() {
+					
+						cb(elem._qdata);
+					
+					};
+				})(e, callback);
+				
+			}
 		}
 	},
 	

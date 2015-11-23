@@ -1,18 +1,27 @@
-<label for="forename">Customer Forename</label>
-<input type="text" id="forename" name="forename" />
+<div id="record">
+	
+	<label for="forename">Customer Forename</label>
+	<input type="text" id="forename" name="forename" value="{forename}" />
 
-<label for="forename">Customer Surname</label>
-<input type="text" id="surname" name="surname" />
+	<label for="forename">Customer Surname</label>
+	<input type="text" id="surname" name="surname" value="{surname}" />
 
-<table id="invoice-item">
-	<tr>
-		<th>Item</th>
-		<th>Price</th>
-	</tr>
-	<tr>
-		<td><input type="text" class="invoiceitem-name" /></td>
-		<td><input type="text" class="invoiceitem-price" /></td>
-	</tr>
-</table>
+	<table id="invoice-item">
+		<tr>
+			<th>Item</th>
+			<th>Price</th>
+		</tr>
+		<tr>
+			<td><input type="text" class="invoiceitem-name" value="{name}" /></td>
+			<td><input type="text" class="invoiceitem-price" value="{price}" /></td>
+		</tr>
+	</table>
+	
+	<label for="total">Total</label>
+	<input type="text" id="total" name="total" value="{total}" />
 
-<button type="button" class="btn_large" id="invoice-save">Save</button>
+	<button type="button" class="btn_large" id="invoice-save">Save</button>
+	<button type="button" class="btn_large" id="invoice-reset">Reset</button>
+	<button type="button" class="btn_large" id="invoice-reload">Reload</button>
+	<button type="button" class="btn_large" id="invoice-return">Return to list</button>
+</div>
