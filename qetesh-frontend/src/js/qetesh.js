@@ -275,8 +275,9 @@ var Qetesh = {
 			
 			if (!(data instanceof Array)) {
 				
-				this.__bindItem(data, elem);
-				return;
+				elem = this.__bindItem(data, elem);
+				bind.addElement(elem);
+				return bind;
 			}
 			
 			var len = data.length;
@@ -358,6 +359,7 @@ var Qetesh = {
 		
 		Init : function () {
 			
+			this.__elements = [];
 		},
 		
 		Click : function (callback) {

@@ -236,3 +236,29 @@ input[type=text].consec { border-left: none; }
 	cursor: pointer;
 	background-color: #CDFFE0;
 }
+
+#record {
+	
+	margin: 2em;
+	padding: 2em;
+	border: 3px solid black;
+	background-color: #ADD8E6;
+}
+
+#record label {
+	
+	font-size: 1em;
+	font-weight: bold;
+	display: block;
+	margin-bottom: 2px;
+}
+
+#record input[type=text], #invoice-item input[type=text] {
+
+	display: block;
+	padding: 0.5em;
+	background-color: white;
+	border: none;
+	margin-bottom: 1em;
+	cursor: pointer;
+}
