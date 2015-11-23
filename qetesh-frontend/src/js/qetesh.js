@@ -123,12 +123,36 @@ var Qetesh = {
 			if(manifest.hasOwnProperty(methodName) ) {
 				
 				var methodDef = manifest[methodName];
+				var httpMethod = methodDef.HttpMethod;
+				var nodePath = methodDef.NodePath;
+				
+				
 			
-				proxy[methodName] = function(callback) {
+				proxy[methodName] = (function(hMethod, nPath) {
 					
-					alert('Proxy function call successful:');
-					callback("invoices");
-				}
+					return function(callback) {
+					
+						var xh = new XMLHttpRequest();
+							
+						xh.onreadystatechange = function () {
+								
+							if (xh.readyState == 4 && xh.status == 200) {
+								
+								callback(JSON.parse(xh.responseText));
+							}
+						};
+							
+						xh.open(
+							hMethod, 
+							Qetesh.QConf.ServerUri + nPath, 
+							true
+						);
+						xh.send();
+						
+					}
+				})(httpMethod, nodePath);
+				
+				
 			} 
 		} 
 		
