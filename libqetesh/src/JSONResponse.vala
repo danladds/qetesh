@@ -108,7 +108,7 @@ namespace Qetesh {
 			}
 			else {
 				if (!parentIsArray) {
-					Content.append("\"\", ");
+					Content.append("\"\"");
 				}
 				else {
 					Content.append("{ }");

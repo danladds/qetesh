@@ -4,13 +4,12 @@ $_qetesh.Ready(function(q) {
 	
 	var viewPane = q.ViewManage('view-pane');
 	
-	viewPane.View('list', 'list.html', function(view, data) {
+	viewPane.View('list', 'list.html', function(view) {
 		
 		var invoice = q.Data.Invoice.Obj();
 		invoice.LoadAll(function(invoices) {
 			
-			alert('Callback');
-			//view.Bind(invoices);
+			view.Bind(invoices, '.invoice-list-item');
 		});
 	});
 	

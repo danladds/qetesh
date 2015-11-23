@@ -252,13 +252,63 @@ var Qetesh = {
 				if (xh.readyState == 4 && xh.status == 200) {
 					
 					pane.innerHTML = xh.responseText;
-					_view.Operators[_view.ActiveOperator]();
+					_view.Operators[_view.ActiveOperator](_view);
 				}
 			};
 				
 			// TODO: use setting
 			xh.open("GET", '/tpl/' + this.TplUri, true);
 			xh.send();
+		},
+		
+		Bind : function (data, selector) {
+			
+			var elem = this.Manager.pane.querySelector(selector);
+			var container = elem.parentNode;
+			
+			if (!(data instanceof Array)) {
+				
+				this.__bindItem(data, elem);
+				return;
+			}
+			
+			var len = data.length;
+			
+			
+			for (var i = 0; i < len; ++i) {
+				
+				var item = data[i];
+				
+				// Deep clone inc. subelements
+				var e = elem.cloneNode(true);
+				
+				e = this.__bindItem(item, e);
+				
+				container.appendChild(e);
+			}
+			
+			// Remove template item
+			container.removeChild(elem);
+		},
+		
+		__bindItem(data, elem) {
+			
+			var content = elem.innerHTML;
+			
+			for (var propName in data) {
+				
+				if( data.hasOwnProperty(propName) ) {
+					
+					var propVal = data[propName];
+					var tag = "{" + propName + "}";
+					
+					content = content.replace(tag, propVal);
+				}
+			}
+			
+			elem.innerHTML = content;
+			
+			return elem;
 		}
 	},
 	

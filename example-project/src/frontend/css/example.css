@@ -132,10 +132,6 @@ div#wrapper { width: 100%; height: 92%; background-color: white;
 	border: 3px black solid;
 }
 
-div#menu-wrapper { height: 7%; background-color: #005980; 
-	border-radius: 1em 1em 0px 0px;
-}
-
 div#view-pane { margin: 2em; }
 
 /* --- Core Styles --- */
@@ -192,63 +188,7 @@ input[type=text].consec { border-left: none; }
 /* --- Messages --- */
 .js-sorry { color: #888; font-size: 1.4em; margin-top: 40%; margin-left: 35%; width: 30%; }
 
-
-/* --- Top Menu --- */
-#top-menu {
-	height: 90%;	
-}
-
-#top-menu ul { width: 100%; height: 100%; }
-#top-menu ul li {
-	width: 20%; float: left; display: block; padding-left: 2%;
-	color: #005980; font-size: 1.2em; margin-right: 1%;
-	border: 3px solid black;
-	border-bottom: none;
-	border-radius: 1em 1em 0px 0px;
-	background-color: white;
-	cursor: pointer;
-	background-color: #80D8FF; 
-	background-image: repeating-linear-gradient(45deg, transparent, transparent 3px, rgba(255,255,255,.45) 6px, rgba(255,255,255,.15) 6px);
-	font-weight: bold;
-}
-
-#top-menu ul li:hover {
-	background-color: #FF4D00;
-	color: black;
-	border-color: transparent;
-}
-
-#top-menu ul li a {
-	display: block;
-	padding-top: 8%;
-	padding-bottom: 8%;
-	color: inherit;
-	text-decoration: none;
-	outline: none;
-}
-
 /* ================ Specific Elements ================= */
-
-/* --- Dashboard --- */
-#dashboard-tasklist {
-	width: 20em;
-	float: right;
-	border-radius: 1em;
-	border: 4px solid #006161;
-	padding: 1em;
-	margin-top: 1em;
-}
-
-#dashboard-tasklist h3 { 
-	font-size: 1.4em;
-	padding-bottom: 0.5em;
-	border-bottom: 1px #D1F1FF solid;
-	margin-bottom: 0.5em;
-}
-
-#dash-runs li {
-	width: 30em;
-}
 
 .progress {
 	width: 100$;
@@ -263,49 +203,6 @@ input[type=text].consec { border-left: none; }
 	background-image: repeating-linear-gradient(45deg, transparent, transparent 3px, rgba(255,255,255,.45) 6px, rgba(255,255,255,.15) 6px);
 }
 
-/* --- Contacts List --- */
-#contacts-list li {
-	height: 5em; width: 15em;
-}
-
-#contacts-list h3 { 
-	
-}
-
-#people-order {
-	-moz-appearance: none;
-	-webkit-appearance: none;
-	appearance: none;
-	border: 2px solid #005980;
-	padding-left: 0.5em;
-
-	font-size: 1.2em; color: #ddd;
-	background-color: #4A90D9;
-	color: white;
-	width: 13.5em;
-	cursor: pointer;
-	border-radius: 1em 1em 1em 1em;
-	outline: none;
-}
-
-#people-order:focus {
-	border-radius: 1em 1em 0px 0px;
-}
-
-#people-order option {
-	-moz-appearance: none;
-    -webkit-appearance: none;
-    appearance: none;
-	background-color: #300061;
-	border-bottom: 1px solid #D1F1FF;
-	padding: 0.5em; 
-	cursor: pointer;
-}
-
-#people-order option:checked {
-	background-color: #4A90D9;
-}
-
 .big-search  {
 	
 	font-size: 1.2em; margin-top: 1em;
@@ -314,4 +211,22 @@ input[type=text].consec { border-left: none; }
 	width: 28em;
 }
 
+#invoice-list {
+	
+	background-color: #ADD8E6;
+	width: 100%;
+	border: 2px solid black;
+}
 
+#invoice-list th {
+	padding: 1em;
+	font-weight: bold;
+	text-align: left;
+}
+
+#invoice-list tr td {
+	
+	padding: 1em;
+	background-color: white;
+	border: 2px solid black;
+}
