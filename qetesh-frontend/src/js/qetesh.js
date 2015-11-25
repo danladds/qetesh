@@ -324,6 +324,8 @@ var Qetesh = {
 					var propVal = data[propName];
 					var tag = "{" + propName + "}";
 					
+					// Handle lazy loading here
+					
 					content = content.replace(tag, propVal);
 				}
 			}

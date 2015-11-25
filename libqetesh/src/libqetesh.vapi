@@ -12,7 +12,7 @@ namespace Qetesh {
 			public Qetesh.Data.QDatabaseConn GetConnection (string dbNick) throws Qetesh.Data.QDBError;
 		}
 		[CCode (cheader_filename = "libqetesh.h")]
-		public class DataObject<TImp> : GLib.Object {
+		public abstract class DataObject<TImp> : GLib.Object {
 			public class DataNode {
 				public DataNode (string name = "Data", bool isArray = false);
 				public Gee.LinkedList<Qetesh.Data.DataObject.DataNode> Children { get; private set; }
@@ -33,12 +33,17 @@ namespace Qetesh {
 				public string ParentTableKey { get; set; }
 				public string ParentTableName { get; set; }
 			}
+			public class LazyNode : Qetesh.QWebNode {
+				public LazyNode ();
+			}
 			public delegate void DataNodeTransform (Qetesh.Data.DataObject.DataNode n);
 			public DataObject (Qetesh.Data.QDatabaseConn dbh);
 			public void Create ();
 			public Qetesh.Data.DataObject CreateObject (Gee.TreeMap<string?,string?> datum);
 			public void Delete ();
+			public abstract void Init ();
 			public void LazyLink (string localProp, string remoteProp = "");
+			protected Gee.LinkedList<Qetesh.Data.DataObject> LazyLoadList (string propertyName, GLib.Type fType);
 			public void Load ();
 			public Gee.LinkedList<Qetesh.Data.DataObject> LoadAll () throws Qetesh.Data.QDBError;
 			public void MapObject (Gee.TreeMap<string?,string?> datum);
@@ -218,6 +223,7 @@ namespace Qetesh {
 		public string Host { get; private set; }
 		public Qetesh.HTTPRequest.RequestMethod Method { get; private set; }
 		public string Path { get; private set; }
+		public Gee.LinkedList<string> PathArgs { get; private set; }
 		public uint16 RequestPort { get; private set; }
 		public Qetesh.WebServerContext ServerContext { get; private set; }
 		public uint16 ServerRequestPort { get; set; }
@@ -273,6 +279,9 @@ namespace Qetesh {
 	}
 	[CCode (cheader_filename = "libqetesh.h")]
 	public class QWebNode : GLib.Object {
+		public class LazyExposer {
+			public Qetesh.QWebNode.LazyExposer Lazy (string propertyName, GLib.Type fType);
+		}
 		public class ManifestObject {
 			public class ManifestMethod {
 				public ManifestMethod (string name, string path);
@@ -293,12 +302,11 @@ namespace Qetesh {
 			public ManifestWalker (Qetesh.Data.DataObject.DataNode rNode);
 			public Qetesh.Data.DataObject.DataNode AddObject (string tName);
 		}
-		protected delegate Qetesh.Data.DataObject GetNextDataObject (Qetesh.HTTPRequest req);
 		public Gee.Map<string,Qetesh.QWebNode> Children;
 		public Qetesh.QWebNode.ManifestObject Manifest;
 		public Qetesh.QWebNode? Parent;
 		protected QWebNode (string path = "");
-		protected void ExposeCrud (string typeName, Qetesh.QWebNode.GetNextDataObject newDo);
+		protected Qetesh.QWebNode.LazyExposer ExposeCrud (string typeName, GLib.Type typ, string dbName);
 		public string GetFullPath ();
 		public virtual void OnBind ();
 		public void WalkManifests (Qetesh.QWebNode.ManifestWalker walker);

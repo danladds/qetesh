@@ -80,8 +80,6 @@ namespace Qetesh {
 		/// PUT request event
 		public signal void PUT(HTTPRequest req);
 		
-		protected delegate DataObject GetNextDataObject(HTTPRequest req);
-		
 		public ManifestObject Manifest;
 		
 
@@ -107,7 +105,7 @@ namespace Qetesh {
 			else return Path;
 		}
 		
-		protected void ExposeCrud (string typeName, GetNextDataObject newDo) {
+		protected LazyExposer ExposeCrud (string typeName, Type typ, string dbName) {
 			
 			
 			// Need to update JS manifest
@@ -116,7 +114,8 @@ namespace Qetesh {
 			// Read list
 			GET.connect((req) => {
 				
-				var obj = newDo(req);
+				var obj = (DataObject) Object.new(typ);
+				obj._init(req.Data.GetConnection(dbName));
 				var list = obj.LoadAll();
 				
 				foreach (var item in list) {
@@ -150,6 +149,52 @@ namespace Qetesh {
 			});
 			
 			Manifest.Method("Update", this["$n"]).PUT();
+			
+			var proto = (DataObject) Object.new(typ);
+			
+			return new LazyExposer(typeName, typ, dbName, this["$n"]);
+			
+		}
+		
+		public class LazyExposer {
+			
+			private string localTypeName;
+			private Type localType;
+			private string dbNick;
+			QWebNode node;
+			
+			internal LazyExposer(string typeName, Type typ, string dbName, QWebNode contextNode) {
+				
+				localTypeName = typeName;
+				localType = typ;
+				dbNick = dbName;
+				node = contextNode;
+			}
+			
+			public LazyExposer Lazy (string propertyName, Type fType) {
+				
+				var path = propertyName.down();
+					
+				node[path].GET.connect((req) => {
+						
+					var proto = (DataObject) Object.new(localType);
+					proto._init(req.Data.GetConnection(dbNick));
+					proto.setPKeyStr(req.PathArgs[0]);
+					
+					var list = proto._lazyLoadList(propertyName, fType);
+					
+					foreach (var item in list) {
+						
+						req.HResponse.DataTree.Children.add(
+							item.ToNode((n) => { })
+						);
+					}
+				});
+					
+				node.Parent.Manifest.Method(propertyName, node[path]).GET();
+					
+				return this;
+			}
 		}
 		
 		public void WalkManifests(ManifestWalker walker) {

@@ -1,7 +1,7 @@
 /*
- * InvoiceNode.vala
+ * DataLinkList.vala
  * 
- * Copyright 2015 Dan Ladds <Dan@el-topo.co.uk>
+ * Copyright 2014 Dan Ladds <Dan@el-topo.co.uk>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,20 +21,7 @@
  * 
  */
 
-
-using Qetesh;
-using Qetesh.Data;
-using QExample.Data;
-
-namespace QExample {
+namespace Qetesh.Data {
 	
-	public class InvoiceNode : QWebNode {
-		
-		public override void OnBind() {
-			
-			ExposeCrud("Invoice", typeof(Invoice), "example").Lazy(
-				"Items", typeof(InvoiceItem)
-			);
-		}
-	} 
+	
 }

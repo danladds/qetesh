@@ -26,13 +26,14 @@ using Mysql;
 
 namespace Qetesh.Data {
 
-	public class DataObject<TImp> : GLib.Object {
+	public abstract class DataObject<TImp> : GLib.Object {
 		
 		private QDatabaseConn db;
 		
-		// ID map for lazy loading - stores 
-		// ID values for objects to lazy load on access
-		private Gee.HashMap<string, int> IdMap;
+		// ID map for lazy loading (single objects)
+		private Gee.HashMap<string, int> lazySingleMap;
+		
+		private Gee.HashMap<string, Gee.LinkedList<DataObject>> lazyCache;
 		
 		protected string TableName { get; set; }
 		
@@ -92,8 +93,16 @@ namespace Qetesh.Data {
 		
 		public DataObject (QDatabaseConn dbh) {
 			
+			_init(dbh);
+		}
+		
+		public abstract void Init ();
+		
+		internal void _init(QDatabaseConn dbh) {
+		
 			db = dbh;
-			IdMap = new Gee.HashMap<string, int>();
+			lazySingleMap = new Gee.HashMap<string, int>();
+			lazyCache = new Gee.HashMap<string, Gee.LinkedList<DataObject>>();
 			
 			// Defaults
 			TableName = this.get_type().to_string();
@@ -102,6 +111,8 @@ namespace Qetesh.Data {
 			// List of linked objects (i.e. joins in SQL)
 			ClassParents = new Gee.LinkedList<InheritInfo>();
 			Links = new Gee.LinkedList<LinkInfo>();
+			
+			Init();
 		}
 
 		public void Create() {
@@ -131,18 +142,18 @@ namespace Qetesh.Data {
 		private Gee.LinkedList<TImp> parents;
 		private Gee.LinkedList<TImp> children;
 		
-		private string getPKeyStr() {
+		internal string getPKeyStr() {
 			
 			return getPropStr(PKeyName);
 		}
 		
-		private void setPKeyStr(string val) {
+		internal void setPKeyStr(string val) {
 			
 			setPropStr(PKeyName, val);
 			
 		}
 		
-		private string getPropStr(string propName) {
+		internal string getPropStr(string propName) {
 			
 			var classObj = (ObjectClass) this.get_type().class_ref();
 			
@@ -284,6 +295,63 @@ namespace Qetesh.Data {
 			return returnList;
 		}
 		
+		internal Gee.LinkedList<DataObject> _lazyLoadList(string propertyName, Type fType) {
+			return LazyLoadList(propertyName, fType);
+		}
+		
+		/**
+		 * Server side lazy loading
+		 * 
+		**/
+		protected Gee.LinkedList<DataObject> LazyLoadList(string propertyName, Type fType) {
+			
+			var proto = (DataObject) Object.new(fType);
+			proto._init(db);
+			
+			// Set criteron field, default first property of own type			
+			var fClassObj = (ObjectClass) fType.class_ref();
+			var fieldName = "";
+			
+			foreach (var prop in fClassObj.list_properties()) {
+			
+				if (prop.value_type.is_a(this.get_type())) {
+					
+					/// TODO: Error
+					fieldName = prop.get_name();	
+					break;
+				}
+			}
+			
+			var colName = proto.NameTransform(fieldName);
+			
+			Gee.LinkedList<DataObject> returnList;
+			
+			string sql = "SELECT * FROM %s AND `%s`.`%s` = %s".printf(
+				proto.QueryTarget,
+				proto.TableName,
+				colName,
+				getPKeyStr()
+			);
+			
+			returnList = proto.MapObjectList(db.Q(sql));
+			
+			foreach(var obj in returnList) {
+				
+				var val = Value(typeof(Object));
+				val.set_object(this);
+				obj.set_property(fieldName, val);
+			}
+			
+			return returnList;
+		}
+		
+		/*
+		protected DataObject LazyLoad(string propertyName) {
+			
+			
+		}
+		* */
+		
 		public void Load() {
 			
 			
@@ -321,6 +389,7 @@ namespace Qetesh.Data {
 		public DataObject CreateObject(Gee.TreeMap<string?, string?> datum) {
 			
 			var obj = (DataObject) Object.new(this.get_type());
+			obj._init(db);
 			
 			obj.MapObject(datum);
 			
@@ -396,6 +465,11 @@ namespace Qetesh.Data {
 			transform(dn);
 			
 			return dn;
+		}
+		
+		public class LazyNode : QWebNode {
+			
+			
 		}
 		
 		public void LazyLink(string localProp, string remoteProp = "") {

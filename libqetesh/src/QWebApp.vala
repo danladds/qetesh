@@ -41,6 +41,12 @@ namespace Qetesh {
 			RootNode = new QWebNode("");
 		}
 		
+		/**
+		 * 
+		 * NB: This is called at request time, so be careful
+		 * with properties used at app load
+		 * 
+		**/
 		internal QWebNode? GetNode(HTTPRequest req) {
 		
 			QWebNode node = null;			
@@ -54,7 +60,11 @@ namespace Qetesh {
 			
 			if(path.has_prefix("/")) path = path.substring(1);
 			
-			if(path.has_suffix("/")) path = path.substring(0, path.char_count());
+			if(path.has_suffix("/")) {
+				
+				appContext.Server.Err.WriteMessage("Stripping trailing slash", ErrorManager.QErrorClass.QETESH_DEBUG);
+				path = path.substring(0, path.char_count() - 1);
+			}
 			
 			appContext.Server.Err.WriteMessage("Trying to find node for %s"
 				.printf(path), ErrorManager.QErrorClass.QETESH_DEBUG);
@@ -68,9 +78,26 @@ namespace Qetesh {
 				
 			foreach (var sp in parts) {
 				
+				appContext.Server.Err.WriteMessage("Searching children of %s (%d) for %s"
+				.printf(node.Path, node.Children.size, sp), ErrorManager.QErrorClass.QETESH_DEBUG);
+				
+				if (node.Children.size > 0) {
+					foreach (var c in node.Children.values) {
+						
+						appContext.Server.Err.WriteMessage("Child node: %s"
+					.printf(c.Path), ErrorManager.QErrorClass.QETESH_DEBUG);
+					}
+				}
+				
 				if (node.Children.has_key(sp)) {
 					
 					node = node.Children[sp];
+				}
+				else if (node.Children.has_key("$n")) {
+					
+					node = node.Children["$n"];
+					req.PathArgs.add(sp);
+					
 				}
 				else {
 					return null;

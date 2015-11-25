@@ -34,14 +34,14 @@ namespace QExample.Data {
 		public string Description { get; set; }
 		public int Price { get; set; }
 		
-		public InvoiceItem (QDatabaseConn dbh) {
+		public InvoiceItem(QDatabaseConn db) {
 			
-				// Call base first!
-				base(dbh);
+			base(db);
+		}
+		
+		public override void Init () {
 				
 				TableName = "invoiceitem";
-				
-				LazyLink("FromInvoice");
 		}
 		
 		public override string NameTransform(string fieldName) {

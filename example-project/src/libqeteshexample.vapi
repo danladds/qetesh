@@ -4,18 +4,20 @@ namespace QExample {
 	namespace Data {
 		[CCode (cheader_filename = "QExample.h")]
 		public class Invoice : Qetesh.Data.DataObject<global::QExample.Data.Invoice> {
-			public Invoice (Qetesh.Data.QDatabaseConn dbh);
+			public Invoice (Qetesh.Data.QDatabaseConn db);
+			public override void Init ();
 			public override string NameTransform (string fieldName);
 			public string Forename { get; set; }
 			public int Id { get; set; }
 			public GLib.DateTime Issued { get; set; }
-			public Gee.LinkedList<global::QExample.Data.InvoiceItem> Items { get; set; }
+			public Gee.LinkedList<global::QExample.Data.InvoiceItem> Items { get; private set; }
 			public string Surname { get; set; }
 			public int Total { get; set; }
 		}
 		[CCode (cheader_filename = "QExample.h")]
 		public class InvoiceItem : Qetesh.Data.DataObject<global::QExample.Data.Invoice> {
-			public InvoiceItem (Qetesh.Data.QDatabaseConn dbh);
+			public InvoiceItem (Qetesh.Data.QDatabaseConn db);
+			public override void Init ();
 			public override string NameTransform (string fieldName);
 			public string Description { get; set; }
 			public global::QExample.Data.Invoice FromInvoice { get; set; }

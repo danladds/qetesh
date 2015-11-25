@@ -247,6 +247,38 @@ typedef struct _QeteshDataDataObjectPrivate QeteshDataDataObjectPrivate;
 
 typedef struct _QeteshDataQDatabaseConn QeteshDataQDatabaseConn;
 typedef struct _QeteshDataQDatabaseConnClass QeteshDataQDatabaseConnClass;
+
+#define QETESH_TYPE_QWEB_NODE (qetesh_qweb_node_get_type ())
+#define QETESH_QWEB_NODE(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), QETESH_TYPE_QWEB_NODE, QeteshQWebNode))
+#define QETESH_QWEB_NODE_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), QETESH_TYPE_QWEB_NODE, QeteshQWebNodeClass))
+#define QETESH_IS_QWEB_NODE(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), QETESH_TYPE_QWEB_NODE))
+#define QETESH_IS_QWEB_NODE_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), QETESH_TYPE_QWEB_NODE))
+#define QETESH_QWEB_NODE_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), QETESH_TYPE_QWEB_NODE, QeteshQWebNodeClass))
+
+typedef struct _QeteshQWebNode QeteshQWebNode;
+typedef struct _QeteshQWebNodeClass QeteshQWebNodeClass;
+typedef struct _QeteshQWebNodePrivate QeteshQWebNodePrivate;
+
+#define QETESH_QWEB_NODE_TYPE_MANIFEST_OBJECT (qetesh_qweb_node_manifest_object_get_type ())
+#define QETESH_QWEB_NODE_MANIFEST_OBJECT(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), QETESH_QWEB_NODE_TYPE_MANIFEST_OBJECT, QeteshQWebNodeManifestObject))
+#define QETESH_QWEB_NODE_MANIFEST_OBJECT_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), QETESH_QWEB_NODE_TYPE_MANIFEST_OBJECT, QeteshQWebNodeManifestObjectClass))
+#define QETESH_QWEB_NODE_IS_MANIFEST_OBJECT(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), QETESH_QWEB_NODE_TYPE_MANIFEST_OBJECT))
+#define QETESH_QWEB_NODE_IS_MANIFEST_OBJECT_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), QETESH_QWEB_NODE_TYPE_MANIFEST_OBJECT))
+#define QETESH_QWEB_NODE_MANIFEST_OBJECT_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), QETESH_QWEB_NODE_TYPE_MANIFEST_OBJECT, QeteshQWebNodeManifestObjectClass))
+
+typedef struct _QeteshQWebNodeManifestObject QeteshQWebNodeManifestObject;
+typedef struct _QeteshQWebNodeManifestObjectClass QeteshQWebNodeManifestObjectClass;
+
+#define QETESH_DATA_DATA_OBJECT_TYPE_LAZY_NODE (qetesh_data_data_object_lazy_node_get_type ())
+#define QETESH_DATA_DATA_OBJECT_LAZY_NODE(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), QETESH_DATA_DATA_OBJECT_TYPE_LAZY_NODE, QeteshDataDataObjectLazyNode))
+#define QETESH_DATA_DATA_OBJECT_LAZY_NODE_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), QETESH_DATA_DATA_OBJECT_TYPE_LAZY_NODE, QeteshDataDataObjectLazyNodeClass))
+#define QETESH_DATA_DATA_OBJECT_IS_LAZY_NODE(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), QETESH_DATA_DATA_OBJECT_TYPE_LAZY_NODE))
+#define QETESH_DATA_DATA_OBJECT_IS_LAZY_NODE_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), QETESH_DATA_DATA_OBJECT_TYPE_LAZY_NODE))
+#define QETESH_DATA_DATA_OBJECT_LAZY_NODE_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), QETESH_DATA_DATA_OBJECT_TYPE_LAZY_NODE, QeteshDataDataObjectLazyNodeClass))
+
+typedef struct _QeteshDataDataObjectLazyNode QeteshDataDataObjectLazyNode;
+typedef struct _QeteshDataDataObjectLazyNodeClass QeteshDataDataObjectLazyNodeClass;
+typedef struct _QeteshDataDataObjectLazyNodePrivate QeteshDataDataObjectLazyNodePrivate;
 typedef struct _QeteshDataDataObjectDataNodePrivate QeteshDataDataObjectDataNodePrivate;
 
 #define QETESH_DATA_DATA_OBJECT_TYPE_INHERIT_INFO (qetesh_data_data_object_inherit_info_get_type ())
@@ -300,16 +332,6 @@ typedef struct _QeteshWebServerContextPrivate QeteshWebServerContextPrivate;
 typedef struct _QeteshWebAppContextPrivate QeteshWebAppContextPrivate;
 typedef struct _QeteshQWebAppPrivate QeteshQWebAppPrivate;
 
-#define QETESH_TYPE_QWEB_NODE (qetesh_qweb_node_get_type ())
-#define QETESH_QWEB_NODE(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), QETESH_TYPE_QWEB_NODE, QeteshQWebNode))
-#define QETESH_QWEB_NODE_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), QETESH_TYPE_QWEB_NODE, QeteshQWebNodeClass))
-#define QETESH_IS_QWEB_NODE(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), QETESH_TYPE_QWEB_NODE))
-#define QETESH_IS_QWEB_NODE_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), QETESH_TYPE_QWEB_NODE))
-#define QETESH_QWEB_NODE_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), QETESH_TYPE_QWEB_NODE, QeteshQWebNodeClass))
-
-typedef struct _QeteshQWebNode QeteshQWebNode;
-typedef struct _QeteshQWebNodeClass QeteshQWebNodeClass;
-
 #define QETESH_TYPE_HTML_ELEMENT (qetesh_html_element_get_type ())
 #define QETESH_HTML_ELEMENT(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), QETESH_TYPE_HTML_ELEMENT, QeteshHTMLElement))
 #define QETESH_HTML_ELEMENT_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), QETESH_TYPE_HTML_ELEMENT, QeteshHTMLElementClass))
@@ -320,17 +342,16 @@ typedef struct _QeteshQWebNodeClass QeteshQWebNodeClass;
 typedef struct _QeteshHTMLElement QeteshHTMLElement;
 typedef struct _QeteshHTMLElementClass QeteshHTMLElementClass;
 typedef struct _QeteshHTMLElementPrivate QeteshHTMLElementPrivate;
-typedef struct _QeteshQWebNodePrivate QeteshQWebNodePrivate;
 
-#define QETESH_QWEB_NODE_TYPE_MANIFEST_OBJECT (qetesh_qweb_node_manifest_object_get_type ())
-#define QETESH_QWEB_NODE_MANIFEST_OBJECT(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), QETESH_QWEB_NODE_TYPE_MANIFEST_OBJECT, QeteshQWebNodeManifestObject))
-#define QETESH_QWEB_NODE_MANIFEST_OBJECT_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), QETESH_QWEB_NODE_TYPE_MANIFEST_OBJECT, QeteshQWebNodeManifestObjectClass))
-#define QETESH_QWEB_NODE_IS_MANIFEST_OBJECT(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), QETESH_QWEB_NODE_TYPE_MANIFEST_OBJECT))
-#define QETESH_QWEB_NODE_IS_MANIFEST_OBJECT_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), QETESH_QWEB_NODE_TYPE_MANIFEST_OBJECT))
-#define QETESH_QWEB_NODE_MANIFEST_OBJECT_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), QETESH_QWEB_NODE_TYPE_MANIFEST_OBJECT, QeteshQWebNodeManifestObjectClass))
+#define QETESH_QWEB_NODE_TYPE_LAZY_EXPOSER (qetesh_qweb_node_lazy_exposer_get_type ())
+#define QETESH_QWEB_NODE_LAZY_EXPOSER(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), QETESH_QWEB_NODE_TYPE_LAZY_EXPOSER, QeteshQWebNodeLazyExposer))
+#define QETESH_QWEB_NODE_LAZY_EXPOSER_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), QETESH_QWEB_NODE_TYPE_LAZY_EXPOSER, QeteshQWebNodeLazyExposerClass))
+#define QETESH_QWEB_NODE_IS_LAZY_EXPOSER(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), QETESH_QWEB_NODE_TYPE_LAZY_EXPOSER))
+#define QETESH_QWEB_NODE_IS_LAZY_EXPOSER_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), QETESH_QWEB_NODE_TYPE_LAZY_EXPOSER))
+#define QETESH_QWEB_NODE_LAZY_EXPOSER_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), QETESH_QWEB_NODE_TYPE_LAZY_EXPOSER, QeteshQWebNodeLazyExposerClass))
 
-typedef struct _QeteshQWebNodeManifestObject QeteshQWebNodeManifestObject;
-typedef struct _QeteshQWebNodeManifestObjectClass QeteshQWebNodeManifestObjectClass;
+typedef struct _QeteshQWebNodeLazyExposer QeteshQWebNodeLazyExposer;
+typedef struct _QeteshQWebNodeLazyExposerClass QeteshQWebNodeLazyExposerClass;
 
 #define QETESH_QWEB_NODE_TYPE_MANIFEST_WALKER (qetesh_qweb_node_manifest_walker_get_type ())
 #define QETESH_QWEB_NODE_MANIFEST_WALKER(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), QETESH_QWEB_NODE_TYPE_MANIFEST_WALKER, QeteshQWebNodeManifestWalker))
@@ -341,6 +362,7 @@ typedef struct _QeteshQWebNodeManifestObjectClass QeteshQWebNodeManifestObjectCl
 
 typedef struct _QeteshQWebNodeManifestWalker QeteshQWebNodeManifestWalker;
 typedef struct _QeteshQWebNodeManifestWalkerClass QeteshQWebNodeManifestWalkerClass;
+typedef struct _QeteshQWebNodeLazyExposerPrivate QeteshQWebNodeLazyExposerPrivate;
 typedef struct _QeteshQWebNodeManifestWalkerPrivate QeteshQWebNodeManifestWalkerPrivate;
 typedef struct _QeteshQWebNodeManifestObjectPrivate QeteshQWebNodeManifestObjectPrivate;
 
@@ -566,6 +588,7 @@ struct _QeteshDataDataObject {
 
 struct _QeteshDataDataObjectClass {
 	GObjectClass parent_class;
+	void (*Init) (QeteshDataDataObject* self);
 	gchar* (*NameTransform) (QeteshDataDataObject* self, const gchar* fieldName);
 };
 
@@ -575,6 +598,28 @@ typedef enum  {
 } QeteshDataQDBError;
 #define QETESH_DATA_QDB_ERROR qetesh_data_qdb_error_quark ()
 typedef void (*QeteshDataDataObjectDataNodeTransform) (QeteshDataDataObjectDataNode* n, void* user_data);
+struct _QeteshQWebNode {
+	GObject parent_instance;
+	QeteshQWebNodePrivate * priv;
+	GeeMap* Children;
+	QeteshQWebNode* Parent;
+	QeteshQWebNodeManifestObject* Manifest;
+};
+
+struct _QeteshQWebNodeClass {
+	GObjectClass parent_class;
+	void (*OnBind) (QeteshQWebNode* self);
+};
+
+struct _QeteshDataDataObjectLazyNode {
+	QeteshQWebNode parent_instance;
+	QeteshDataDataObjectLazyNodePrivate * priv;
+};
+
+struct _QeteshDataDataObjectLazyNodeClass {
+	QeteshQWebNodeClass parent_class;
+};
+
 struct _QeteshDataDataObjectDataNode {
 	GTypeInstance parent_instance;
 	volatile int ref_count;
@@ -697,20 +742,17 @@ struct _QeteshHTMLElementClass {
 };
 
 typedef void (*QeteshHTMLElementPropogateCallback) (QeteshDataDataObject* datum, QeteshHTMLElement* elem, void* user_data);
-struct _QeteshQWebNode {
-	GObject parent_instance;
-	QeteshQWebNodePrivate * priv;
-	GeeMap* Children;
-	QeteshQWebNode* Parent;
-	QeteshQWebNodeManifestObject* Manifest;
+struct _QeteshQWebNodeLazyExposer {
+	GTypeInstance parent_instance;
+	volatile int ref_count;
+	QeteshQWebNodeLazyExposerPrivate * priv;
 };
 
-struct _QeteshQWebNodeClass {
-	GObjectClass parent_class;
-	void (*OnBind) (QeteshQWebNode* self);
+struct _QeteshQWebNodeLazyExposerClass {
+	GTypeClass parent_class;
+	void (*finalize) (QeteshQWebNodeLazyExposer *self);
 };
 
-typedef QeteshDataDataObject* (*QeteshQWebNodeGetNextDataObject) (QeteshHTTPRequest* req, void* user_data);
 struct _QeteshQWebNodeManifestWalker {
 	GTypeInstance parent_instance;
 	volatile int ref_count;
@@ -905,6 +947,7 @@ void qetesh_http_request_set_ServerRequestPort (QeteshHTTPRequest* self, guint16
 guint16 qetesh_http_request_get_RequestPort (QeteshHTTPRequest* self);
 const gchar* qetesh_http_request_get_Host (QeteshHTTPRequest* self);
 const gchar* qetesh_http_request_get_UserAgent (QeteshHTTPRequest* self);
+GeeLinkedList* qetesh_http_request_get_PathArgs (QeteshHTTPRequest* self);
 GeeMap* qetesh_http_request_get_Headers (QeteshHTTPRequest* self);
 QeteshHTTPResponse* qetesh_http_request_get_HResponse (QeteshHTTPRequest* self);
 QeteshDataDataObjectDataNode* qetesh_http_request_get_DataTree (QeteshHTTPRequest* self);
@@ -915,12 +958,13 @@ void qetesh_data_value_set_qdatabase_conn (GValue* value, gpointer v_object);
 void qetesh_data_value_take_qdatabase_conn (GValue* value, gpointer v_object);
 gpointer qetesh_data_value_get_qdatabase_conn (const GValue* value);
 GType qetesh_data_qdatabase_conn_get_type (void) G_GNUC_CONST;
-QeteshDataDataObject* qetesh_data_data_object_new (GType timp_type, GBoxedCopyFunc timp_dup_func, GDestroyNotify timp_destroy_func, QeteshDataQDatabaseConn* dbh);
 QeteshDataDataObject* qetesh_data_data_object_construct (GType object_type, GType timp_type, GBoxedCopyFunc timp_dup_func, GDestroyNotify timp_destroy_func, QeteshDataQDatabaseConn* dbh);
+void qetesh_data_data_object_Init (QeteshDataDataObject* self);
 void qetesh_data_data_object_Create (QeteshDataDataObject* self);
 void qetesh_data_data_object_Delete (QeteshDataDataObject* self);
 GQuark qetesh_data_qdb_error_quark (void);
 GeeLinkedList* qetesh_data_data_object_LoadAll (QeteshDataDataObject* self, GError** error);
+GeeLinkedList* qetesh_data_data_object_LazyLoadList (QeteshDataDataObject* self, const gchar* propertyName, GType fType);
 void qetesh_data_data_object_Load (QeteshDataDataObject* self);
 GeeLinkedList* qetesh_data_data_object_MapObjectList (QeteshDataDataObject* self, GeeLinkedList* rows);
 QeteshDataDataObject* qetesh_data_data_object_CreateObject (QeteshDataDataObject* self, GeeTreeMap* datum);
@@ -935,6 +979,17 @@ void qetesh_data_data_object_set_PKeyName (QeteshDataDataObject* self, const gch
 const gchar* qetesh_data_data_object_get_QueryTarget (QeteshDataDataObject* self);
 GeeLinkedList* qetesh_data_data_object_get_Children (QeteshDataDataObject* self);
 GeeLinkedList* qetesh_data_data_object_get_Parents (QeteshDataDataObject* self);
+GType qetesh_qweb_node_get_type (void) G_GNUC_CONST;
+gpointer qetesh_qweb_node_manifest_object_ref (gpointer instance);
+void qetesh_qweb_node_manifest_object_unref (gpointer instance);
+GParamSpec* qetesh_qweb_node_param_spec_manifest_object (const gchar* name, const gchar* nick, const gchar* blurb, GType object_type, GParamFlags flags);
+void qetesh_qweb_node_value_set_manifest_object (GValue* value, gpointer v_object);
+void qetesh_qweb_node_value_take_manifest_object (GValue* value, gpointer v_object);
+gpointer qetesh_qweb_node_value_get_manifest_object (const GValue* value);
+GType qetesh_qweb_node_manifest_object_get_type (void) G_GNUC_CONST;
+GType qetesh_data_data_object_lazy_node_get_type (void) G_GNUC_CONST;
+QeteshDataDataObjectLazyNode* qetesh_data_data_object_lazy_node_new (void);
+QeteshDataDataObjectLazyNode* qetesh_data_data_object_lazy_node_construct (GType object_type);
 QeteshDataDataObjectDataNode* qetesh_data_data_object_data_node_new (const gchar* name, gboolean isArray);
 QeteshDataDataObjectDataNode* qetesh_data_data_object_data_node_construct (GType object_type, const gchar* name, gboolean isArray);
 const gchar* qetesh_data_data_object_data_node_get_Name (QeteshDataDataObjectDataNode* self);
@@ -991,7 +1046,6 @@ QeteshEventManager* qetesh_web_app_context_get_Events (QeteshWebAppContext* self
 void qetesh_web_app_context_set_Events (QeteshWebAppContext* self, QeteshEventManager* value);
 QeteshWebServerContext* qetesh_web_app_context_get_Server (QeteshWebAppContext* self);
 void qetesh_web_app_context_set_Server (QeteshWebAppContext* self, QeteshWebServerContext* value);
-GType qetesh_qweb_node_get_type (void) G_GNUC_CONST;
 QeteshQWebApp* qetesh_qweb_app_new (QeteshWebAppContext* ctx);
 QeteshQWebApp* qetesh_qweb_app_construct (GType object_type, QeteshWebAppContext* ctx);
 void qetesh_qweb_app_WriteMessage (QeteshQWebApp* self, const gchar* message, QeteshErrorManagerQErrorClass errorClass, const gchar* modName);
@@ -1007,20 +1061,20 @@ void qetesh_html_element_set_Val (QeteshHTMLElement* self, const gchar* value);
 gint qetesh_html_element_get_size (QeteshHTMLElement* self);
 const gchar* qetesh_html_element_get_Selector (QeteshHTMLElement* self);
 void qetesh_html_element_set_Selector (QeteshHTMLElement* self, const gchar* value);
-gpointer qetesh_qweb_node_manifest_object_ref (gpointer instance);
-void qetesh_qweb_node_manifest_object_unref (gpointer instance);
-GParamSpec* qetesh_qweb_node_param_spec_manifest_object (const gchar* name, const gchar* nick, const gchar* blurb, GType object_type, GParamFlags flags);
-void qetesh_qweb_node_value_set_manifest_object (GValue* value, gpointer v_object);
-void qetesh_qweb_node_value_take_manifest_object (GValue* value, gpointer v_object);
-gpointer qetesh_qweb_node_value_get_manifest_object (const GValue* value);
-GType qetesh_qweb_node_manifest_object_get_type (void) G_GNUC_CONST;
 QeteshQWebNode* qetesh_qweb_node_get (QeteshQWebNode* self, const gchar* subpath);
 void qetesh_qweb_node_set (QeteshQWebNode* self, const gchar* subpath, QeteshQWebNode* node);
 void qetesh_qweb_node_OnBind (QeteshQWebNode* self);
 QeteshQWebNode* qetesh_qweb_node_new (const gchar* path);
 QeteshQWebNode* qetesh_qweb_node_construct (GType object_type, const gchar* path);
 gchar* qetesh_qweb_node_GetFullPath (QeteshQWebNode* self);
-void qetesh_qweb_node_ExposeCrud (QeteshQWebNode* self, const gchar* typeName, QeteshQWebNodeGetNextDataObject newDo, void* newDo_target);
+gpointer qetesh_qweb_node_lazy_exposer_ref (gpointer instance);
+void qetesh_qweb_node_lazy_exposer_unref (gpointer instance);
+GParamSpec* qetesh_qweb_node_param_spec_lazy_exposer (const gchar* name, const gchar* nick, const gchar* blurb, GType object_type, GParamFlags flags);
+void qetesh_qweb_node_value_set_lazy_exposer (GValue* value, gpointer v_object);
+void qetesh_qweb_node_value_take_lazy_exposer (GValue* value, gpointer v_object);
+gpointer qetesh_qweb_node_value_get_lazy_exposer (const GValue* value);
+GType qetesh_qweb_node_lazy_exposer_get_type (void) G_GNUC_CONST;
+QeteshQWebNodeLazyExposer* qetesh_qweb_node_ExposeCrud (QeteshQWebNode* self, const gchar* typeName, GType typ, const gchar* dbName);
 gpointer qetesh_qweb_node_manifest_walker_ref (gpointer instance);
 void qetesh_qweb_node_manifest_walker_unref (gpointer instance);
 GParamSpec* qetesh_qweb_node_param_spec_manifest_walker (const gchar* name, const gchar* nick, const gchar* blurb, GType object_type, GParamFlags flags);
@@ -1032,6 +1086,7 @@ void qetesh_qweb_node_WalkManifests (QeteshQWebNode* self, QeteshQWebNodeManifes
 gint qetesh_qweb_node_get_size (QeteshQWebNode* self);
 const gchar* qetesh_qweb_node_get_Path (QeteshQWebNode* self);
 void qetesh_qweb_node_set_Path (QeteshQWebNode* self, const gchar* value);
+QeteshQWebNodeLazyExposer* qetesh_qweb_node_lazy_exposer_Lazy (QeteshQWebNodeLazyExposer* self, const gchar* propertyName, GType fType);
 QeteshQWebNodeManifestWalker* qetesh_qweb_node_manifest_walker_new (QeteshDataDataObjectDataNode* rNode);
 QeteshQWebNodeManifestWalker* qetesh_qweb_node_manifest_walker_construct (GType object_type, QeteshDataDataObjectDataNode* rNode);
 QeteshDataDataObjectDataNode* qetesh_qweb_node_manifest_walker_AddObject (QeteshQWebNodeManifestWalker* self, const gchar* tName);

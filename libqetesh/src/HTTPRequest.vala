@@ -87,6 +87,9 @@ namespace Qetesh {
 		/// User's browser, according to itself
 		public string UserAgent { get; private set; }
 		
+		/// $n 
+		public Gee.LinkedList<string> PathArgs { get; private set; }
+		
 		// Map of request key: value
 		public Map<string,string> Headers { get; private set; }
 		
@@ -107,6 +110,10 @@ namespace Qetesh {
 			
 			conn = c;
 			ServerContext = sc;
+			
+			PathArgs = new Gee.LinkedList<string>();
+			
+			
 			// We don't get the App context until we're routed to
 			// an application
 			

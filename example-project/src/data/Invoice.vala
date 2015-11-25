@@ -34,14 +34,29 @@ namespace QExample.Data {
 		public string Surname { get; set; }
 		public DateTime Issued { get; set; }
 		public int Total { get; set; }
-		public Gee.LinkedList<InvoiceItem> Items { get; set; }
-		
-		public Invoice (QDatabaseConn dbh) {
+		public Gee.LinkedList<InvoiceItem> Items { 
 			
-				// Call base first!
-				base(dbh);
-				
-				TableName = "invoice";
+			get { 
+					if (_items == null) {
+						
+						_items = (Gee.LinkedList<InvoiceItem>) LazyLoadList("Items", typeof(InvoiceItem));
+					}
+					
+					return _items;
+				}
+			private set{  }
+		}
+		
+		private Gee.LinkedList<InvoiceItem>? _items { get; set; }
+		
+		public Invoice(QDatabaseConn db) {
+			
+			base(db);
+		}
+		
+		public override void Init() {
+			
+			TableName = "invoice";
 		}
 		
 		public override string NameTransform(string fieldName) {
