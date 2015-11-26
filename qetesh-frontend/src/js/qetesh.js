@@ -125,10 +125,12 @@ var Qetesh = {
 				var methodDef = manifest[methodName];
 				var httpMethod = methodDef.HttpMethod;
 				var nodePath = methodDef.NodePath;
-				
-				
+				var methodType = methodDef.MethodType;
+				var returnType = methodDef.ReturnType;
 			
-				proxy[methodName] = (function(hMethod, nPath) {
+				proxy[methodName] = (function(
+					hMethod, nPath,	mType, rType
+				) {
 					
 					return function(callback) {
 					
@@ -138,9 +140,55 @@ var Qetesh = {
 								
 							if (xh.readyState == 4 && xh.status == 200) {
 								
-								callback(JSON.parse(xh.responseText));
+								var inData = JSON.parse(xh.responseText);
+								
+								// Array returns
+								if (rType.indexOf("[]") > 1) {
+									
+									var returnList = [];
+									rType = rType.replace("[]", "");
+									
+									var arrayLen = inData.length;
+									for (var i = 0; i < arrayLen; ++i) {
+										
+										var proto = Qetesh.Data[rType].Obj();
+										
+										for (var prop in inData[i]) {
+				  
+											if( inData[i].hasOwnProperty(prop) ) {
+											
+												proto[prop] = inData[i][prop];
+											} 
+										}
+										
+										returnList.push(proto);
+									}
+									
+									callback(returnList);
+								}
+								// Single returns
+								else
+								{
+									var proto = Qetesh.Data[rType].Obj();
+									
+									for (var prop in inData) {
+			  
+										if( inData.hasOwnProperty(prop) ) {
+										
+											proto[prop] = inData[prop];
+										} 
+									} 
+									
+									callback(proto);
+								}
+								
 							}
 						};
+						
+						if(mType == "link") {
+					
+							nPath = nPath.replace("$n", this[this.PKeyName]);
+						}
 							
 						xh.open(
 							hMethod, 
@@ -150,7 +198,7 @@ var Qetesh = {
 						xh.send();
 						
 					}
-				})(httpMethod, nodePath);
+				})(httpMethod, nodePath, methodType, returnType);
 				
 				
 			} 
@@ -170,6 +218,7 @@ var Qetesh = {
 		PaneId : '',
 		pane : null,
 		Views : [],
+		ActiveView : 0,
 		
 		
 		Obj : function(paneId) {
@@ -184,6 +233,7 @@ var Qetesh = {
 			
 			this.PaneId = paneId;
 			this.pane = document.getElementById(paneId);
+			this.pane.innerHTML = "";
 		},
 		
 		View : function(name, tpl, defaultOperator) {
@@ -194,17 +244,37 @@ var Qetesh = {
 			view.Operators.push(defaultOperator);
 			view.Manager = this;
 			
+			var container = document.createElement("div");
+			container.id = "_q-view-container-" + this.PaneId + "-" + name;
+			
+			view.container = container;
+			
+			this.pane.appendChild(container);
+			
 			this.Views.push(view);
 			
 			return view;
 		},
 		
-		Show : function(name, clearcache = false, nocache = false) {
+		Show : function(name, params = {}, reload = false, clearcache = false, nocache = false) {
+			
+			this.Views[this.ActiveView].Hide();
 			
 			var vc = this.Views.length;
 			for (var i = 0; i < vc; ++i) {
 				
-				if (this.Views[i].Name == name) this.Views[i].Show(name, clearcache, nocache);
+				if (this.Views[i].Name == name) {
+					
+					if(reload || !this.Views[i].beenLoaded) {
+						this.Views[i].Reload(params, clearcache, nocache, true);
+						
+					}
+					else {
+						this.Views[i].Show();
+					}
+					
+					this.ActiveView = i;
+				}
 			}
 		}
 	},
@@ -216,6 +286,9 @@ var Qetesh = {
 		Operators : [],
 		ActiveOperator : 0,
 		Manager : null,
+		paneElem : null,
+		container : null,
+		beenLoaded : false,
 		
 		
 		__cache : "",
@@ -231,11 +304,25 @@ var Qetesh = {
 		Init : function () {
 			
 			this.Operators = [];
+		},
+		
+		RunFunc : function (view, args) {
 			
+			this.Operators[this.ActiveOperator](view, args);
+		},
+		
+		Show : function() {
+			
+			this.container.style.visibility = "visible";
+		},
+		
+		Hide : function() {
+			
+			this.container.style.visibility = "hidden";
 		},
 		
 		// Args!
-		Show : function(name, params = {}, clearcache = false, nocache = false) {
+		Reload : function(params = {}, clearcache = false, nocache = false, andShow = false) {
 			
 			params._qclearcache = clearcache;
 			params._qnocache = nocache;
@@ -244,21 +331,24 @@ var Qetesh = {
 			
 			if (!nocache && this.__cache != null && this.__cache != "") {
 				
-				pane.innerHTML = this.__cache;
-				this.Operators[this.ActiveOperator]();
+				this.container.innerHTML = this.__cache;
+				this.RunFunc(this, params);
+				if (andShow) this.Show();
 				return;
 			}
 			
 			var xh = new XMLHttpRequest();
 			var _view = this;
-			var pane = this.Manager.pane;
+			var pane = this.container;
 				
 			xh.onreadystatechange = function () {
 					
 				if (xh.readyState == 4 && xh.status == 200) {
 					
 					pane.innerHTML = xh.responseText;
-					_view.Operators[_view.ActiveOperator](_view, params);
+					_view.RunFunc(_view, params);
+					_view.beenLoaded = true;
+					if (andShow) _view.Show();
 				}
 			};
 				
@@ -267,76 +357,15 @@ var Qetesh = {
 			xh.send();
 		},
 		
-		Bind : function (data, selector) {
+		Element : function(selector) {
 			
-			var bind = Qetesh.HTMLElement.Obj();
-			var elem = this.Manager.pane.querySelector(selector);
-			var container = elem.parentNode;
-			
-			if (!(data instanceof Array)) {
+			if (this.paneElem == null) {
 				
-				elem = this.__bindItem(data, elem);
-				bind.addElement(elem);
-				return bind;
+				this.paneElem = Qetesh.HTMLElement.Obj();
+				this.paneElem.addElement(this.container);
 			}
 			
-			var len = data.length;
-			
-			
-			for (var i = 0; i < len; ++i) {
-				
-				var item = data[i];
-				
-				// Deep clone inc. subelements
-				var e = elem.cloneNode(true);
-				
-				e = this.__bindItem(item, e);
-				
-				container.appendChild(e);
-				bind.addElement(e);
-			}
-			
-			// Remove template item
-			container.removeChild(elem);
-			
-			return bind;
-			
-		},
-		
-		Element : function (selector) {
-			
-			var bind = Qetesh.HTMLElement.Obj();
-			var elem = this.Manager.pane.querySelector(selector);
-			elem._qdata = null;
-			bind.addElement(elem);
-			
-			return bind;
-		},
-		
-		__bindItem(data, elem) {
-			
-			var content = elem.innerHTML;
-			
-			for (var propName in data) {
-				
-				if( data.hasOwnProperty(propName) ) {
-					
-					var propVal = data[propName];
-					var tag = "{" + propName + "}";
-					
-					// Handle lazy loading here
-					
-					content = content.replace(tag, propVal);
-				}
-			}
-			
-			elem.innerHTML = content;
-			
-			// Link data and element
-			elem._qdata = data;
-			data.boundElement = elem;
-			
-			return elem;
+			return this.paneElem.Element(selector);
 		}
 	},
 	
@@ -383,6 +412,91 @@ var Qetesh = {
 				})(e, callback);
 				
 			}
+		},
+
+	
+		Bind : function (data) {
+			
+			var bind = this.Obj();
+			var len = this.__elements.length;
+			
+			for (var i = 0; i < len; ++i) {
+				
+				var elem = this.__elements[i];
+				var container = elem.parentNode;
+				
+				if (!(data instanceof Array)) {
+				
+					elem = this.__bindItem(data, elem);
+					bind.addElement(elem);
+					return bind;
+				}
+			
+				var datalen = data.length;
+			
+				for (var x = 0; x < datalen; ++x) {
+					
+					var item = data[x];
+					
+					// Deep clone inc. subelements
+					var e = elem.cloneNode(true);
+					
+					e = this.__bindItem(item, e);
+					
+					container.appendChild(e);
+					bind.addElement(e);
+				}
+				
+				// Remove template item
+				container.removeChild(elem);
+			}
+			
+			return bind;
+			
+		},
+		
+		__bindItem : function(data, elem) {
+			
+			var content = elem.innerHTML;
+			
+			for (var propName in data) {
+				
+				if( data.hasOwnProperty(propName) ) {
+					
+					var propVal = data[propName];
+					var tag = "{" + propName + "}";
+					
+					// Handle lazy loading here
+					
+					content = content.replace(tag, propVal);
+				}
+			}
+			
+			elem.innerHTML = content;
+			
+			// Link data and element
+			elem._qdata = data;
+			data.boundElement = elem;
+			
+			return elem;
+		},
+		
+		Element : function (selector) {
+			
+			var len = this.__elements.length;
+			var subobj = Qetesh.HTMLElement.Obj();
+			
+			for (var i = 0; i < len; ++i) {
+				
+				var elem = this.__elements[i];
+				
+				var subelem = elem.querySelector(selector);
+				subelem._qdata = null;
+				subobj.addElement(subelem);
+				
+			}
+			
+			return subobj;
 		}
 	},
 	

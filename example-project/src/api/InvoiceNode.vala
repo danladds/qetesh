@@ -33,7 +33,7 @@ namespace QExample {
 		public override void OnBind() {
 			
 			ExposeCrud("Invoice", typeof(Invoice), "example").Lazy(
-				"Items", typeof(InvoiceItem)
+				"Items", typeof(InvoiceItem), "InvoiceItem[]"
 			);
 		}
 	} 

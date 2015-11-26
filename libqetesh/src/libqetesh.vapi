@@ -280,22 +280,25 @@ namespace Qetesh {
 	[CCode (cheader_filename = "libqetesh.h")]
 	public class QWebNode : GLib.Object {
 		public class LazyExposer {
-			public Qetesh.QWebNode.LazyExposer Lazy (string propertyName, GLib.Type fType);
+			public Qetesh.QWebNode.LazyExposer Lazy (string propertyName, GLib.Type fType, string returnType);
 		}
 		public class ManifestObject {
 			public class ManifestMethod {
-				public ManifestMethod (string name, string path);
+				public ManifestMethod (string name, string path, string mType, string rType);
 				public void GET ();
 				public Qetesh.Data.DataObject.DataNode GetDescriptor ();
 				public void POST ();
 				public void PUT ();
 				public string HttpMethod { get; private set; }
+				public string MethodType { get; private set; }
 				public string Name { get; set; }
 				public string NodePath { get; set; }
+				public string ReturnType { get; private set; }
 			}
 			public Gee.LinkedList<Qetesh.QWebNode.ManifestObject.ManifestMethod> Methods;
 			public ManifestObject (string typeName);
-			public Qetesh.QWebNode.ManifestObject.ManifestMethod Method (string mName, Qetesh.QWebNode node);
+			public Qetesh.QWebNode.ManifestObject.ManifestMethod LazyLink (string mName, string mType, Qetesh.QWebNode node);
+			public Qetesh.QWebNode.ManifestObject.ManifestMethod Method (string mName, string mType, Qetesh.QWebNode node);
 			public string TypeName { get; private set; }
 		}
 		public class ManifestWalker {

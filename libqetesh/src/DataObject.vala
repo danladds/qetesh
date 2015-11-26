@@ -456,6 +456,11 @@ namespace Qetesh.Data {
 				
 				Type propertyType = prop.value_type;
 				
+				if(propertyType.is_a(typeof(Gee.AbstractList))) {
+					
+					continue;
+				}
+				
 				var childNode = new DataNode(pName);
 				childNode.Val = _getPropStr(pName, propertyType);
 					

@@ -127,28 +127,28 @@ namespace Qetesh {
 						
 			});
 			
-			Manifest.Method("LoadAll", this).GET();
+			Manifest.Method("LoadAll", typeName + "[]", this).GET();
 			
 			// Create new
 			POST.connect((req) => {
 				
 			});
 			
-			Manifest.Method("Create", this).POST();
+			Manifest.Method("Create", "void", this).POST();
 			
 			// Read single
 			this["$n"].GET.connect((req) => { 
 				
 			});
 			
-			Manifest.Method("Load", this["$n"]).GET();
+			Manifest.Method("Load", typeName, this["$n"]).GET();
 			
 			// Update single
 			this["$n"].PUT.connect((req) => { 
 				
 			});
 			
-			Manifest.Method("Update", this["$n"]).PUT();
+			Manifest.Method("Update", "void", this["$n"]).PUT();
 			
 			var proto = (DataObject) Object.new(typ);
 			
@@ -171,7 +171,7 @@ namespace Qetesh {
 				node = contextNode;
 			}
 			
-			public LazyExposer Lazy (string propertyName, Type fType) {
+			public LazyExposer Lazy (string propertyName, Type fType, string returnType) {
 				
 				var path = propertyName.down();
 					
@@ -191,7 +191,18 @@ namespace Qetesh {
 					}
 				});
 					
-				node.Parent.Manifest.Method(propertyName, node[path]).GET();
+				node.Parent.Manifest.LazyLink(propertyName, returnType, node[path]).GET();
+				
+				var rCoreType = returnType;
+				
+				// Also expose return type
+				if(returnType.has_suffix("[]")) {
+					
+					rCoreType = returnType.replace("[]", "");
+				}
+				
+				
+				node.ExposeCrud(rCoreType, fType, dbNick);
 					
 				return this;
 			}
@@ -240,9 +251,17 @@ namespace Qetesh {
 				Methods = new Gee.LinkedList<ManifestMethod>();
 			}
 			
-			public ManifestMethod Method(string mName, QWebNode node) {
+			public ManifestMethod Method(string mName, string mType, QWebNode node) {
 				
-				var method = new ManifestMethod(mName, node.GetFullPath());
+				var method = new ManifestMethod(mName, node.GetFullPath(), "method", mType);
+				
+				Methods.add(method);
+				return method;
+			}
+			
+			public ManifestMethod LazyLink(string mName, string mType, QWebNode node) {
+				
+				var method = new ManifestMethod(mName, node.GetFullPath(), "link", mType);
 				
 				Methods.add(method);
 				return method;
@@ -254,11 +273,15 @@ namespace Qetesh {
 				public string Name { get; set; }
 				public string NodePath { get; set; }
 				public string HttpMethod { get; private set; default = "GET"; }
+				public string MethodType { get; private set; default = "method"; }
+				public string ReturnType { get; private set; default = ""; }
 				
-				public ManifestMethod(string name, string path) {
+				public ManifestMethod(string name, string path, string mType, string rType) {
 					
 					Name = name;
 					NodePath = path;
+					MethodType = mType;
+					ReturnType = rType;
 				}
 				
 				public DataObject.DataNode GetDescriptor() {
@@ -271,6 +294,14 @@ namespace Qetesh {
 					
 					desc.Children.add(
 						new DataObject.DataNode ("HttpMethod") { Val = HttpMethod }
+					);
+					
+					desc.Children.add(
+						new DataObject.DataNode ("MethodType") { Val = MethodType }
+					);
+					
+					desc.Children.add(
+						new DataObject.DataNode ("ReturnType") { Val = ReturnType }
 					);
 
 					return desc;

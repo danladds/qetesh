@@ -9,7 +9,7 @@ $_qetesh.Ready(function(q) {
 		var invoice = q.Data.Invoice.Obj();
 		invoice.LoadAll(function(invoices) {
 			
-			view.Bind(invoices, '.invoice-list-item').Click(function(invoice) {
+			view.Element('.invoice-list-item').Bind(invoices).Click(function(invoice) {
 				
 				viewPane.Show('record', invoice );
 			});
@@ -18,7 +18,12 @@ $_qetesh.Ready(function(q) {
 	
 	viewPane.View('record', 'record.html', function(view, invoice) {
 		
-		var invoiceForm = view.Bind(invoice, '#record');
+		var invoiceForm = view.Element('#record').Bind(invoice);
+		
+		invoice.Items(function(items) {
+		
+			invoiceForm.Element('.invoiceitem-list-item').Bind(items);
+		});
 		
 		// This is for elements that don't utilise bound data for their actions
 		view.Element('#invoice-return').Click(function(invoice) {
