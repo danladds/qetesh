@@ -140,18 +140,19 @@ var Qetesh = {
 								
 							if (xh.readyState == 4 && xh.status == 200) {
 								
+								var realType;
 								var inData = JSON.parse(xh.responseText);
 								
 								// Array returns
 								if (rType.indexOf("[]") > 1) {
 									
 									var returnList = [];
-									rType = rType.replace("[]", "");
+									realType = rType.replace("[]", "");
 									
 									var arrayLen = inData.length;
 									for (var i = 0; i < arrayLen; ++i) {
 										
-										var proto = Qetesh.Data[rType].Obj();
+										var proto = Qetesh.Data[realType].Obj();
 										
 										for (var prop in inData[i]) {
 				  
@@ -185,14 +186,20 @@ var Qetesh = {
 							}
 						};
 						
+						var actualPath = "";
+						
 						if(mType == "link") {
 					
-							nPath = nPath.replace("$n", this[this.PKeyName]);
+							actualPath = nPath.replace("$n", this[this.PKeyName]);
+						}
+						else {
+							
+							actualPath = nPath;
 						}
 							
 						xh.open(
 							hMethod, 
-							Qetesh.QConf.ServerUri + nPath, 
+							Qetesh.QConf.ServerUri + actualPath, 
 							true
 						);
 						xh.send();
@@ -256,7 +263,7 @@ var Qetesh = {
 			return view;
 		},
 		
-		Show : function(name, params = {}, reload = false, clearcache = false, nocache = false) {
+		Show : function(name, params = {}, reload = true, clearcache = false, nocache = false) {
 			
 			this.Views[this.ActiveView].Hide();
 			
@@ -313,12 +320,12 @@ var Qetesh = {
 		
 		Show : function() {
 			
-			this.container.style.visibility = "visible";
+			this.container.style.display = "block";
 		},
 		
 		Hide : function() {
 			
-			this.container.style.visibility = "hidden";
+			this.container.style.display = "none";
 		},
 		
 		// Args!
@@ -396,7 +403,6 @@ var Qetesh = {
 		Click : function (callback) {
 			
 			var len = this.__elements.length;
-			
 			
 			for (var i = 0; i < len; ++i) {
 				

@@ -34,7 +34,8 @@ $_qetesh.Ready(function(q) {
 		// This is for elements that don't utilise bound data for their actions
 		view.Element('#invoice-return').Click(function(invoice) {
 			
-			viewPane.Show('list');
+			// Show from cached rendering
+			viewPane.Show('list', {}, false);
 		});
 		
 		/* - No need to load individually, as we already have it!
