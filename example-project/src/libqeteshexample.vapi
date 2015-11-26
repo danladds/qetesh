@@ -9,7 +9,7 @@ namespace QExample {
 			public override string NameTransform (string fieldName);
 			public string Forename { get; set; }
 			public int Id { get; set; }
-			public GLib.DateTime Issued { get; set; }
+			public Qetesh.QDateTime Issued { get; set; }
 			public Gee.LinkedList<global::QExample.Data.InvoiceItem> Items { get; private set; }
 			public string Surname { get; set; }
 			public int Total { get; set; }

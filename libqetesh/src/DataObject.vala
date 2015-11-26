@@ -209,6 +209,13 @@ namespace Qetesh.Data {
 				strVal = val.get_double().to_string();
 			}
 			
+			else if (propertyType.is_a(typeof(QDateTime))) {
+				var val = Value(typeof(QDateTime));
+				this.get_property(pName, ref val);
+				var dObj = (QDateTime) val.get_object();
+				strVal = dObj.toString();
+			}
+			
 			else {
 				
 				if (propertyType.is_a(typeof(DataObject))) {
@@ -259,9 +266,14 @@ namespace Qetesh.Data {
 				this.set_property(pName, val);
 			}
 			
-			else if (propertyType.is_a(typeof(DateTime))) {
+			else if (propertyType.is_a(typeof(QDateTime))) {
 				
-				// Todo: handle
+				var dt = new QDateTime();
+				dt.fromString(inVal);
+				
+				var val = Value(typeof(QDateTime));
+				val.set_object((Object) dt);
+				this.set_property(pName, val);
 			}
 			
 			else {

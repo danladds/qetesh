@@ -9,7 +9,13 @@ $_qetesh.Ready(function(q) {
 		var invoice = q.Data.Invoice.Obj();
 		invoice.LoadAll(function(invoices) {
 			
-			view.Element('.invoice-list-item').Bind(invoices).Click(function(invoice) {
+			view.Element('.invoice-list-item').Bind(invoices, function(item) {
+					
+				var dt = new Date(item.Issued);
+				item.Issued = dt.toLocaleDateString();
+				return item;
+				
+			}).Click(function(invoice) {
 				
 				viewPane.Show('record', invoice );
 			});

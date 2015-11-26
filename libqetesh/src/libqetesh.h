@@ -388,6 +388,17 @@ typedef struct _QeteshQManifest QeteshQManifest;
 typedef struct _QeteshQManifestClass QeteshQManifestClass;
 typedef struct _QeteshQManifestPrivate QeteshQManifestPrivate;
 
+#define QETESH_TYPE_QDATE_TIME (qetesh_qdate_time_get_type ())
+#define QETESH_QDATE_TIME(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), QETESH_TYPE_QDATE_TIME, QeteshQDateTime))
+#define QETESH_QDATE_TIME_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), QETESH_TYPE_QDATE_TIME, QeteshQDateTimeClass))
+#define QETESH_IS_QDATE_TIME(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), QETESH_TYPE_QDATE_TIME))
+#define QETESH_IS_QDATE_TIME_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), QETESH_TYPE_QDATE_TIME))
+#define QETESH_QDATE_TIME_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), QETESH_TYPE_QDATE_TIME, QeteshQDateTimeClass))
+
+typedef struct _QeteshQDateTime QeteshQDateTime;
+typedef struct _QeteshQDateTimeClass QeteshQDateTimeClass;
+typedef struct _QeteshQDateTimePrivate QeteshQDateTimePrivate;
+
 struct _QeteshWebserverlibqetesh {
 	GTypeInstance parent_instance;
 	volatile int ref_count;
@@ -796,6 +807,15 @@ struct _QeteshQManifestClass {
 	QeteshQWebNodeClass parent_class;
 };
 
+struct _QeteshQDateTime {
+	GObject parent_instance;
+	QeteshQDateTimePrivate * priv;
+};
+
+struct _QeteshQDateTimeClass {
+	GObjectClass parent_class;
+};
+
 
 gpointer qetesh_webserver_libqetesh_ref (gpointer instance);
 void qetesh_webserver_libqetesh_unref (gpointer instance);
@@ -1118,6 +1138,11 @@ const gchar* qetesh_qweb_node_manifest_object_manifest_method_get_ReturnType (Qe
 GType qetesh_qmanifest_get_type (void) G_GNUC_CONST;
 QeteshQManifest* qetesh_qmanifest_new (void);
 QeteshQManifest* qetesh_qmanifest_construct (GType object_type);
+GType qetesh_qdate_time_get_type (void) G_GNUC_CONST;
+QeteshQDateTime* qetesh_qdate_time_new (void);
+QeteshQDateTime* qetesh_qdate_time_construct (GType object_type);
+void qetesh_qdate_time_fromString (QeteshQDateTime* self, const gchar* inVal);
+gchar* qetesh_qdate_time_toString (QeteshQDateTime* self);
 
 
 G_END_DECLS

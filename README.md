@@ -24,7 +24,6 @@ Here is a very basic overview of how Qetesh works:
 -An app packaging and deployments system - on top of automake
 -A sandbox testbed /  dev environment
 -IDE plugin - possibly for Geany, as it's very lightweight - integrating the former
-- Angular.js plugin
  
 Advantages of Qetesh:
 
@@ -36,4 +35,4 @@ Advantages of Qetesh:
 - ORM and data binding stack cut out many lines of boilerplate code, and provide a consistent interface and nomenclature across client and server sides.
 - Easy to use only parts of the Qetesh system if desired!
 - "Convention over configuation" architecture
- 
+- Fine-grained caching control - decide what gets refetched and rerun and when 

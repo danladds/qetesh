@@ -13,7 +13,7 @@ libqetesh_la_CFLAGS =\
 
 
 libqetesh_la_SOURCES =  \
-	libqetesh.vala HTTPResponse.vala EventManager.vala JSONResponse.vala FileParser.vala ErrorManager.vala AppModule.vala ModuleManager.vala ConfigFile.vala ConfigFileParser.vala QException.vala QEvent.vala HTTPRequest.vala DataObject.vala DBManager.vala QDatabase.vala QMysqlDB.vala QDatabaseConn.vala QMysqlConn.vala DataManager.vala WebServerContext.vala WebAppContext.vala QWebApp.vala HTMLElement.vala QWebNode.vala QManifest.vala
+	libqetesh.vala HTTPResponse.vala EventManager.vala JSONResponse.vala FileParser.vala ErrorManager.vala AppModule.vala ModuleManager.vala ConfigFile.vala ConfigFileParser.vala QException.vala QEvent.vala HTTPRequest.vala DataObject.vala DBManager.vala QDatabase.vala QMysqlDB.vala QDatabaseConn.vala QMysqlConn.vala DataManager.vala WebServerContext.vala WebAppContext.vala QWebApp.vala HTMLElement.vala QWebNode.vala QManifest.vala QDateTime.vala
 
 libqetesh_la_VALAFLAGS = --pkg gio-unix-2.0 --pkg gio-2.0 --pkg gee-0.8  --pkg glib-2.0 --pkg gobject-2.0 --pkg gmodule-2.0 --pkg mysql --target-glib=2.38 --vapi=libqetesh.vapi -H libqetesh.h --library=libqetesh 
 

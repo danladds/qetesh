@@ -258,6 +258,12 @@ namespace Qetesh {
 		public void LoadModules ();
 	}
 	[CCode (cheader_filename = "libqetesh.h")]
+	public class QDateTime : GLib.Object {
+		public QDateTime ();
+		public void fromString (string inVal);
+		public string toString ();
+	}
+	[CCode (cheader_filename = "libqetesh.h")]
 	public class QEvent {
 		public QEvent (string type);
 		public void Fire (Qetesh.HTTPRequest req);

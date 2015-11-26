@@ -415,7 +415,7 @@ var Qetesh = {
 		},
 
 	
-		Bind : function (data) {
+		Bind : function (data, transform) {
 			
 			var bind = this.Obj();
 			var len = this.__elements.length;
@@ -426,6 +426,8 @@ var Qetesh = {
 				var container = elem.parentNode;
 				
 				if (!(data instanceof Array)) {
+					
+					data = (transform == null) ? data : transform(data);
 				
 					elem = this.__bindItem(data, elem);
 					bind.addElement(elem);
@@ -441,6 +443,7 @@ var Qetesh = {
 					// Deep clone inc. subelements
 					var e = elem.cloneNode(true);
 					
+					item = (transform == null) ? item : transform(item);
 					e = this.__bindItem(item, e);
 					
 					container.appendChild(e);
@@ -466,7 +469,7 @@ var Qetesh = {
 					var propVal = data[propName];
 					var tag = "{" + propName + "}";
 					
-					// Handle lazy loading here
+					
 					
 					content = content.replace(tag, propVal);
 				}

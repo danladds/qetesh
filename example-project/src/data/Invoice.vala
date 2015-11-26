@@ -32,7 +32,7 @@ namespace QExample.Data {
 		public int Id { get; set; }
 		public string Forename { get; set; }
 		public string Surname { get; set; }
-		public DateTime Issued { get; set; }
+		public QDateTime Issued { get; set; }
 		public int Total { get; set; }
 		public Gee.LinkedList<InvoiceItem> Items { 
 			
