@@ -105,6 +105,19 @@ namespace Qetesh {
 			else return Path;
 		}
 		
+		protected void ExposeProperties(string typeName, Type typ) {
+			
+			var proto = (DataObject) Object.new(typ);
+			proto.Init();
+			
+			var defaults = proto.ToNode((n) => { });
+			
+			foreach(var node in defaults.Children) {
+				
+				Manifest.Prop(node.Name, node.Val);
+			}
+		}
+		
 		protected LazyExposer ExposeCrud (string typeName, Type typ, string dbName) {
 			
 			
@@ -112,8 +125,6 @@ namespace Qetesh {
 			proto.Init();
 			
 			Manifest = new ManifestObject(typeName, proto.PKeyName);
-			
-			
 			
 			// Read list
 			GET.connect((req) => {
@@ -161,6 +172,8 @@ namespace Qetesh {
 			});
 			
 			Manifest.Method("Update", "void", this["$n"]).PUT();
+			
+			ExposeProperties(typeName, typ);
 			
 			return new LazyExposer(typeName, typ, dbName, this["$n"]);
 			
@@ -227,6 +240,13 @@ namespace Qetesh {
 				
 				foreach(var mm in Manifest.Methods)
 					objBase.Children.add(mm.GetDescriptor());
+					
+				foreach(var prop in Manifest.Props.keys) {
+					
+					objBase.Children.add(
+						new DataObject.DataNode (prop) { Val = Manifest.Props[prop] }
+					);
+				}
 			}
 			
 			foreach(var cld in Children.values) cld.WalkManifests(walker);
@@ -259,13 +279,20 @@ namespace Qetesh {
 			public string TypeName { get; private set; }
 			public string PKeyName { get; private set; }
 			
-			public Gee.LinkedList<ManifestMethod> Methods;
+			public Gee.LinkedList<ManifestMethod> Methods { get; private set; }
+			public Gee.HashMap<string, string> Props { get; private set; }
 			
 			public ManifestObject(string typeName, string pKey) {
 				
 				TypeName = typeName;
 				PKeyName = pKey;
 				Methods = new Gee.LinkedList<ManifestMethod>();
+				Props = new Gee.HashMap<string, string>();
+			}
+			
+			public void Prop(string name, string def) {
+				
+				Props.set(name, def);
 			}
 			
 			public ManifestMethod Method(string mName, string mType, QWebNode node) {

@@ -230,6 +230,8 @@ namespace Qetesh.Data {
 				}
 			}
 			
+			if(strVal == null) return "";
+			
 			return strVal;
 		}
 		

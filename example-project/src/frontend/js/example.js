@@ -17,7 +17,9 @@ $_qetesh.Ready(function(q) {
 				
 			}).Click(function(invoice) {
 				
-				viewPane.Show('record', invoice );
+				// True = reload, otherwise we just get the cached first entry
+				// every time
+				viewPane.Show('record', invoice, true );
 			});
 		});
 	});
@@ -28,7 +30,8 @@ $_qetesh.Ready(function(q) {
 		
 		invoice.Items(function(items) {
 		
-			invoiceForm.Element('.invoiceitem-list-item').Bind(items);
+			// Bind existing and add row with new object
+			invoiceForm.Element('.invoiceitem-list-item').Bind(items).Bind(q.Data.InvoiceItem.Obj());
 		});
 		
 		// This is for elements that don't utilise bound data for their actions

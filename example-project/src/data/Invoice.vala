@@ -57,6 +57,7 @@ namespace QExample.Data {
 		public override void Init() {
 			
 			TableName = "invoice";
+			Issued = new QDateTime();
 		}
 		
 		public override string NameTransform(string fieldName) {

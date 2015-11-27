@@ -301,11 +301,13 @@ namespace Qetesh {
 				public string NodePath { get; set; }
 				public string ReturnType { get; private set; }
 			}
-			public Gee.LinkedList<Qetesh.QWebNode.ManifestObject.ManifestMethod> Methods;
 			public ManifestObject (string typeName, string pKey);
 			public Qetesh.QWebNode.ManifestObject.ManifestMethod LazyLink (string mName, string mType, Qetesh.QWebNode node);
 			public Qetesh.QWebNode.ManifestObject.ManifestMethod Method (string mName, string mType, Qetesh.QWebNode node);
+			public void Prop (string name, string def);
+			public Gee.LinkedList<Qetesh.QWebNode.ManifestObject.ManifestMethod> Methods { get; private set; }
 			public string PKeyName { get; private set; }
+			public Gee.HashMap<string,string> Props { get; private set; }
 			public string TypeName { get; private set; }
 		}
 		public class ManifestWalker {
@@ -317,6 +319,7 @@ namespace Qetesh {
 		public Qetesh.QWebNode? Parent;
 		protected QWebNode (string path = "");
 		protected Qetesh.QWebNode.LazyExposer ExposeCrud (string typeName, GLib.Type typ, string dbName);
+		protected void ExposeProperties (string typeName, GLib.Type typ);
 		public string GetFullPath ();
 		public virtual void OnBind ();
 		public void WalkManifests (Qetesh.QWebNode.ManifestWalker walker);

@@ -123,16 +123,16 @@ var Qetesh = {
 			if(manifest.hasOwnProperty(methodName) ) {
 				
 				var methodDef = manifest[methodName];
+				
+				if(methodDef.HttpMethod == null) {
+					proxy[methodName] = methodDef;
+					continue;
+				}
+				
 				var httpMethod = methodDef.HttpMethod;
 				var nodePath = methodDef.NodePath;
 				var methodType = methodDef.MethodType;
 				var returnType = methodDef.ReturnType;
-				
-				
-				if(methodName == "PKeyName") {
-					proxy[methodName] = methodDef;
-					continue;
-				}
 
 			
 				proxy[methodName] = (function(
@@ -455,12 +455,24 @@ var Qetesh = {
 			
 			var len = this.__elements.length;
 			this.__dataBound = true;
-			this.__bindData = data;
-			this.__bindDataState = Object.create(data);
+			
+			if (!this.__dataBound || !(this.__bindData instanceof Array)) {
+				this.__bindData = data;
+				this.__bindDataState = Object.create(data);
+			}
+			else if (data instanceof Array) {
+				this.__bindData = this.__bindData.concat(data);
+				this.__bindDataState = this.__bindDataState.concat(data);
+			}
+			else {
+				this.__bindData.push(data);
+				this.__bindDataState.push(data);
+			}
+			
 			this.__dataTransform = transform;
 			
 			// Single objects
-			if (!(data instanceof Array)) {
+			if (!(data instanceof Array) && !(this.__bindData instanceof Array)) {
 				
 				// Bind to all matches
 				for (var i = 0; i < len; ++i) {
@@ -489,6 +501,21 @@ var Qetesh = {
 				
 				elem = this.__elements[0];
 				container = elem.parentNode;
+			}
+			
+			if (!(data instanceof Array)) {
+				
+				// Deep clone inc. subelements
+				var e = elem.cloneNode(true);
+				container.appendChild(e);
+				
+				var subobj = Qetesh.HTMLElement.Obj();
+				subobj.addElement(e);
+				
+				subobj.__parent = this;
+				this.__children.push(subobj);
+				
+				subobj.Bind(data, transform);
 			}
 				
 			var datalen = data.length;
@@ -545,7 +572,7 @@ var Qetesh = {
 			
 			for (var propName in data) {
 				
-				if( data.hasOwnProperty(propName) ) {
+				if( data.hasOwnProperty(propName) || data.__proto__.hasOwnProperty(propName) ) {
 					
 					var tag;
 					var propVal = data[propName];
