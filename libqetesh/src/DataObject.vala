@@ -38,8 +38,7 @@ namespace Qetesh.Data {
 		protected string TableName { get; set; }
 		
 		/// Primary key name
-		/// First field is used if not set
-		protected string PKeyName { get; set; }
+		public string PKeyName { get; protected set; default="Id"; }
 		
 		private Gee.LinkedList<InheritInfo> ClassParents { get; private set; }
 		private Gee.LinkedList<LinkInfo> Links { get; private set; }
@@ -368,7 +367,7 @@ namespace Qetesh.Data {
 			
 			
 			
-			string sql = "SELECT * FROM %s WHERE `%s`.`%s` = \"%s\"".printf(
+			string sql = "SELECT * FROM %s AND `%s`.`%s` = %s".printf(
 				QueryTarget,
 				TableName,
 				NameTransform(PKeyName),
@@ -381,9 +380,11 @@ namespace Qetesh.Data {
 				
 				// Todo: throw exception
 			}
+			else {
 			
-			// Map into self
-			MapObject(result[0]);
+				// Map into self
+				MapObject(result[0]);
+			}
 		}
 		
 		public Gee.LinkedList<DataObject> MapObjectList(Gee.LinkedList<Gee.TreeMap<string?, string?>> rows) {

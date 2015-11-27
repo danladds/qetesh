@@ -127,6 +127,12 @@ var Qetesh = {
 				var nodePath = methodDef.NodePath;
 				var methodType = methodDef.MethodType;
 				var returnType = methodDef.ReturnType;
+				
+				if(methodName == "PKeyName") {
+					proxy[methodName] = methodDef;
+					continue;
+				}
+
 			
 				proxy[methodName] = (function(
 					hMethod, nPath,	mType, rType
@@ -147,7 +153,7 @@ var Qetesh = {
 								if (rType.indexOf("[]") > 1) {
 									
 									var returnList = [];
-									realType = rType.replace("[]", "");
+									var realType = rType.replace("[]", "");
 									
 									var arrayLen = inData.length;
 									for (var i = 0; i < arrayLen; ++i) {
@@ -172,11 +178,11 @@ var Qetesh = {
 								{
 									var proto = Qetesh.Data[rType].Obj();
 									
-									for (var prop in inData) {
+									for (var prop in inData[0]) {
 			  
-										if( inData.hasOwnProperty(prop) ) {
+										if( inData[0].hasOwnProperty(prop) ) {
 										
-											proto[prop] = inData[prop];
+											proto[prop] = inData[0][prop];
 										} 
 									} 
 									
@@ -187,15 +193,8 @@ var Qetesh = {
 						};
 						
 						var actualPath = "";
-						
-						if(mType == "link") {
 					
-							actualPath = nPath.replace("$n", this[this.PKeyName]);
-						}
-						else {
-							
-							actualPath = nPath;
-						}
+						actualPath = nPath.replace("$n", this[this.PKeyName]);
 							
 						xh.open(
 							hMethod, 
@@ -331,9 +330,6 @@ var Qetesh = {
 		// Args!
 		Reload : function(params = {}, clearcache = false, nocache = false, andShow = false) {
 			
-			params._qclearcache = clearcache;
-			params._qnocache = nocache;
-			
 			if (clearcache) this.__cache = "";
 			
 			if (!nocache && this.__cache != null && this.__cache != "") {
@@ -381,6 +377,12 @@ var Qetesh = {
 	HTMLElement : {
 		
 		__elements : [],
+		__dataBound : false,
+		__qdata : {},
+		__qdatastate : {},
+		__repeaterTemplate : null,
+		__repeaterContainer : null,
+		__parent : null,
 		
 		addElement : function(elem) {
 			
@@ -408,59 +410,96 @@ var Qetesh = {
 				
 				var e = this.__elements[i];
 				
-				(function (elem, cb) { 
+				(function (elem, cb, _this, x) { 
 					
 					elem.onclick = function() {
 					
-						cb(elem._qdata);
+						cb(_this._getQData(x));
 					
 					};
-				})(e, callback);
+				})(e, callback, this, i);
 				
 			}
 		},
-
+		
+		_getQData : function(i) {
+			
+			if (this.__dataBound) {
+				
+				return this.__elements[i].__qdata;
+			}
+			else if (this.__parent != null) {
+				
+				return this.__parent._getQData(i);
+			}
+			
+			return null;
+		},
 	
 		Bind : function (data, transform) {
 			
-			var bind = this.Obj();
 			var len = this.__elements.length;
+			this.__dataBound = true;
 			
-			for (var i = 0; i < len; ++i) {
+			// Single objects
+			if (!(data instanceof Array)) {
 				
-				var elem = this.__elements[i];
-				var container = elem.parentNode;
-				
-				if (!(data instanceof Array)) {
+				// Bind to all matches
+				for (var i = 0; i < len; ++i) {
 					
-					data = (transform == null) ? data : transform(data);
-				
-					elem = this.__bindItem(data, elem);
-					bind.addElement(elem);
-					return bind;
-				}
-			
-				var datalen = data.length;
-			
-				for (var x = 0; x < datalen; ++x) {
+					var elem = this.__elements[i];
+					var realData = (transform == null) ? data : transform(data);
+					elem = this.__bindItem(realData, elem);
 					
-					var item = data[x];
-					
-					// Deep clone inc. subelements
-					var e = elem.cloneNode(true);
-					
-					item = (transform == null) ? item : transform(item);
-					e = this.__bindItem(item, e);
-					
-					container.appendChild(e);
-					bind.addElement(e);
 				}
 				
-				// Remove template item
-				container.removeChild(elem);
+				return this;
 			}
 			
-			return bind;
+			var elem;
+			var container;
+			
+			// Already-expanded repeaters
+			if (this.__repeaterTemplate != null) {
+				
+				this.__elements = [];
+				elem = this.__repeaterTemplate;
+				container = this.__repeaterContainer;
+			}
+			
+			// Arrays, repeater templates
+			else {
+				
+				elem = this.__elements[0];
+				container = elem.parentNode;
+				this.__elements.splice(0, 1);
+			}
+				
+			var datalen = data.length;
+			
+			// Each DataObject in array
+			for (var x = 0; x < datalen; ++x) {
+				
+				var item = data[x];
+				
+				// Deep clone inc. subelements
+				var e = elem.cloneNode(true);
+				
+				item = (transform == null) ? item : transform(item);
+				e = this.__bindItem(item, e);
+				
+				container.appendChild(e);
+				this.addElement(e);
+			}
+			
+			// Remove template item
+			if (this.__repeaterTemplate == null) {
+				container.removeChild(elem);
+				this.__repeaterContainer = container;
+				this.__repeaterTemplate = elem;
+			}
+			
+			return this;
 			
 		},
 		
@@ -484,10 +523,27 @@ var Qetesh = {
 			elem.innerHTML = content;
 			
 			// Link data and element
-			elem._qdata = data;
+			elem.__qdata = data;
+			elem.__qdatastate = Object.create(data);
 			data.boundElement = elem;
+			data.boundQElement = this;
 			
 			return elem;
+		},
+		
+		Reset : function (deep = true) {
+			
+			
+			
+			if (deep) {
+				
+				var childLen = this.__children.lenth;
+				
+				for(var i = 0; i < childLen; ++i) {
+					
+					this.__children[i].Reset(true);
+				}
+			}
 		},
 		
 		Element : function (selector) {
@@ -500,16 +556,21 @@ var Qetesh = {
 				var elem = this.__elements[i];
 				
 				var subelem = elem.querySelector(selector);
-				subelem._qdata = null;
+				subelem.__qdata = null;
 				subobj.addElement(subelem);
 				
 			}
+			
+			subobj.__parent = this;
 			
 			return subobj;
 		}
 	},
 	
 	DataObject : {
+		
+		Id : 0,
+		PKeyName : "Id",
 		
 		Obj : function() {
 		

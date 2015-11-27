@@ -32,10 +32,25 @@ $_qetesh.Ready(function(q) {
 		});
 		
 		// This is for elements that don't utilise bound data for their actions
-		view.Element('#invoice-return').Click(function(invoice) {
+		invoiceForm.Element('#invoice-return').Click(function(invoice) {
 			
 			// Show from cached rendering
 			viewPane.Show('list', {}, false);
+		});
+		
+		invoiceForm.Element('#invoice-reset').Click(function(invoice) {
+			
+			invoiceForm.Reset();
+		});
+		
+		invoiceForm.Element('#invoice-reload').Click(function(invoice) {
+			
+			var rInvoice = q.Data.Invoice.Obj();
+			rInvoice.Id = invoice.Id;
+			rInvoice.Load(function(ri) {
+				
+				viewPane.Show('record', ri);
+			});
 		});
 		
 		/* - No need to load individually, as we already have it!

@@ -108,8 +108,12 @@ namespace Qetesh {
 		protected LazyExposer ExposeCrud (string typeName, Type typ, string dbName) {
 			
 			
-			// Need to update JS manifest
-			Manifest = new ManifestObject(typeName);
+			var proto = (DataObject) Object.new(typ);
+			proto.Init();
+			
+			Manifest = new ManifestObject(typeName, proto.PKeyName);
+			
+			
 			
 			// Read list
 			GET.connect((req) => {
@@ -139,6 +143,14 @@ namespace Qetesh {
 			// Read single
 			this["$n"].GET.connect((req) => { 
 				
+				var obj = (DataObject) Object.new(typ);
+				obj._init(req.Data.GetConnection(dbName));
+				
+				obj.setPKeyStr(req.PathArgs[0]);
+				
+				obj.Load();
+				
+				req.HResponse.DataTree.Children.add(obj.ToNode((n) => { }));
 			});
 			
 			Manifest.Method("Load", typeName, this["$n"]).GET();
@@ -149,8 +161,6 @@ namespace Qetesh {
 			});
 			
 			Manifest.Method("Update", "void", this["$n"]).PUT();
-			
-			var proto = (DataObject) Object.new(typ);
 			
 			return new LazyExposer(typeName, typ, dbName, this["$n"]);
 			
@@ -202,7 +212,8 @@ namespace Qetesh {
 				}
 				
 				
-				node.ExposeCrud(rCoreType, fType, dbNick);
+				// Todo: integrate conditions into ExposeCrud
+				node["_" + path].ExposeCrud(rCoreType, fType, dbNick);
 					
 				return this;
 			}
@@ -212,7 +223,7 @@ namespace Qetesh {
 			
 			if (Manifest != null) {
 				
-				var objBase = walker.AddObject(Manifest.TypeName);
+				var objBase = walker.AddObject(Manifest.TypeName, Manifest.PKeyName);
 				
 				foreach(var mm in Manifest.Methods)
 					objBase.Children.add(mm.GetDescriptor());
@@ -230,10 +241,14 @@ namespace Qetesh {
 				rootNode = rNode;
 			}
 			
-			public DataObject.DataNode AddObject(string tName) {
+			public DataObject.DataNode AddObject(string tName, string pKey) {
 				
 				var newNode = new DataObject.DataNode(tName);
 				rootNode.Children.add(newNode);
+					
+				newNode.Children.add(
+					new DataObject.DataNode ("PKeyName") { Val = pKey }
+				);
 				
 				return newNode;
 			}
@@ -242,12 +257,14 @@ namespace Qetesh {
 		public class ManifestObject {
 			
 			public string TypeName { get; private set; }
+			public string PKeyName { get; private set; }
 			
 			public Gee.LinkedList<ManifestMethod> Methods;
 			
-			public ManifestObject(string typeName) {
+			public ManifestObject(string typeName, string pKey) {
 				
 				TypeName = typeName;
+				PKeyName = pKey;
 				Methods = new Gee.LinkedList<ManifestMethod>();
 			}
 			

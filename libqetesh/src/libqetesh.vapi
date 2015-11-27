@@ -51,7 +51,7 @@ namespace Qetesh {
 			protected virtual string NameTransform (string fieldName);
 			public Qetesh.Data.DataObject.DataNode ToNode (Qetesh.Data.DataObject.DataNodeTransform transform);
 			public Gee.LinkedList<TImp> Children { get; }
-			protected string PKeyName { get; set; }
+			public string PKeyName { get; protected set; }
 			public Gee.LinkedList<TImp> Parents { get; }
 			protected string QueryTarget { get; private set; }
 			protected string TableName { get; set; }
@@ -302,14 +302,15 @@ namespace Qetesh {
 				public string ReturnType { get; private set; }
 			}
 			public Gee.LinkedList<Qetesh.QWebNode.ManifestObject.ManifestMethod> Methods;
-			public ManifestObject (string typeName);
+			public ManifestObject (string typeName, string pKey);
 			public Qetesh.QWebNode.ManifestObject.ManifestMethod LazyLink (string mName, string mType, Qetesh.QWebNode node);
 			public Qetesh.QWebNode.ManifestObject.ManifestMethod Method (string mName, string mType, Qetesh.QWebNode node);
+			public string PKeyName { get; private set; }
 			public string TypeName { get; private set; }
 		}
 		public class ManifestWalker {
 			public ManifestWalker (Qetesh.Data.DataObject.DataNode rNode);
-			public Qetesh.Data.DataObject.DataNode AddObject (string tName);
+			public Qetesh.Data.DataObject.DataNode AddObject (string tName, string pKey);
 		}
 		public Gee.Map<string,Qetesh.QWebNode> Children;
 		public Qetesh.QWebNode.ManifestObject Manifest;
