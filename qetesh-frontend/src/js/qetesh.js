@@ -263,7 +263,7 @@ var Qetesh = {
 			return view;
 		},
 		
-		Show : function(name, params = {}, reload = true, clearcache = false, nocache = false) {
+		Show : function(name, params = {}, reload = false, clearcache = false, nocache = false) {
 			
 			this.Views[this.ActiveView].Hide();
 			
@@ -565,6 +565,16 @@ var Qetesh = {
 						fld.Type = "input";
 						fld.ReplaceTag = "{" + propName + "}";
 						
+						tag.__qBindField = fld;
+						
+						tag.onchange = (function (f, t) {
+								
+							return function(ev) {
+								
+								f.UpdateState();
+							};
+						})(fld, tag);
+						
 						this.__fields.push(fld);
 					}
 					
@@ -585,14 +595,6 @@ var Qetesh = {
 							fld.ReplaceTag = "{" + propName + "}";
 							
 							this.__fields.push(fld);
-							
-							fld.ObjElem.onchange = (function (f) {
-								
-								return function() {
-					
-									this.__qdatastate[f.FieldName] = this.value;
-								};
-							})(fld);
 						}
 					}
 				}
@@ -663,6 +665,26 @@ var Qetesh = {
 				for(var i = 0; i < childLen; ++i) {
 					
 					this.__children[i].Update(true);
+				}
+			}
+		},
+		
+		Commit : function (deep = true) {
+			
+			var fieldCount = this.__fields.length;
+			
+			for(var m = 0; m < fieldCount; ++m) {
+				
+				this.__fields[m].Commit();
+			}
+			
+			if (deep) {
+				
+				var childLen = this.__children.lenth;
+				
+				for(var i = 0; i < childLen; ++i) {
+					
+					this.__children[i].Commit(true);
 				}
 			}
 		},
@@ -742,6 +764,23 @@ var Qetesh = {
 					
 				this.FieldElement.nodeValue = content;
 			}
+		},
+		
+		UpdateState : function() {
+			
+			if (this.Type == "input") {
+				 this.QElem.__bindDataState[this.FieldName] = this.FieldElement.value;
+				
+			}
+			else {
+				
+				// What? It's not a form field!
+			}
+		},
+		
+		Commit : function() {
+			
+			this.QElem.__bindData[this.FieldName] = this.QElem.__bindDataState[this.FieldName];
 		},
 		
 		Clear : function() {

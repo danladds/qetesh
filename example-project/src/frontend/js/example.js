@@ -35,12 +35,17 @@ $_qetesh.Ready(function(q) {
 		invoiceForm.Element('#invoice-return').Click(function(invoice) {
 			
 			// Show from cached rendering
-			viewPane.Show('list', {}, false);
+			viewPane.Show('list');
 		});
 		
 		invoiceForm.Element('#invoice-reset').Click(function(invoice) {
 			
 			invoiceForm.Reset();
+		});
+		
+		invoiceForm.Element('#invoice-commit').Click(function(invoice) {
+			
+			invoiceForm.Commit();
 		});
 		
 		invoiceForm.Element('#invoice-reload').Click(function(invoice) {
