@@ -45,12 +45,7 @@ $_qetesh.Ready(function(q) {
 		
 		invoiceForm.Element('#invoice-reload').Click(function(invoice) {
 			
-			var rInvoice = q.Data.Invoice.Obj();
-			rInvoice.Id = invoice.Id;
-			rInvoice.Load(function(ri) {
-				
-				viewPane.Show('record', ri);
-			});
+			invoice.Reload();
 		});
 		
 		/* - No need to load individually, as we already have it!

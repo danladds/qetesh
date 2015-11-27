@@ -128,6 +128,7 @@ var Qetesh = {
 				var methodType = methodDef.MethodType;
 				var returnType = methodDef.ReturnType;
 				
+				
 				if(methodName == "PKeyName") {
 					proxy[methodName] = methodDef;
 					continue;
@@ -141,6 +142,8 @@ var Qetesh = {
 					return function(callback) {
 					
 						var xh = new XMLHttpRequest();
+						
+						var _this = this;
 							
 						xh.onreadystatechange = function () {
 								
@@ -175,18 +178,16 @@ var Qetesh = {
 								}
 								// Single returns
 								else
-								{
-									var proto = Qetesh.Data[rType].Obj();
-									
+								{	
 									for (var prop in inData[0]) {
 			  
 										if( inData[0].hasOwnProperty(prop) ) {
 										
-											proto[prop] = inData[0][prop];
+											_this[prop] = inData[0][prop];
 										} 
 									} 
 									
-									callback(proto);
+									callback();
 								}
 								
 							}
@@ -380,11 +381,13 @@ var Qetesh = {
 		__dataBound : false,
 		
 		__bindData : null,
+		__bindDataState : null,
 		__repeaterTemplate : null,
 		__repeaterContainer : null,
 		__parent : null,
 		__children : [],
 		__fields : [],
+		__dataTransform : function (data) { return data; },
 		
 		addElement : function(elem) {
 			
@@ -426,7 +429,7 @@ var Qetesh = {
 					
 					elem.onclick = function() {
 					
-						cb(_this._getQData(x));
+						cb(_this._getQDataState());
 					
 					};
 				})(e, callback, this, i);
@@ -434,15 +437,15 @@ var Qetesh = {
 			}
 		},
 		
-		_getQData : function(i) {
+		_getQDataState : function() {
 			
 			if (this.__dataBound) {
 				
-				return this.__elements[i].__qdata;
+				return this.__bindDataState;
 			}
 			else if (this.__parent != null) {
 				
-				return this.__parent._getQData(i);
+				return this.__parent._getQDataState();
 			}
 			
 			return null;
@@ -453,6 +456,8 @@ var Qetesh = {
 			var len = this.__elements.length;
 			this.__dataBound = true;
 			this.__bindData = data;
+			this.__bindDataState = Object.create(data);
+			this.__dataTransform = transform;
 			
 			// Single objects
 			if (!(data instanceof Array)) {
@@ -461,7 +466,7 @@ var Qetesh = {
 				for (var i = 0; i < len; ++i) {
 					
 					var elem = this.__elements[i];
-					var realData = (transform == null) ? data : transform(data);
+					var realData = (transform == null) ? data : this.__dataTransform(data);
 					elem = this.__bindItem(realData, elem);
 					
 				}
@@ -500,9 +505,6 @@ var Qetesh = {
 				var subobj = Qetesh.HTMLElement.Obj();
 				subobj.addElement(e);
 				
-				e.__qdata = null;
-				e.__qdatastate = null;
-				
 				subobj.__parent = this;
 				this.__children.push(subobj);
 				
@@ -519,6 +521,24 @@ var Qetesh = {
 			
 			return this;
 			
+		},
+		
+		Show : function() {
+			
+			var len = this.__elements.length;
+			
+			for(var x = 0; x < len; ++x) {
+				this.__elements[x].style.visibility = "visible";
+			}
+		},
+		
+		Hide : function() {
+			
+			var len = this.__elements.length;
+			
+			for(var x = 0; x < len; ++x) {
+				this.__elements[x].style.display = "hidden";
+			}
 		},
 		
 		__bindItem : function(data, elem) {
@@ -565,19 +585,23 @@ var Qetesh = {
 							fld.ReplaceTag = "{" + propName + "}";
 							
 							this.__fields.push(fld);
-													
+							
+							fld.ObjElem.onchange = (function (f) {
+								
+								return function() {
+					
+									this.__qdatastate[f.FieldName] = this.value;
+								};
+							})(fld);
 						}
 					}
 				}
 			}
 			
-			// Link data and element
-			elem.__qdata = data;
-			elem.__qdatastate = Object.create(data);
 			data.boundElement = elem;
 			data.boundQElement = this;
 			
-			this.Reset();
+			this.Reset(false);
 			
 			return elem;
 		},
@@ -607,12 +631,6 @@ var Qetesh = {
 			
 			var fieldCount = this.__fields.length;
 			
-			// Clear run
-			for(var n = 0; n < fieldCount; ++n) {
-				
-				this.__fields[n].Revert();
-			}
-			
 			for(var m = 0; m < fieldCount; ++m) {
 				
 				this.__fields[m].Reset();
@@ -629,6 +647,26 @@ var Qetesh = {
 			}
 		},
 		
+		Update : function (deep = true) {
+			
+			var fieldCount = this.__fields.length;
+			
+			for(var m = 0; m < fieldCount; ++m) {
+				
+				this.__fields[m].Update();
+			}
+			
+			if (deep) {
+				
+				var childLen = this.__children.lenth;
+				
+				for(var i = 0; i < childLen; ++i) {
+					
+					this.__children[i].Update(true);
+				}
+			}
+		},
+		
 		Element : function (selector) {
 			
 			var len = this.__elements.length;
@@ -639,8 +677,11 @@ var Qetesh = {
 				var elem = this.__elements[i];
 				
 				var subelem = elem.querySelector(selector);
-				subelem.__qdata = null;
+				
+				if (subelem == null) return null;
+				
 				subobj.addElement(subelem);
+				subelem._qElement = subobj;
 				
 			}
 			
@@ -673,14 +714,31 @@ var Qetesh = {
 			
 		},
 		
+		Show : function() {
+			
+			this.FieldElement.style.visibility = "visible";
+		},
+		
+		Hide : function() {
+			
+			this.FieldElement.style.display = "hidden";
+		},
+		
 		Reset : function() {
 			
+			this.QElem.__bindDataState[this.FieldName] = this.QElem.__bindData[this.FieldName];
+			this.Update();
+		},
+		
+		Update : function() {
+			
 			if (this.Type == "input") {
-				this.FieldElement.value = this.ObjElem.__qdata[this.FieldName];
+				this.FieldElement.value = this.QElem.__bindDataState[this.FieldName];
+				
 			}
 			else {
 				
-				content = this.FieldElement.nodeValue.replace(this.ReplaceTag, this.ObjElem.__qdata[this.FieldName]);
+				content = this.FieldElement.nodeValue.replace(this.ReplaceTag, this.QElem.__bindDataState[this.FieldName]);
 					
 				this.FieldElement.nodeValue = content;
 			}
@@ -701,6 +759,7 @@ var Qetesh = {
 		
 		Id : 0,
 		PKeyName : "Id",
+		__fromMethod : null,
 		
 		Obj : function() {
 		
@@ -714,10 +773,18 @@ var Qetesh = {
 			
 		},
 		
-		__callServerFunc : function (name, args) {
+		Reload : function () {
 			
-			
-		}
+			if (this.boundQElement != null) {
+				
+				var _this = this;
+				
+				this.Load(function() {
+					
+					_this.boundQElement.Update();
+				});
+			}
+		},
 	
 	},
 };
