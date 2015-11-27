@@ -378,11 +378,13 @@ var Qetesh = {
 		
 		__elements : [],
 		__dataBound : false,
-		__qdata : {},
-		__qdatastate : {},
+		
+		__bindData : null,
 		__repeaterTemplate : null,
 		__repeaterContainer : null,
 		__parent : null,
+		__children : [],
+		__fields : [],
 		
 		addElement : function(elem) {
 			
@@ -400,9 +402,19 @@ var Qetesh = {
 		Init : function () {
 			
 			this.__elements = [];
+			this.__children = [];
+			this.__fields = [];
 		},
 		
 		Click : function (callback) {
+			
+			// Repeaters etc. - re-call on children
+			var childCount = this.__children.length;
+			
+			for (var w = 0; w < childCount; ++w) {
+				
+				this.__children[w].Click(callback);
+			}
 			
 			var len = this.__elements.length;
 			
@@ -440,6 +452,7 @@ var Qetesh = {
 			
 			var len = this.__elements.length;
 			this.__dataBound = true;
+			this.__bindData = data;
 			
 			// Single objects
 			if (!(data instanceof Array)) {
@@ -462,7 +475,6 @@ var Qetesh = {
 			// Already-expanded repeaters
 			if (this.__repeaterTemplate != null) {
 				
-				this.__elements = [];
 				elem = this.__repeaterTemplate;
 				container = this.__repeaterContainer;
 			}
@@ -472,7 +484,6 @@ var Qetesh = {
 				
 				elem = this.__elements[0];
 				container = elem.parentNode;
-				this.__elements.splice(0, 1);
 			}
 				
 			var datalen = data.length;
@@ -484,12 +495,19 @@ var Qetesh = {
 				
 				// Deep clone inc. subelements
 				var e = elem.cloneNode(true);
-				
-				item = (transform == null) ? item : transform(item);
-				e = this.__bindItem(item, e);
-				
 				container.appendChild(e);
-				this.addElement(e);
+				
+				var subobj = Qetesh.HTMLElement.Obj();
+				subobj.addElement(e);
+				
+				e.__qdata = null;
+				e.__qdatastate = null;
+				
+				subobj.__parent = this;
+				this.__children.push(subobj);
+				
+				subobj.Bind(item, transform);
+				
 			}
 			
 			// Remove template item
@@ -505,22 +523,53 @@ var Qetesh = {
 		
 		__bindItem : function(data, elem) {
 			
-			var content = elem.innerHTML;
-			
 			for (var propName in data) {
 				
 				if( data.hasOwnProperty(propName) ) {
 					
+					var tag;
 					var propVal = data[propName];
-					var tag = "{" + propName + "}";
 					
+					// Is it a field value
+					var attr = "value=\"{" + propName + "}\""
+					tag = elem.querySelector("input[" + attr + "]");
 					
+					if(tag != null) {
+						
+						var fld = Qetesh.BindField.Obj();
+						
+						fld.FieldElement = tag;
+						fld.FieldName = propName;
+						fld.QElem = this;
+						fld.ObjElem = elem;
+						fld.Type = "input";
+						fld.ReplaceTag = "{" + propName + "}";
+						
+						this.__fields.push(fld);
+					}
 					
-					content = content.replace(tag, propVal);
+					else {
+						
+						var tag = this._findTag("{" + propName + "}", elem);
+						
+						if(tag != null) {
+						
+							var fld = Qetesh.BindField.Obj();
+							
+							fld.FieldElement = tag;
+							fld.FieldName = propName;
+							fld.QElem = this;
+							fld.ObjElem = elem;
+							fld.Type = "text";
+							fld.Template = tag.nodeValue;
+							fld.ReplaceTag = "{" + propName + "}";
+							
+							this.__fields.push(fld);
+													
+						}
+					}
 				}
 			}
-			
-			elem.innerHTML = content;
 			
 			// Link data and element
 			elem.__qdata = data;
@@ -528,12 +577,46 @@ var Qetesh = {
 			data.boundElement = elem;
 			data.boundQElement = this;
 			
+			this.Reset();
+			
 			return elem;
+		},
+		
+		_findTag : function (tagName, elem) {
+			
+			if(elem.nodeValue == null) {
+				
+				var cLen = elem.childNodes.length;
+				
+				for(var u = 0; u < cLen; ++u) {
+					
+					var rtn = this._findTag(tagName, elem.childNodes[u]);
+					if(rtn != null) return rtn;
+				}
+			}
+			
+			else if(elem.nodeValue.indexOf(tagName) > -1) {
+				
+				return elem;
+			}
+			
+			return null;
 		},
 		
 		Reset : function (deep = true) {
 			
+			var fieldCount = this.__fields.length;
 			
+			// Clear run
+			for(var n = 0; n < fieldCount; ++n) {
+				
+				this.__fields[n].Revert();
+			}
+			
+			for(var m = 0; m < fieldCount; ++m) {
+				
+				this.__fields[m].Reset();
+			}
 			
 			if (deep) {
 				
@@ -562,8 +645,55 @@ var Qetesh = {
 			}
 			
 			subobj.__parent = this;
+			this.__children.push(subobj);
 			
 			return subobj;
+		}
+	},
+	
+	BindField : {
+								
+		FieldElement : null,
+		FieldName : "",
+		QElem : null,
+		ObjElem : null,
+		Type : "",
+		Template : "",
+		ReplaceTag : "",
+		
+		Obj : function() {
+		
+			var obj = Object.create(this);
+			obj.Init();
+				
+			return obj;
+		}, 
+		
+		Init : function () {
+			
+		},
+		
+		Reset : function() {
+			
+			if (this.Type == "input") {
+				this.FieldElement.value = this.ObjElem.__qdata[this.FieldName];
+			}
+			else {
+				
+				content = this.FieldElement.nodeValue.replace(this.ReplaceTag, this.ObjElem.__qdata[this.FieldName]);
+					
+				this.FieldElement.nodeValue = content;
+			}
+		},
+		
+		Clear : function() {
+			
+			this.FieldElement.nodeValue = "";
+		},
+		
+		Revert : function() {
+			
+			this.FieldName.nodeValue = this.Template;
 		}
 	},
 	
