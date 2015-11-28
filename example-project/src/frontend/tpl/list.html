@@ -1,14 +1,19 @@
-<table id="invoice-list">
-	<tr>
-		<th>#</th>
-		<th>Date</th>
-		<th>Customer Name</th>
-		<th>Total</th>
-	</tr>
-	<tr class="invoice-list-item">
-		<td>{Id}</td>
-		<td>{Issued}</td>
-		<td>{Forename} {Surname}</td>
-		<td>{Total}</td>
-	</tr>
-</table>
+<div id="invoice-list-wrap">
+	<table id="invoice-list">
+		<tr>
+			<th>#</th>
+			<th>Date</th>
+			<th>Customer Name</th>
+			<th>Total</th>
+		</tr>
+		<tr class="invoice-list-item">
+			<td class="{Id}"></td>
+			<td class="{Issued}"></td>
+			<td><span class="{Forename}"></span> <span class="{Surname}"></span></td>
+			<td class="{Total}"></td>
+		</tr>
+	</table>
+
+	<button type="button" class="btn_large" id="invoice-list-new">New Invoice</button>
+	<button type="button" class="btn_large" id="invoice-list-reload">Reload All</button>
+</div>

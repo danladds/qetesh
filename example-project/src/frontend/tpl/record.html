@@ -3,17 +3,22 @@
 	<label for="forename">Customer Forename</label>
 	<input type="text" id="forename" name="forename" value="{Forename}" />
 
-	<label for="forename">Customer Surname</label>
+	<label for="surname">Customer Surname</label>
 	<input type="text" id="surname" name="surname" value="{Surname}" />
+	
+	<label for="issued">Date Issued</label>
+	<input type="text" id="issued" name="issued" value="{Issued}" />
 
 	<table id="invoice-item">
 		<tr>
 			<th>Item</th>
 			<th>Price</th>
+			<th></th>
 		</tr>
 		<tr class="invoiceitem-list-item">
 			<td><input type="text" class="invoiceitem-name" value="{Description}" /></td>
 			<td><input type="text" class="invoiceitem-price" value="{Price}" /></td>
+			<td class="invoiceitem-list-item-action"></td>
 		</tr>
 	</table>
 	
@@ -24,5 +29,6 @@
 	<button type="button" class="btn_large" id="invoice-commit">Commit</button>
 	<button type="button" class="btn_large" id="invoice-reset">Reset</button>
 	<button type="button" class="btn_large" id="invoice-reload">Reload</button>
+	<button type="button" class="btn_large" id="invoice-delete">Delete</button>
 	<button type="button" class="btn_large" id="invoice-return">Return to list</button>
 </div>

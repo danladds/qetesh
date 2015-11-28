@@ -320,6 +320,10 @@ var Qetesh = {
 		
 		Show : function() {
 			
+			if (this.paneElem != null) {
+				this.paneElem.Reset();
+			}
+			
 			this.container.style.display = "block";
 		},
 		
@@ -387,7 +391,6 @@ var Qetesh = {
 		__parent : null,
 		__children : [],
 		__fields : [],
-		__dataTransform : function (data) { return data; },
 		
 		addElement : function(elem) {
 			
@@ -429,7 +432,7 @@ var Qetesh = {
 					
 					elem.onclick = function() {
 					
-						cb(_this._getQDataState());
+						cb(_this._getQData());
 					
 					};
 				})(e, callback, this, i);
@@ -450,8 +453,22 @@ var Qetesh = {
 			
 			return null;
 		},
+		
+		_getQData : function() {
+			
+			if (this.__dataBound) {
+				
+				return this.__bindData;
+			}
+			else if (this.__parent != null) {
+				
+				return this.__parent._getQData();
+			}
+			
+			return null;
+		},
 	
-		Bind : function (data, transform) {
+		Bind : function (data) {
 			
 			var len = this.__elements.length;
 			this.__dataBound = true;
@@ -469,8 +486,6 @@ var Qetesh = {
 				this.__bindDataState.push(data);
 			}
 			
-			this.__dataTransform = transform;
-			
 			// Single objects
 			if (!(data instanceof Array) && !(this.__bindData instanceof Array)) {
 				
@@ -478,8 +493,7 @@ var Qetesh = {
 				for (var i = 0; i < len; ++i) {
 					
 					var elem = this.__elements[i];
-					var realData = (transform == null) ? data : this.__dataTransform(data);
-					elem = this.__bindItem(realData, elem);
+					elem = this.__bindItem(data, elem);
 					
 				}
 				
@@ -515,7 +529,7 @@ var Qetesh = {
 				subobj.__parent = this;
 				this.__children.push(subobj);
 				
-				subobj.Bind(data, transform);
+				subobj.Bind(data);
 			}
 				
 			var datalen = data.length;
@@ -535,7 +549,7 @@ var Qetesh = {
 				subobj.__parent = this;
 				this.__children.push(subobj);
 				
-				subobj.Bind(item, transform);
+				subobj.Bind(item);
 				
 			}
 			
@@ -578,7 +592,7 @@ var Qetesh = {
 					var propVal = data[propName];
 					
 					// Is it a field value
-					var attr = "value=\"{" + propName + "}\""
+					var attr = "value=\"{" + propName + "}\"";
 					tag = elem.querySelector("input[" + attr + "]");
 					
 					if(tag != null) {
@@ -590,7 +604,6 @@ var Qetesh = {
 						fld.QElem = this;
 						fld.ObjElem = elem;
 						fld.Type = "input";
-						fld.ReplaceTag = "{" + propName + "}";
 						
 						tag.__qBindField = fld;
 						
@@ -607,7 +620,7 @@ var Qetesh = {
 					
 					else {
 						
-						var tag = this._findTag("{" + propName + "}", elem);
+						tag = this._findTag("{" + propName + "}", elem);
 						
 						if(tag != null) {
 						
@@ -618,8 +631,6 @@ var Qetesh = {
 							fld.QElem = this;
 							fld.ObjElem = elem;
 							fld.Type = "text";
-							fld.Template = tag.nodeValue;
-							fld.ReplaceTag = "{" + propName + "}";
 							
 							this.__fields.push(fld);
 						}
@@ -637,7 +648,12 @@ var Qetesh = {
 		
 		_findTag : function (tagName, elem) {
 			
-			if(elem.nodeValue == null) {
+			if(elem.className != null && elem.className.indexOf(tagName) > -1) {
+				
+				return elem;
+			}
+			
+			if(elem.childNodes != null && elem.childNodes.length > 0) {
 				
 				var cLen = elem.childNodes.length;
 				
@@ -647,13 +663,33 @@ var Qetesh = {
 					if(rtn != null) return rtn;
 				}
 			}
-			
-			else if(elem.nodeValue.indexOf(tagName) > -1) {
-				
-				return elem;
-			}
+
 			
 			return null;
+		},
+		
+		Transform : function(propName, inTransform, outTransform, deep = true) {
+			
+			var fieldCount = this.__fields.length;
+			
+			for(var m = 0; m < fieldCount; ++m) {
+				
+				if(this.__fields[m].FieldName == propName) {
+					
+					this.__fields[m].Transform(inTransform, outTransform);
+					this.Update(false);
+				}
+			}
+			
+			if (deep) {
+				
+				var childLen = this.__children.length;
+				
+				for(var i = 0; i < childLen; ++i) {
+					
+					this.__children[i].Transform(propName, inTransform, outTransform);
+				}
+			}
 		},
 		
 		Reset : function (deep = true) {
@@ -667,7 +703,7 @@ var Qetesh = {
 			
 			if (deep) {
 				
-				var childLen = this.__children.lenth;
+				var childLen = this.__children.length;
 				
 				for(var i = 0; i < childLen; ++i) {
 					
@@ -687,7 +723,7 @@ var Qetesh = {
 			
 			if (deep) {
 				
-				var childLen = this.__children.lenth;
+				var childLen = this.__children.length;
 				
 				for(var i = 0; i < childLen; ++i) {
 					
@@ -707,7 +743,7 @@ var Qetesh = {
 			
 			if (deep) {
 				
-				var childLen = this.__children.lenth;
+				var childLen = this.__children.length;
 				
 				for(var i = 0; i < childLen; ++i) {
 					
@@ -748,8 +784,9 @@ var Qetesh = {
 		QElem : null,
 		ObjElem : null,
 		Type : "",
-		Template : "",
-		ReplaceTag : "",
+		Tainted : false,
+		__outTransform : function (propertyValue) { return propertyValue; },
+		__inTransform : function (propertyValue) { return propertyValue; },
 		
 		Obj : function() {
 		
@@ -761,6 +798,12 @@ var Qetesh = {
 		
 		Init : function () {
 			
+		},
+		
+		Transform : function (outTransform, inTransform) {
+			
+			if (outTransform != null) this.__outTransform = outTransform;
+			if (inTransform != null) this.__inTransform = inTransform;
 		},
 		
 		Show : function() {
@@ -781,33 +824,50 @@ var Qetesh = {
 		
 		Update : function() {
 			
+			var val = this.__outTransform(this.QElem.__bindDataState[this.FieldName]);
+			
 			if (this.Type == "input") {
-				this.FieldElement.value = this.QElem.__bindDataState[this.FieldName];
+				this.FieldElement.value = val;
 				
 			}
 			else {
 				
-				content = this.FieldElement.nodeValue.replace(this.ReplaceTag, this.QElem.__bindDataState[this.FieldName]);
-					
-				this.FieldElement.nodeValue = content;
+				this.FieldElement.textContent = val;
+			}
+			
+			this.UpdateTaint();
+		},
+		
+		UpdateTaint : function() {
+			
+			if(this.QElem.__bindDataState[this.FieldName] != this.QElem.__bindData[this.FieldName]) {
+				this.Taint = true;
+				this.FieldElement.className += " q-taint";
+			}
+			else if (this.FieldElement.className != null) {
+				this.Taint = false;
+				this.FieldElement.className = this.FieldElement.className.replace(/q-taint/g, "");
 			}
 		},
 		
 		UpdateState : function() {
 			
 			if (this.Type == "input") {
-				 this.QElem.__bindDataState[this.FieldName] = this.FieldElement.value;
 				
+				this.QElem.__bindDataState[this.FieldName] = this.__inTransform(this.FieldElement.value);
+				this.UpdateTaint();
 			}
 			else {
 				
-				// What? It's not a form field!
+				// What? It's not a form field! Why are we here?
 			}
 		},
 		
 		Commit : function() {
 			
 			this.QElem.__bindData[this.FieldName] = this.QElem.__bindDataState[this.FieldName];
+			
+			this.UpdateTaint();
 		},
 		
 		Clear : function() {
