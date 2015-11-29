@@ -41,6 +41,8 @@ namespace Qetesh {
 			public void Create ();
 			public Qetesh.Data.DataObject CreateObject (Gee.TreeMap<string?,string?> datum);
 			public void Delete ();
+			public void FromNode (Qetesh.Data.DataObject.DataNode data);
+			public void FromRequest (Qetesh.HTTPRequest req);
 			public abstract void Init ();
 			public void LazyLink (string localProp, string remoteProp = "");
 			protected Gee.LinkedList<Qetesh.Data.DataObject> LazyLoadList (string propertyName, GLib.Type fType);
@@ -50,9 +52,8 @@ namespace Qetesh {
 			public Gee.LinkedList<Qetesh.Data.DataObject> MapObjectList (Gee.LinkedList<Gee.TreeMap<string?,string?>> rows);
 			protected virtual string NameTransform (string fieldName);
 			public Qetesh.Data.DataObject.DataNode ToNode (Qetesh.Data.DataObject.DataNodeTransform transform);
-			public Gee.LinkedList<TImp> Children { get; }
+			public void Update ();
 			public string PKeyName { get; protected set; }
-			public Gee.LinkedList<TImp> Parents { get; }
 			protected string QueryTarget { get; private set; }
 			protected string TableName { get; set; }
 		}
@@ -216,7 +217,6 @@ namespace Qetesh {
 		public void Route (Qetesh.WebAppContext cxt, Qetesh.HTTPResponse resp);
 		public Qetesh.WebAppContext AppContext { get; private set; }
 		public Qetesh.Data.DataManager Data { get; private set; }
-		public Qetesh.Data.DataObject.DataNode DataTree { get; private set; }
 		public string FullPath { get; private set; }
 		public Qetesh.HTTPResponse HResponse { get; private set; }
 		public Gee.Map<string,string> Headers { get; private set; }
@@ -224,6 +224,7 @@ namespace Qetesh {
 		public Qetesh.HTTPRequest.RequestMethod Method { get; private set; }
 		public string Path { get; private set; }
 		public Gee.LinkedList<string> PathArgs { get; private set; }
+		public Qetesh.RequestDataParser RequestData { get; private set; }
 		public uint16 RequestPort { get; private set; }
 		public Qetesh.WebServerContext ServerContext { get; private set; }
 		public uint16 ServerRequestPort { get; set; }
@@ -244,6 +245,10 @@ namespace Qetesh {
 		public Gee.LinkedList<string> Messages { get; private set; }
 		public int ResponseCode { get; set; }
 		public string ResponseMessage { get; set; }
+	}
+	[CCode (cheader_filename = "libqetesh.h")]
+	public class JSONReqestDataParser : GLib.Object, Qetesh.RequestDataParser {
+		public JSONReqestDataParser ();
 	}
 	[CCode (cheader_filename = "libqetesh.h")]
 	public class JSONResponse : Qetesh.HTTPResponse {
@@ -354,5 +359,10 @@ namespace Qetesh {
 	[CCode (cheader_filename = "libqetesh.h")]
 	public interface QPlugin : GLib.Object {
 		public abstract Qetesh.QWebApp GetModObject (Qetesh.WebAppContext ctx);
+	}
+	[CCode (cheader_filename = "libqetesh.h")]
+	public interface RequestDataParser : GLib.Object {
+		public abstract void Parse (string inData);
+		public abstract Qetesh.Data.DataObject.DataNode DataTree { get; protected set; }
 	}
 }

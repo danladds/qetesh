@@ -25,11 +25,11 @@ using Qetesh.Data;
 
 namespace Qetesh {
 
-	public class JSONReqestDataParser : RequestDataParser {
+	public class JSONReqestDataParser : GLib.Object, RequestDataParser {
 		
-		public Data.DataObject.DataNode DataTree { get; private set; }
+		public Data.DataObject.DataNode DataTree { get; protected set; }
 		
-		// Space skipping index
+		// Space skipping, one-way, one-pass index
 		private int index {
 			get {
 				
@@ -37,11 +37,12 @@ namespace Qetesh {
 					
 					return -1;
 				}
+				else if (_index == -1) return -1;
 				else if(
 					data[_index] == ' ' ||
 					data[_index] == '\n' ||
 					data[_index] == '\r' ||
-					data[_index] == "\t"
+					data[_index] == '\t'
 				){
 					index++;
 					return index;
@@ -51,12 +52,12 @@ namespace Qetesh {
 			}
 			
 			set {
-				_index = val;
+				_index = value;
 			}
 		}
 		
 		private int _index;
-		private data;
+		private string data;
 		
 		public void Parse(string inData) {
 			
@@ -64,46 +65,50 @@ namespace Qetesh {
 			//   {"Id":"1","Surname":"Smithsons"}
 			
 			DataTree = new DataObject.DataNode();
+			DataTree.IsArray = true;
 			
 			index = 0;
 			data = inData;
-			
-			while(index > -1)
-				ParseValue(DataTree);
+
+			ParseArrayItem(DataTree);
 		}
 		
-		private void ParseValue(DataObject.DataNode node) {
+		private void ParseValue(DataObject.DataNode node, string name) {
 			
 			if(index < 0) return;
 			
 			if (data[index] == '{') {
 				index++;
-				ParseObject(node);
+				ParseObject(node, name);
 			}
 			else if (data[index] == '[') {
 				index++;
 				node.IsArray = true;
-				ParseArray(node);
+				ParseArray(node, name);
 			}
 			else if (data[index] == '"') {
 				index++;
-				ParseString(node);
+				ParseString(node, name);
 			}
 			else {
 				// Ignore it
-				index++:
+				index++;
 			}
 			
 		}
 		
-		private void ParseString (DataObject.DataNode node) {
+		private void ParseString (DataObject.DataNode node, string name) {
 			
 			if(index < 0) return;
 			
-			var close = data.index_of("\"", ++index);
-				node.Val = data.slice(index, close);
+			var strNode = new DataObject.DataNode(name);
+			
+			var close = data.index_of("\"", index);
+				strNode.Val = data.slice(index, close);
 				index = close;
 				++index;
+				
+			node.Children.add(strNode);
 		}
 		
 		private void ParseAttribute (DataObject.DataNode node) {
@@ -113,13 +118,13 @@ namespace Qetesh {
 			if(data[index] == '"') {
 				
 				var close = data.index_of("\"", ++index);
-				node.Name = data.slice(index, close);
+				var name = data.slice(index, close);
 				index = close;
 				++index;
 				
 				if (data[index] == ':') {
 					index++;
-					ParseValue(node);
+					ParseValue(node, name);
 				}
 				else {
 					index++;
@@ -131,22 +136,21 @@ namespace Qetesh {
 			
 		}
 		
-		private void ParseArray (DataObject.DataNode node) {
+		private void ParseArray (DataObject.DataNode node, string name) {
 			
-			if(index < 0) return
+			if(index < 0) return;
 			
-			var arrNode = new DataObject.DataNode();
+			var arrNode = new DataObject.DataNode(name);
 			node.Children.add(arrNode);
 			
-			index++;
 			ParseArrayItem(node);
 		}
 		
 		private void ParseArrayItem (DataObject.DataNode node) {
 			
-			ParseValue(node);
+			ParseValue(node, "(Array Item)");
 			
-			if(data[index] == ',';
+			if(data[index] == ',')
 				ParseArrayItem(node);
 			else if(data[index] == ']') {
 				
@@ -158,13 +162,12 @@ namespace Qetesh {
 		}
 		
 		
-		private void ParseObject (DataObject.DataNode node) {
+		private void ParseObject (DataObject.DataNode node, string name) {
 			
 			if(index < 0) return;
-			var objNode = new DataObject.DataNode();
+			var objNode = new DataObject.DataNode(name);
 			node.Children.add(objNode);
 			
-			index++;
 			ParseObjectItem(objNode);
 			
 		}
@@ -173,8 +176,10 @@ namespace Qetesh {
 			
 			ParseAttribute(node);
 			
-			if(data[index] == ',';
-				ParseArrayItem(node);
+			if(data[index] == ',') {
+				index++;
+				ParseObjectItem(node);
+			}
 			else if(data[index] == '}') {
 				
 				index++;

@@ -76,29 +76,33 @@ namespace Qetesh.Data {
 			
 			Result res = db.use_result();
 			
-			var fieldList = new Gee.LinkedList<string>();
+			if(res != null) {
 			
-			foreach (var fld in res.fetch_fields()) {
+				var fieldList = new Gee.LinkedList<string>();
 				
-				fieldList.add(fld.name);
-			}
-			
-			while (true) {
-				
-				var row = res.fetch_row();
-				if (row == null) break;
-				
-				var hash = new Gee.TreeMap<string?, string?>();
-				
-				for (int x = 0; x < fieldList.size; ++x) {
+				foreach (var fld in res.fetch_fields()) {
 					
-					hash.set(fieldList[x], row[x]);
+					fieldList.add(fld.name);
 				}
 				
-				result.add(hash);
+				while (true) {
+					
+					var row = res.fetch_row();
+					if (row == null) break;
+					
+					var hash = new Gee.TreeMap<string?, string?>();
+					
+					for (int x = 0; x < fieldList.size; ++x) {
+						
+						hash.set(fieldList[x], row[x]);
+					}
+					
+					result.add(hash);
+				}
 			}
 			
 			return result;
+			
 		}
 	}
 }

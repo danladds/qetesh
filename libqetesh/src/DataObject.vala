@@ -113,6 +113,8 @@ namespace Qetesh.Data {
 			ClassParents = new Gee.LinkedList<InheritInfo>();
 			Links = new Gee.LinkedList<LinkInfo>();
 			
+			TaintedProperties = new Gee.LinkedList<string>();
+			
 			Init();
 		}
 
@@ -375,14 +377,39 @@ namespace Qetesh.Data {
 		public void Update() {
 			
 			var sql = new StringBuilder("UPDATE `%s` SET ".printf(
-				this.QueryTarget
+				TableName
 			));
 			
-			sql.append("WHERE `%s`.`%s` = %s".printf(
-				this.QueryTarget,
-				this.PKeyName,
-				this.getPKeyStr()
+			var fieldUpdates = new Gee.LinkedList<string>();
+			
+			foreach(var prop in TaintedProperties) {
+				
+				fieldUpdates.add("`%s`.`%s` = \"%s\"".printf(
+					TableName, prop, getPropStr(prop)
+				));
+			}
+			
+			var fu = fieldUpdates.to_array();
+			
+			if(fu != null) {
+			
+				sql.append(string.joinv(", ", fu));
+			
+			}
+			else {
+				
+				sql.append(" `%s`.`%s` = `%s`.`%s`".printf(
+					TableName, PKeyName, TableName, PKeyName
+				));
+			}
+			
+			sql.append(" WHERE `%s`.`%s` = %s".printf(
+				TableName,
+				PKeyName,
+				getPKeyStr()
 			));
+			
+			db.Q(sql.str);
 		}
 		
 		public Gee.LinkedList<DataObject> MapObjectList(Gee.LinkedList<Gee.TreeMap<string?, string?>> rows) {
@@ -492,9 +519,18 @@ namespace Qetesh.Data {
 			
 			var classObj = (ObjectClass) this.get_type().class_ref();
 			
-			foreach(var child in data.Children) {
-				
-				setPropStr(child.Name, child.Val);
+			if (data.Children.size > 0) {
+			
+				foreach(var child in data.Children[0].Children) {
+					
+					if(
+						child.Name != null && child.Name != "" &
+						child.Val != null & child.Val != ""
+					){
+						this.TaintedProperties.add(child.Name);
+						setPropStr(child.Name, child.Val);
+					}
+				}
 			}
 		}
 		

@@ -171,14 +171,26 @@ namespace Qetesh {
 				
 				var obj = (DataObject) Object.new(typ);
 				obj._init(req.Data.GetConnection(dbName));
-				obj.FromRequest(req);
-				obj.Update();
 				
-				req.HResponse.DataTree.Children.add(
-					new DataNode(obj.PKeyName) { 
-						Val = obj.getPropStr(obj.PKeyName)
-					}	
-				);
+				try {
+					
+					obj.FromRequest(req);
+					obj.Update();
+					
+					req.HResponse.DataTree.Children.add(
+						new DataObject.DataNode(obj.PKeyName) { 
+							Val = obj.getPropStr(obj.PKeyName)
+						}	
+					);
+				
+					req.HResponse.DataTree.Children.add(new DataObject.DataNode ("Update") { Val = "OK" });
+				}
+				catch(Error e) {
+					
+					req.HResponse.DataTree.Children.add(new DataObject.DataNode ("Update") { Val = "FAIL" });
+					
+					throw e;
+				}
 				
 			});
 			

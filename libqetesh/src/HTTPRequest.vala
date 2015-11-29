@@ -244,8 +244,12 @@ namespace Qetesh {
 				}
 			}
 			
+			ServerContext.Err.WriteMessage("Parsing request data structure...", ErrorManager.QErrorClass.QETESH_DEBUG);
+			
 			RequestData = new JSONReqestDataParser();
 			RequestData.Parse(requestData);
+			
+			ServerContext.Err.WriteMessage("Done...", ErrorManager.QErrorClass.QETESH_DEBUG);
 		}
 	
 	
@@ -270,8 +274,13 @@ namespace Qetesh {
 		public void Respond() {
 			
 			
-			if (HResponse != null)
+			if (HResponse != null) {
+				
+				// Echo back request tree - cheap debug hack!
+				//HResponse.DataTree.Children.add(RequestData.DataTree);
+				
 				HResponse.Respond(httpOut);
+			}
 				
 			//else
 				/// TODO: write error

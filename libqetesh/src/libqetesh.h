@@ -236,6 +236,14 @@ typedef struct _QeteshHTTPRequestPrivate QeteshHTTPRequestPrivate;
 
 typedef struct _QeteshDataDataManager QeteshDataDataManager;
 typedef struct _QeteshDataDataManagerClass QeteshDataDataManagerClass;
+
+#define QETESH_TYPE_REQUEST_DATA_PARSER (qetesh_request_data_parser_get_type ())
+#define QETESH_REQUEST_DATA_PARSER(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), QETESH_TYPE_REQUEST_DATA_PARSER, QeteshRequestDataParser))
+#define QETESH_IS_REQUEST_DATA_PARSER(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), QETESH_TYPE_REQUEST_DATA_PARSER))
+#define QETESH_REQUEST_DATA_PARSER_GET_INTERFACE(obj) (G_TYPE_INSTANCE_GET_INTERFACE ((obj), QETESH_TYPE_REQUEST_DATA_PARSER, QeteshRequestDataParserIface))
+
+typedef struct _QeteshRequestDataParser QeteshRequestDataParser;
+typedef struct _QeteshRequestDataParserIface QeteshRequestDataParserIface;
 typedef struct _QeteshDataDataObjectPrivate QeteshDataDataObjectPrivate;
 
 #define QETESH_DATA_TYPE_QDATABASE_CONN (qetesh_data_qdatabase_conn_get_type ())
@@ -398,6 +406,17 @@ typedef struct _QeteshQManifestPrivate QeteshQManifestPrivate;
 typedef struct _QeteshQDateTime QeteshQDateTime;
 typedef struct _QeteshQDateTimeClass QeteshQDateTimeClass;
 typedef struct _QeteshQDateTimePrivate QeteshQDateTimePrivate;
+
+#define QETESH_TYPE_JSON_REQEST_DATA_PARSER (qetesh_json_reqest_data_parser_get_type ())
+#define QETESH_JSON_REQEST_DATA_PARSER(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), QETESH_TYPE_JSON_REQEST_DATA_PARSER, QeteshJSONReqestDataParser))
+#define QETESH_JSON_REQEST_DATA_PARSER_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), QETESH_TYPE_JSON_REQEST_DATA_PARSER, QeteshJSONReqestDataParserClass))
+#define QETESH_IS_JSON_REQEST_DATA_PARSER(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), QETESH_TYPE_JSON_REQEST_DATA_PARSER))
+#define QETESH_IS_JSON_REQEST_DATA_PARSER_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), QETESH_TYPE_JSON_REQEST_DATA_PARSER))
+#define QETESH_JSON_REQEST_DATA_PARSER_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), QETESH_TYPE_JSON_REQEST_DATA_PARSER, QeteshJSONReqestDataParserClass))
+
+typedef struct _QeteshJSONReqestDataParser QeteshJSONReqestDataParser;
+typedef struct _QeteshJSONReqestDataParserClass QeteshJSONReqestDataParserClass;
+typedef struct _QeteshJSONReqestDataParserPrivate QeteshJSONReqestDataParserPrivate;
 
 struct _QeteshWebserverlibqetesh {
 	GTypeInstance parent_instance;
@@ -591,6 +610,13 @@ typedef enum  {
 	QETESH_HTTP_REQUEST_REQUEST_METHOD_HEAD,
 	QETESH_HTTP_REQUEST_REQUEST_METHOD_INVALID
 } QeteshHTTPRequestRequestMethod;
+
+struct _QeteshRequestDataParserIface {
+	GTypeInterface parent_iface;
+	void (*Parse) (QeteshRequestDataParser* self, const gchar* inData);
+	QeteshDataDataObjectDataNode* (*get_DataTree) (QeteshRequestDataParser* self);
+	void (*set_DataTree) (QeteshRequestDataParser* self, QeteshDataDataObjectDataNode* value);
+};
 
 struct _QeteshDataDataObject {
 	GObject parent_instance;
@@ -815,6 +841,15 @@ struct _QeteshQDateTimeClass {
 	GObjectClass parent_class;
 };
 
+struct _QeteshJSONReqestDataParser {
+	GObject parent_instance;
+	QeteshJSONReqestDataParserPrivate * priv;
+};
+
+struct _QeteshJSONReqestDataParserClass {
+	GObjectClass parent_class;
+};
+
 
 gpointer qetesh_webserver_libqetesh_ref (gpointer instance);
 void qetesh_webserver_libqetesh_unref (gpointer instance);
@@ -970,7 +1005,8 @@ const gchar* qetesh_http_request_get_UserAgent (QeteshHTTPRequest* self);
 GeeLinkedList* qetesh_http_request_get_PathArgs (QeteshHTTPRequest* self);
 GeeMap* qetesh_http_request_get_Headers (QeteshHTTPRequest* self);
 QeteshHTTPResponse* qetesh_http_request_get_HResponse (QeteshHTTPRequest* self);
-QeteshDataDataObjectDataNode* qetesh_http_request_get_DataTree (QeteshHTTPRequest* self);
+GType qetesh_request_data_parser_get_type (void) G_GNUC_CONST;
+QeteshRequestDataParser* qetesh_http_request_get_RequestData (QeteshHTTPRequest* self);
 gpointer qetesh_data_qdatabase_conn_ref (gpointer instance);
 void qetesh_data_qdatabase_conn_unref (gpointer instance);
 GParamSpec* qetesh_data_param_spec_qdatabase_conn (const gchar* name, const gchar* nick, const gchar* blurb, GType object_type, GParamFlags flags);
@@ -986,19 +1022,20 @@ GQuark qetesh_data_qdb_error_quark (void);
 GeeLinkedList* qetesh_data_data_object_LoadAll (QeteshDataDataObject* self, GError** error);
 GeeLinkedList* qetesh_data_data_object_LazyLoadList (QeteshDataDataObject* self, const gchar* propertyName, GType fType);
 void qetesh_data_data_object_Load (QeteshDataDataObject* self);
+void qetesh_data_data_object_Update (QeteshDataDataObject* self);
 GeeLinkedList* qetesh_data_data_object_MapObjectList (QeteshDataDataObject* self, GeeLinkedList* rows);
 QeteshDataDataObject* qetesh_data_data_object_CreateObject (QeteshDataDataObject* self, GeeTreeMap* datum);
 gchar* qetesh_data_data_object_NameTransform (QeteshDataDataObject* self, const gchar* fieldName);
 void qetesh_data_data_object_MapObject (QeteshDataDataObject* self, GeeTreeMap* datum);
 QeteshDataDataObjectDataNode* qetesh_data_data_object_ToNode (QeteshDataDataObject* self, QeteshDataDataObjectDataNodeTransform transform, void* transform_target);
+void qetesh_data_data_object_FromRequest (QeteshDataDataObject* self, QeteshHTTPRequest* req);
+void qetesh_data_data_object_FromNode (QeteshDataDataObject* self, QeteshDataDataObjectDataNode* data);
 void qetesh_data_data_object_LazyLink (QeteshDataDataObject* self, const gchar* localProp, const gchar* remoteProp);
 const gchar* qetesh_data_data_object_get_TableName (QeteshDataDataObject* self);
 void qetesh_data_data_object_set_TableName (QeteshDataDataObject* self, const gchar* value);
 const gchar* qetesh_data_data_object_get_PKeyName (QeteshDataDataObject* self);
 void qetesh_data_data_object_set_PKeyName (QeteshDataDataObject* self, const gchar* value);
 const gchar* qetesh_data_data_object_get_QueryTarget (QeteshDataDataObject* self);
-GeeLinkedList* qetesh_data_data_object_get_Children (QeteshDataDataObject* self);
-GeeLinkedList* qetesh_data_data_object_get_Parents (QeteshDataDataObject* self);
 GType qetesh_qweb_node_get_type (void) G_GNUC_CONST;
 gpointer qetesh_qweb_node_manifest_object_ref (gpointer instance);
 void qetesh_qweb_node_manifest_object_unref (gpointer instance);
@@ -1148,6 +1185,12 @@ QeteshQDateTime* qetesh_qdate_time_new (void);
 QeteshQDateTime* qetesh_qdate_time_construct (GType object_type);
 void qetesh_qdate_time_fromString (QeteshQDateTime* self, const gchar* inVal);
 gchar* qetesh_qdate_time_toString (QeteshQDateTime* self);
+void qetesh_request_data_parser_Parse (QeteshRequestDataParser* self, const gchar* inData);
+QeteshDataDataObjectDataNode* qetesh_request_data_parser_get_DataTree (QeteshRequestDataParser* self);
+void qetesh_request_data_parser_set_DataTree (QeteshRequestDataParser* self, QeteshDataDataObjectDataNode* value);
+GType qetesh_json_reqest_data_parser_get_type (void) G_GNUC_CONST;
+QeteshJSONReqestDataParser* qetesh_json_reqest_data_parser_new (void);
+QeteshJSONReqestDataParser* qetesh_json_reqest_data_parser_construct (GType object_type);
 
 
 G_END_DECLS

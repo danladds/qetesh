@@ -35,6 +35,18 @@ var Qetesh = {
 		ServerUri : "/qwf",
 		ManifestUri: "/manifest"
 	},
+	
+	__connectionErrors :  {
+	
+		timeout : function () {
+		
+			alert("Unable to reach data server");
+		},
+		
+		badResponse : function (code) {
+			alert("Bad response from data server: " + code);
+		}
+	},
 
 	Init : function () {
 		
@@ -55,9 +67,16 @@ var Qetesh = {
 					
 					q.__callReady();
 				}
+				else if (xh.readyState == 4) {
+					
+					q.__connectionErrors.badResponse(xh.status);
+				}
 				
 				// Todo: error handling and other fun evening activities
 			};
+			
+			xh.ontimeout = q.__connectionErrors.timeout;
+			xh.timeout = 3000;
 				
 			xh.open("GET", q.QConf.ServerUri + q.QConf.ManifestUri, true);
 			xh.send();

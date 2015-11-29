@@ -25,13 +25,10 @@ using Qetesh.Data;
 
 namespace Qetesh {
 		
-	public interface RequestDataParser {
+	public interface RequestDataParser : GLib.Object {
 		
-		public abstract Data.DataObject.DataNode DataTree { get; private set; }
+		public abstract Data.DataObject.DataNode DataTree { get; protected set; }
 		
-		public abstract void Parse(string inData) {
-			
-			
-		}
+		public abstract void Parse(string inData);
 	}
 }
