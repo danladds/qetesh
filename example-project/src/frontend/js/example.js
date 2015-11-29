@@ -94,6 +94,11 @@ $_qetesh.Ready(function(q) {
 			invoice.Reload();
 		});
 		
+		invoiceForm.Element('#invoice-save').Click(function(invoice) {
+			
+			invoice.Update();
+		});
+		
 		/* - No need to load individually, as we already have it!
 		 * Need to demo Load() somewhere else though...
 		invoice.Load(function () {

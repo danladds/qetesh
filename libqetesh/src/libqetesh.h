@@ -826,6 +826,7 @@ GType qetesh_webserver_libqetesh_get_type (void) G_GNUC_CONST;
 QeteshWebserverlibqetesh* qetesh_webserver_libqetesh_new (void);
 QeteshWebserverlibqetesh* qetesh_webserver_libqetesh_construct (GType object_type);
 GType qetesh_http_response_get_type (void) G_GNUC_CONST;
+#define QETESH_HTTP_RESPONSE_DEFAULT_RM "OK"
 #define QETESH_HTTP_RESPONSE_DEFAULT_CODE 200
 #define QETESH_HTTP_RESPONSE_DEFAULT_CT "text/html"
 GType qetesh_web_app_context_get_type (void) G_GNUC_CONST;

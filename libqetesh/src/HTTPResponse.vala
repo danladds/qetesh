@@ -34,6 +34,7 @@ namespace Qetesh {
 		public string ContentType { get; set; }
 		public StringBuilder Content;
 		
+		public const string DEFAULT_RM = "OK";
 		public const int DEFAULT_CODE = 200;
 		public const string DEFAULT_CT = "text/html";
 		
@@ -46,6 +47,7 @@ namespace Qetesh {
 			
 			ResponseCode = DEFAULT_CODE;
 			ContentType = DEFAULT_CT;
+			ResponseMessage = DEFAULT_RM;
 			Content = new StringBuilder();
 			Context = ctx;
 			

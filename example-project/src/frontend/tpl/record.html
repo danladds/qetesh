@@ -31,4 +31,16 @@
 	<button type="button" class="btn_large" id="invoice-reload">Reload</button>
 	<button type="button" class="btn_large" id="invoice-delete">Delete</button>
 	<button type="button" class="btn_large" id="invoice-return">Return to list</button>
+	
+	<div class="notes">
+		<p>This view features a single item from the previous list bound to a single tag in the template. Sub-items are then loaded and bound to a repeater table.</p>
+		
+		<p>When data is bound to a tag, the data passed is referenced, so if the data is also part of a collection, like the invoices from the main list, when the individual object is changed, the object in the list is also changed.</p>
+		
+		<p>Qetesh uses a staging system where a copy is made of the data. Changes are instantly reflected in that copy when bound form fields are changed. The <strong>Commit()</strong> method pushes data from the staging copy to the underlying DataObject, which other views and your code interact with primarily.</p>
+		
+		<p>Operations like <strong>DataObject.Update()</strong>  use the underlying DataObject rather than the staging copy. In most situations you will want to commit and then update, sending the data to the server. However, in this demo, the functions are separate, meaning that changes entered into the form are not saved when Save is clicked unless Commit is clicked first. Changes will, however, be reflected in the current session after committing, even without saving.</p>
+		
+		<p>Reload restores both sets of data from the server.</p>
+	</div>
 </div>

@@ -96,8 +96,8 @@ namespace Qetesh {
 		// The response to the request
 		public HTTPResponse HResponse { get; private set; }
 		
-		/// Inbound DataTree from JS or API access
-		public Data.DataObject.DataNode DataTree { get; private set; }
+		// Data tree built from request
+		public RequestDataParser RequestData { get; private set; }
 		
 		/**
 		 * Recieve a new request
@@ -208,10 +208,14 @@ namespace Qetesh {
 			ArrayList<string> headerLines =  new ArrayList<string>();
 			
 			try {
+				
+				// Headers
 				while ((line = httpIn.read_line (null)) != null) {
+					
+					ServerContext.Err.WriteMessage("H: %s".printf(line), ErrorManager.QErrorClass.QETESH_DEBUG);
+					
 					headerLines.add(line);
 					if (line.strip () == "") break;
-					// TODO: postdata
 				}
 			}
 			catch (Error e) {
@@ -221,6 +225,27 @@ namespace Qetesh {
 			
 			// Process headers from input
 			ReadHeaders(headerLines);
+			
+			string requestData = "";
+			
+			if(Headers.has_key("Content-Length")) {
+				
+				try {
+
+					Bytes rd = httpIn.read_bytes ((size_t) int.parse(Headers["Content-Length"]), null);
+					
+					requestData = (string) rd.get_data();
+					
+					ServerContext.Err.WriteMessage("B: %s".printf(requestData), ErrorManager.QErrorClass.QETESH_DEBUG);
+				}
+				catch (Error e) {
+					ServerContext.Err.WriteMessage("Error reading input body", ErrorManager.QErrorClass.QETESH_CRITICAL);
+					return;
+				}
+			}
+			
+			RequestData = new JSONReqestDataParser();
+			RequestData.Parse(requestData);
 		}
 	
 	

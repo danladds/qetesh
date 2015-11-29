@@ -139,7 +139,7 @@ var Qetesh = {
 					hMethod, nPath,	mType, rType
 				) {
 					
-					return function(callback) {
+					return function(callback = null) {
 					
 						var xh = new XMLHttpRequest();
 						
@@ -174,12 +174,18 @@ var Qetesh = {
 										returnList.push(proto);
 									}
 									
-									callback(returnList);
+									if (callback != null) callback(returnList);
 								}
 								// Single returns
 								else
-								{	
-									for (var prop in inData[0]) {
+								{
+									var inObj;
+									
+									if (inData instanceof Array) inObj = inData[0];
+									else inObj = inData;
+									
+										
+									for (var prop in inObj) {
 			  
 										if( inData[0].hasOwnProperty(prop) ) {
 										
@@ -187,7 +193,7 @@ var Qetesh = {
 										} 
 									} 
 									
-									callback();
+									if (callback != null) callback(this);
 								}
 								
 							}
@@ -202,8 +208,26 @@ var Qetesh = {
 							Qetesh.QConf.ServerUri + actualPath, 
 							true
 						);
-						xh.send();
 						
+						if(hMethod == "POST" || hMethod == "PUT") {
+							
+							var tLen = this.__tainted.length;
+							var outObj = { };
+							
+							for(var u = 0; u < tLen; ++u) {
+								
+								outObj[this.__tainted[u]] = this[this.__tainted[u]];
+							}
+							
+							var outData = JSON.stringify(outObj);
+							
+							xh.setRequestHeader("Content-Type", "text/json");
+							xh.send(outData);
+						}
+						else {
+						
+							xh.send();
+						}
 					}
 				})(httpMethod, nodePath, methodType, returnType);
 				
@@ -212,6 +236,8 @@ var Qetesh = {
 		} 
 		
 		this.Data[name] = proxy;
+		
+		proxy.__tainted = [proxy.PKeyName];
 	},
 	
 	ViewManage : function (paneId) {
@@ -867,6 +893,8 @@ var Qetesh = {
 			
 			this.QElem.__bindData[this.FieldName] = this.QElem.__bindDataState[this.FieldName];
 			
+			if(this.Taint == true) this.QElem.__bindData.SetTaint(this.FieldName);
+			
 			this.UpdateTaint();
 		},
 		
@@ -886,6 +914,7 @@ var Qetesh = {
 		Id : 0,
 		PKeyName : "Id",
 		__fromMethod : null,
+		__tainted : [],
 		
 		Obj : function() {
 		
@@ -899,7 +928,22 @@ var Qetesh = {
 			
 		},
 		
-		Reload : function () {
+		SetTaint : function (fieldName) {
+			
+			var len = this.__tainted.length;
+			
+			for(var i = 0; i < len; ++i) {
+				
+				if (this.__tainted[i] == fieldName) {
+					
+					return;
+				}
+			}
+			
+			this.__tainted.push(fieldName);
+		},
+		
+		Reload : function (callback = null) {
 			
 			if (this.boundQElement != null) {
 				
@@ -908,6 +952,8 @@ var Qetesh = {
 				this.Load(function() {
 					
 					_this.boundQElement.Update();
+					
+					if(callback != null) callback(this);
 				});
 			}
 		},

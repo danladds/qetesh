@@ -43,6 +43,8 @@ namespace Qetesh.Data {
 		private Gee.LinkedList<InheritInfo> ClassParents { get; private set; }
 		private Gee.LinkedList<LinkInfo> Links { get; private set; }
 		
+		private Gee.LinkedList<string> TaintedProperties { get; set; }
+		
 		private string _queryTarget;
 		protected string QueryTarget { 
 			
@@ -121,25 +123,6 @@ namespace Qetesh.Data {
 		public void Delete() {
 			
 		}
-		
-		public Gee.LinkedList<TImp> Children { 
-			
-			get {
-				return children;
-			}
-			
-		}
-		
-		public Gee.LinkedList<TImp> Parents { 
-			
-			get {
-				return parents;
-			} 
-			
-		}
-		
-		private Gee.LinkedList<TImp> parents;
-		private Gee.LinkedList<TImp> children;
 		
 		internal string getPKeyStr() {
 			
@@ -389,6 +372,19 @@ namespace Qetesh.Data {
 			}
 		}
 		
+		public void Update() {
+			
+			var sql = new StringBuilder("UPDATE `%s` SET ".printf(
+				this.QueryTarget
+			));
+			
+			sql.append("WHERE `%s`.`%s` = %s".printf(
+				this.QueryTarget,
+				this.PKeyName,
+				this.getPKeyStr()
+			));
+		}
+		
 		public Gee.LinkedList<DataObject> MapObjectList(Gee.LinkedList<Gee.TreeMap<string?, string?>> rows) {
 			
 			Gee.LinkedList<DataObject> returnList = new Gee.LinkedList<DataObject>();
@@ -485,6 +481,21 @@ namespace Qetesh.Data {
 			transform(dn);
 			
 			return dn;
+		}
+		
+		public void FromRequest(HTTPRequest req) {
+			
+			FromNode(req.RequestData.DataTree);
+		}
+		
+		public void FromNode(DataNode data) {
+			
+			var classObj = (ObjectClass) this.get_type().class_ref();
+			
+			foreach(var child in data.Children) {
+				
+				setPropStr(child.Name, child.Val);
+			}
 		}
 		
 		public class LazyNode : QWebNode {

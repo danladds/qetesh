@@ -167,7 +167,18 @@ namespace Qetesh {
 			Manifest.Method("Load", typeName, this["$n"]).GET();
 			
 			// Update single
-			this["$n"].PUT.connect((req) => { 
+			this["$n"].PUT.connect((req) => {
+				
+				var obj = (DataObject) Object.new(typ);
+				obj._init(req.Data.GetConnection(dbName));
+				obj.FromRequest(req);
+				obj.Update();
+				
+				req.HResponse.DataTree.Children.add(
+					new DataNode(obj.PKeyName) { 
+						Val = obj.getPropStr(obj.PKeyName)
+					}	
+				);
 				
 			});
 			

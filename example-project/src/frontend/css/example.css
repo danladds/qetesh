@@ -122,12 +122,12 @@ html { width: 100%; height: 100%; font-family: 'Open Sans', sans-serif; }
 
 body {
   width: 100%; height: 98%; padding-bottom: -1px;
-  background-color: black; background-image: repeating-linear-gradient(45deg, transparent, transparent 3px, rgba(255,255,255,.15) 6px, rgba(255,255,255,.15) 12px);
+  background-color: black;
 }
 
 div#superwrapper { width: 98%; height: 99%; margin-top: 1%; margin-left: 1%;
 }
-div#wrapper { width: 100%; height: 92%; background-color: white;
+div#wrapper { width: 100%; height: 100%; background-color: white;
 	margin-top: 0px; margin-bottom: 0px; overflow-y: scroll; overflow-x: hide;
 	border: 3px black solid;
 }
@@ -255,6 +255,7 @@ input[type=text].consec { border-left: none; }
 	font-weight: bold;
 	display: block;
 	margin-bottom: 0.5em;
+	width: 20em;
 }
 
 #record input[type=text] {
@@ -266,6 +267,7 @@ input[type=text].consec { border-left: none; }
 	margin-bottom: 1em;
 	cursor: pointer;
 	font-size: 1em;
+	width: 20em;
 }
 
 #record input[type=text]:hover {
@@ -323,4 +325,15 @@ input[type=text].consec { border-left: none; }
 input[type=text].q-taint {
 
 	background-color: white !important;
+}
+
+.notes {
+	
+	margin-top: 1em;
+	border-top: 2px dashed black;
+	padding: 1em;
+}
+
+.notes p {
+	padding: 1em 0px;
 }

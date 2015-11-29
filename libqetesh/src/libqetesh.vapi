@@ -234,6 +234,7 @@ namespace Qetesh {
 		public GLib.StringBuilder Content;
 		public const int DEFAULT_CODE;
 		public const string DEFAULT_CT;
+		public const string DEFAULT_RM;
 		public HTTPResponse (Qetesh.WebAppContext ctx);
 		public abstract void ComposeContent ();
 		public virtual void Respond (GLib.DataOutputStream httpOut);
