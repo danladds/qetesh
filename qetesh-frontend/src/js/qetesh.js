@@ -171,8 +171,23 @@ var Qetesh = {
 								var realType;
 								var inData = JSON.parse(xh.responseText);
 								
+								// Void returns
+								if (rType == "void") {
+									
+									if (hMethod == "POST") {
+										if (inData instanceof Array) inObj = inData[0];
+										else inObj = inData;
+										
+										if(inData != null) {
+											
+											_this[_this.PKeyName] == inObj;
+										}
+									}
+									
+									_this.__tainted = [];
+								}
 								// Array returns
-								if (rType.indexOf("[]") > 1) {
+								else if (rType.indexOf("[]") > 1) {
 									
 									var returnList = [];
 									var realType = rType.replace("[]", "");
@@ -196,6 +211,7 @@ var Qetesh = {
 											if (obj[obj.PKeyName] == item[obj.PKeyName]) {
 												
 												proto = obj;
+												obj.__tainted = [];
 											}
 										}
 										
@@ -245,7 +261,9 @@ var Qetesh = {
 										} 
 									}
 									
-									_this["__" + mName] = this;
+									_this.__tainted = [];
+									
+									_this["__" + mName] = _this;
 									
 									if(_this.boundQElement != null) {
 										
@@ -281,6 +299,8 @@ var Qetesh = {
 										} 
 									}
 									
+									proto.__tainted = [];
+									
 									if(proto.boundQElement != null) {
 										
 										proto.boundQElement.UpdateTaint();
@@ -304,18 +324,27 @@ var Qetesh = {
 						
 						if(hMethod == "POST" || hMethod == "PUT") {
 							
-							var tLen = this.__tainted.length;
-							var outObj = { };
-							
-							for(var u = 0; u < tLen; ++u) {
+							// Don't bother if nothing to send
+							if (this.__tainted.length > 0) {
+
+								// Always send primary key
+								this.__tainted.push(this.PKeyName);
 								
-								outObj[this.__tainted[u]] = this[this.__tainted[u]];
+								var tLen = this.__tainted.length;
+								var outObj = { };
+								
+								for(var u = 0; u < tLen; ++u) {
+									
+									outObj[this.__tainted[u]] = this[this.__tainted[u]];
+								}
+								
+								var outData = JSON.stringify(outObj);
+								
+								xh.setRequestHeader("Content-Type", "text/json");
+								xh.send(outData);
 							}
 							
-							var outData = JSON.stringify(outObj);
-							
-							xh.setRequestHeader("Content-Type", "text/json");
-							xh.send(outData);
+							if (callback != null) callback(this)
 						}
 						else {
 						
@@ -329,8 +358,6 @@ var Qetesh = {
 		} 
 		
 		this.Data[name] = proxy;
-		
-		proxy.__tainted = [proxy.PKeyName];
 	},
 	
 	ViewManage : function (paneId) {
@@ -534,11 +561,15 @@ var Qetesh = {
 		Click : function (callback) {
 			
 			// Repeaters etc. - re-call on children
-			var childCount = this.__children.length;
+			if(this.__repeaterTemplate != null || this.__elements.length == 0) {
+				var childCount = this.__children.length;
 			
-			for (var w = 0; w < childCount; ++w) {
+				for (var w = 0; w < childCount; ++w) {
+					
+					this.__children[w].Click(callback);
+				}
 				
-				this.__children[w].Click(callback);
+				return;
 			}
 			
 			var len = this.__elements.length;
@@ -901,8 +932,23 @@ var Qetesh = {
 		
 		Element : function (selector) {
 			
+			
+			
 			var len = this.__elements.length;
 			var subobj = Qetesh.HTMLElement.Obj();
+			
+			// Repeaters - get from each child and add to new element collection
+			if(this.__repeaterTemplate != null) {
+				
+				var childLen = this.__children.length;
+				
+				for(var x = 0; x < childLen; ++x) {
+					
+					subobj.__children.push(this.__children[x].Element(selector));
+				}
+				
+				return subobj;
+			}
 			
 			for (var i = 0; i < len; ++i) {
 				
@@ -1076,6 +1122,18 @@ var Qetesh = {
 				});
 			}
 		},
+		
+		Save : function (callback = null) {
+			
+			if (this[this.PKeyName] == null || this[this.PKeyName] < 1) {
+				
+				this.Create(callback);
+			}
+			else {
+				
+				this.Update(callback);
+			}
+		}
 	
 	},
 };

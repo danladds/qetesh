@@ -316,6 +316,23 @@ input[type=text].consec { border-left: none; }
 	text-decoration: underline;
 }
 
+#invoice-item tr td.invoiceitem-save, #invoice-item tr td.invoiceitem-delete{
+	width: 2.5em;
+	cursor: pointer;
+	background-repeat: no-repeat;
+	background-position: center center;
+}
+
+#invoice-item tr td.invoiceitem-save {
+	
+	background-image: url(../img/save.png);
+}
+
+#invoice-item tr td.invoiceitem-delete {
+	
+	background-image: url(../img/delete.png);
+}
+
 #invoice-item th {
 	padding: 1em;
 	font-weight: bold;

@@ -317,6 +317,13 @@ namespace Qetesh.Data {
 			
 			query.Where(PKeyName).Equal(getPKeyStr());
 			
+			if(TaintedProperties.size == 0) {
+				
+				// No need to error, just nothing to do. What we're being
+				// asked is legal but will have zero effect.
+				return;
+			}
+			
 			foreach(var prop in TaintedProperties) {
 				
 				query.Set(prop).Equal(getPropStr(prop));

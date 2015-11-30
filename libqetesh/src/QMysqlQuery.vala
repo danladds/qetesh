@@ -141,6 +141,11 @@ namespace Qetesh.Data {
 				
 				var n = 0;
 				
+				if (setParams.size < 1) {
+					
+					throw new QDBError.QUERY("Cannot perform insert or update with no parameters");
+				}
+				
 				foreach (var param in setParams) {
 					
 					sql.append("`%s`.%s".printf(tableName, param.getQueryText()));

@@ -29,6 +29,7 @@ libqeteshexample_la_LIBADD = $(QETESH_EXAMPLE_LIBS)
 jsdir = $(pkgdatadir)/js
 cssdir = $(pkgdatadir)/css
 tpldir = $(pkgdatadir)/tpl
+imgdir = $(pkgdatadir)/img
 htmldir = $(pkgdatadir)
 qconfdir = $(sysconfdir)/qetesh.conf.d
 
@@ -44,6 +45,10 @@ dist_css_DATA = \
 dist_tpl_DATA = \
 	frontend/tpl/list.html \
 	frontend/tpl/record.html
+	
+dist_img_DATA = \
+	frontend/img/save.png \
+	frontend/img/delete.png
 
 dist_qconf_DATA = \
 	qexample.conf

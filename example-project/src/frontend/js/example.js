@@ -82,6 +82,22 @@ $_qetesh.Ready(function(q) {
 				// do anything else.
 				invoice.Items();
 			});
+			
+			itemList.Element(".invoiceitem-save").Click(function(invoiceItem) {
+				
+				invoiceItem.Save();
+				
+			});
+			
+			invoiceForm.Element('#invoice-save').Click(function(invoice) {
+			
+				invoice.Save();
+				
+				for(var i = 0; i < items.length; i++) {
+						
+					items[i].Save();
+				}
+			});
 		});
 		
 		invoiceForm.Element('#invoice-return').Click(function(invoice) {
@@ -99,11 +115,6 @@ $_qetesh.Ready(function(q) {
 		invoiceForm.Element('#invoice-commit').Click(function(invoice) {
 			
 			invoiceForm.Commit();
-		});
-		
-		invoiceForm.Element('#invoice-save').Click(function(invoice) {
-			
-			invoice.Update();
 		});
 		
 	});
