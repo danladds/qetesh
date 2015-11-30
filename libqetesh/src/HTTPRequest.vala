@@ -61,7 +61,7 @@ namespace Qetesh {
 		
 		// Informationery bits
 		public enum RequestMethod {
-			GET, POST, PUT, HEAD, INVALID
+			GET, POST, PUT, HEAD, DELETE, INVALID
 		}
 		
 		// Individual bits of request data
@@ -147,6 +147,8 @@ namespace Qetesh {
 				Method = RequestMethod.PUT; break;
 				case "HEAD":
 				Method = RequestMethod.HEAD; break;	
+				case "DELETE":
+				Method = RequestMethod.DELETE; break;
 				default:
 				Method = RequestMethod.INVALID; break;
 			}

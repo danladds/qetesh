@@ -28,11 +28,11 @@ using Mysql;
 
 namespace Qetesh.Data {
 	
-	class QMysqlConn : QDatabaseConn {
+	public class QMysqlConn : QDatabaseConn {
 		
 		private ConfigFile.DBConfig conf;
 		private WebServerContext context;
-		private Mysql.Database db;
+		internal Mysql.Database db;
 		
 		public QMysqlConn (ConfigFile.DBConfig config, WebServerContext sc) {
 			
@@ -62,7 +62,7 @@ namespace Qetesh.Data {
 			}
 		}
 		
-		public override Gee.LinkedList<Gee.TreeMap<string?, string?>>? Q(string qText) throws QDBError {
+		public override Gee.LinkedList<Gee.TreeMap<string?, string?>>? DirectQuery(string qText) throws QDBError {
 			
 			context.Err.WriteMessage("MySQL Connector attempting query: %s".printf(qText), ErrorManager.QErrorClass.QETESH_DEBUG);
 			
@@ -103,6 +103,22 @@ namespace Qetesh.Data {
 			
 			return result;
 			
+		}
+		
+		public override QDataQuery NewQuery() {
+			
+			return new QMysqlQuery(this);
+		}
+		
+		internal int _lastInsertId {
+			
+			get {
+			
+				return (int) db.insert_id();
+			}
+			private set {
+				
+			}
 		}
 	}
 }

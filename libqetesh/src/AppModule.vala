@@ -115,6 +115,9 @@ namespace Qetesh {
 				else if (req.Method == HTTPRequest.RequestMethod.PUT) {
 					node.PUT(req);
 				}
+				else if (req.Method == HTTPRequest.RequestMethod.DELETE) {
+					node.DELETE(req);
+				}
 			}
 			else {
 				Context.Server.Err.WriteMessage("Node not found (404)", ErrorManager.QErrorClass.QETESH_DEBUG);

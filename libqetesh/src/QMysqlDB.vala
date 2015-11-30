@@ -29,6 +29,10 @@ namespace Qetesh.Data {
 
 	public class QMysqlDB : QDatabase {
 		
+		// For persistent connection
+		private Gee.ConcurrentList<bool> connectionDipatched { get; set; }
+		private Gee.ConcurrentList<QMysqlConn> connections { get; set; }
+		
 		public QMysqlDB (ConfigFile.DBConfig config, WebServerContext sc) {
 			
 			base(config, sc);

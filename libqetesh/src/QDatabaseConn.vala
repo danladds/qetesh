@@ -29,11 +29,13 @@ namespace Qetesh.Data {
 	
 	public abstract class QDatabaseConn {
 
-		public abstract Gee.LinkedList<Gee.TreeMap<string?, string?>>? Q(string qText) throws QDBError;
+		public abstract Gee.LinkedList<Gee.TreeMap<string?, string?>>? DirectQuery(string qText) throws QDBError;
 		
 		public abstract void Connect () throws QDBError;
 
 		public bool IsConnected { get; protected set; }
+		
+		public abstract QDataQuery NewQuery();
 		
 	}
 }

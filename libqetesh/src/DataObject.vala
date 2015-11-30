@@ -40,57 +40,7 @@ namespace Qetesh.Data {
 		/// Primary key name
 		public string PKeyName { get; protected set; default="Id"; }
 		
-		private Gee.LinkedList<InheritInfo> ClassParents { get; private set; }
-		private Gee.LinkedList<LinkInfo> Links { get; private set; }
-		
 		private Gee.LinkedList<string> TaintedProperties { get; set; }
-		
-		private string _queryTarget;
-		protected string QueryTarget { 
-			
-			get {
-				
-				if (_queryTarget != null &&
-					_queryTarget != "") {
-				
-					return _queryTarget;
-				}
-				
-				var tName = new StringBuilder();
-				
-				tName.append_printf("`%s`", TableName);
-				
-				
-				foreach(InheritInfo li in ClassParents) {
-					
-					tName.append_printf(
-						", `%s`", 						
-						li.ParentTableName
-					);
-				}
-				
-				tName.append(" WHERE 1");
-				
-				foreach(InheritInfo li in ClassParents) {
-					
-					tName.append_printf(
-						" AND `%s`.`%s` = `%s`.`%s`",
-						li.ParentTableName,
-						li.ParentTableKey,
-						li.LocalTableName,
-						li.LocalTableKey
-					);
-				}
-				
-				_queryTarget = tName.str;
-				
-				return _queryTarget;
-			}
-			private set {
-				
-				_queryTarget = value;
-			} 
-		}
 		
 		public DataObject (QDatabaseConn dbh) {
 			
@@ -109,10 +59,6 @@ namespace Qetesh.Data {
 			TableName = this.get_type().to_string();
 			PKeyName = "Id";
 			
-			// List of linked objects (i.e. joins in SQL)
-			ClassParents = new Gee.LinkedList<InheritInfo>();
-			Links = new Gee.LinkedList<LinkInfo>();
-			
 			TaintedProperties = new Gee.LinkedList<string>();
 			
 			Init();
@@ -120,10 +66,16 @@ namespace Qetesh.Data {
 
 		public void Create() {
 			
+			//var query = db.NewQuery().DataSet(TableName).Create();
+			//this.setPKeyStr(query.DoInt().to_string());
 		}
 		
 		public void Delete() {
 			
+			var query = db.NewQuery().DataSet(TableName).Delete();
+			
+			query.Where(PKeyName).Equal(getPKeyStr());
+			query.Do();
 		}
 		
 		internal string getPKeyStr() {
@@ -271,24 +223,15 @@ namespace Qetesh.Data {
 			}
 		}
 		
-		//public static Gee.ArrayList<DataObject> ReadTree() {
-		//	
-		//}
-		
-		// Why no Read or Update? Read is called (by ID) the first time
-		// Id is set while another property is accessed.
-		// Update is called on destruct if changes have been made and Id
-		// is set
-		
-		// TODO: Latch onto Notify signal
-		
+	
 		public Gee.LinkedList<DataObject> LoadAll() throws Qetesh.Data.QDBError {
 			
 			Gee.LinkedList<DataObject> returnList;
 			
-			string sql = "SELECT * FROM %s".printf(QueryTarget);
+			var query = db.NewQuery().DataSet(TableName).Read();
+			var res = query.Do();
 			
-			returnList = MapObjectList(db.Q(sql));
+			returnList = MapObjectList(res.Items);
 			
 			return returnList;
 		}
@@ -324,14 +267,13 @@ namespace Qetesh.Data {
 			
 			Gee.LinkedList<DataObject> returnList;
 			
-			string sql = "SELECT * FROM %s AND `%s`.`%s` = %s".printf(
-				proto.QueryTarget,
-				proto.TableName,
-				colName,
-				getPKeyStr()
-			);
+			var query = db.NewQuery().DataSet(proto.TableName).Read();
 			
-			returnList = proto.MapObjectList(db.Q(sql));
+			query.Where(colName).Equal(getPKeyStr());
+			
+			var res = query.Do();
+			
+			returnList = proto.MapObjectList(res.Items);
 			
 			foreach(var obj in returnList) {
 				
@@ -352,64 +294,35 @@ namespace Qetesh.Data {
 		
 		public void Load() {
 			
+			var query = db.NewQuery().DataSet(TableName).Read();
 			
+			query.Where(PKeyName).Equal(getPKeyStr());
 			
-			string sql = "SELECT * FROM %s AND `%s`.`%s` = %s".printf(
-				QueryTarget,
-				TableName,
-				NameTransform(PKeyName),
-				getPropStr(PKeyName)
-			);
+			var res = query.Do();
 			
-			var result = db.Q(sql);
-			
-			if (result.size == 0) {
+			if (res.Items.size == 0) {
 				
 				// Todo: throw exception
 			}
 			else {
 			
 				// Map into self
-				MapObject(result[0]);
+				MapObject(res.Items[0]);
 			}
 		}
 		
 		public void Update() {
 			
-			var sql = new StringBuilder("UPDATE `%s` SET ".printf(
-				TableName
-			));
+			var query = db.NewQuery().DataSet(TableName).Update();
 			
-			var fieldUpdates = new Gee.LinkedList<string>();
+			query.Where(PKeyName).Equal(getPKeyStr());
 			
 			foreach(var prop in TaintedProperties) {
 				
-				fieldUpdates.add("`%s`.`%s` = \"%s\"".printf(
-					TableName, prop, getPropStr(prop)
-				));
+				query.Set(prop).Equal(getPropStr(prop));
 			}
 			
-			var fu = fieldUpdates.to_array();
-			
-			if(fu != null) {
-			
-				sql.append(string.joinv(", ", fu));
-			
-			}
-			else {
-				
-				sql.append(" `%s`.`%s` = `%s`.`%s`".printf(
-					TableName, PKeyName, TableName, PKeyName
-				));
-			}
-			
-			sql.append(" WHERE `%s`.`%s` = %s".printf(
-				TableName,
-				PKeyName,
-				getPKeyStr()
-			));
-			
-			db.Q(sql.str);
+			query.Do();
 		}
 		
 		public Gee.LinkedList<DataObject> MapObjectList(Gee.LinkedList<Gee.TreeMap<string?, string?>> rows) {
@@ -517,8 +430,6 @@ namespace Qetesh.Data {
 		
 		public void FromNode(DataNode data) {
 			
-			var classObj = (ObjectClass) this.get_type().class_ref();
-			
 			if (data.Children.size > 0) {
 			
 				foreach(var child in data.Children[0].Children) {
@@ -537,22 +448,6 @@ namespace Qetesh.Data {
 		public class LazyNode : QWebNode {
 			
 			
-		}
-		
-		public void LazyLink(string localProp, string remoteProp = "") {
-			
-			var info = new LinkInfo();
-			info.Lazy = true;
-			info.LocalPropertyName = localProp;
-			info.LinkedProperyName = remoteProp;
-		}
-		
-		private class LinkInfo {
-			
-			public bool Lazy { get; set; }
-			public Type LinkedType { get; set; }
-			public string LocalPropertyName { get; set; }
-			public string LinkedProperyName { get; set; }
 		}
 		
 		public class DataNode {

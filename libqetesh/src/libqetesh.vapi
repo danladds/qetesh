@@ -44,7 +44,6 @@ namespace Qetesh {
 			public void FromNode (Qetesh.Data.DataObject.DataNode data);
 			public void FromRequest (Qetesh.HTTPRequest req);
 			public abstract void Init ();
-			public void LazyLink (string localProp, string remoteProp = "");
 			protected Gee.LinkedList<Qetesh.Data.DataObject> LazyLoadList (string propertyName, GLib.Type fType);
 			public void Load ();
 			public Gee.LinkedList<Qetesh.Data.DataObject> LoadAll () throws Qetesh.Data.QDBError;
@@ -54,8 +53,33 @@ namespace Qetesh {
 			public Qetesh.Data.DataObject.DataNode ToNode (Qetesh.Data.DataObject.DataNodeTransform transform);
 			public void Update ();
 			public string PKeyName { get; protected set; }
-			protected string QueryTarget { get; private set; }
 			protected string TableName { get; set; }
+		}
+		[CCode (cheader_filename = "libqetesh.h")]
+		public abstract class QDataQuery : GLib.Object {
+			public abstract class QueryParam {
+				public QueryParam ();
+				public abstract Qetesh.Data.QDataQuery.QueryParam Equal (string val);
+				public abstract Qetesh.Data.QDataQuery.QueryParam GreaterThan (string val);
+				public abstract Qetesh.Data.QDataQuery.QueryParam LessThan (string val);
+				public abstract Qetesh.Data.QDataQuery.QueryParam Like (string val);
+			}
+			public abstract class QueryResult {
+				public QueryResult ();
+				public abstract Gee.LinkedList<Gee.TreeMap<string,string>> Items { get; protected set; }
+			}
+			public QDataQuery ();
+			public abstract Qetesh.Data.QDataQuery Count ();
+			public abstract Qetesh.Data.QDataQuery Create ();
+			public abstract Qetesh.Data.QDataQuery DataSet (string setName);
+			public abstract Qetesh.Data.QDataQuery Delete ();
+			public abstract Qetesh.Data.QDataQuery.QueryResult Do ();
+			public abstract int DoInt ();
+			protected abstract Gee.LinkedList<Gee.TreeMap<string,string>> Fetch ();
+			public abstract Qetesh.Data.QDataQuery Read ();
+			public abstract Qetesh.Data.QDataQuery.QueryParam Set (string fieldName);
+			public abstract Qetesh.Data.QDataQuery Update ();
+			public abstract Qetesh.Data.QDataQuery.QueryParam Where (string fieldName);
 		}
 		[CCode (cheader_filename = "libqetesh.h")]
 		public abstract class QDatabase : GLib.Object {
@@ -68,13 +92,50 @@ namespace Qetesh {
 		public abstract class QDatabaseConn {
 			public QDatabaseConn ();
 			public abstract void Connect () throws Qetesh.Data.QDBError;
-			public abstract Gee.LinkedList<Gee.TreeMap<string?,string?>>? Q (string qText) throws Qetesh.Data.QDBError;
+			public abstract Gee.LinkedList<Gee.TreeMap<string?,string?>>? DirectQuery (string qText) throws Qetesh.Data.QDBError;
+			public abstract Qetesh.Data.QDataQuery NewQuery ();
 			public bool IsConnected { get; protected set; }
+		}
+		[CCode (cheader_filename = "libqetesh.h")]
+		public class QMysqlConn : Qetesh.Data.QDatabaseConn {
+			public QMysqlConn (Qetesh.ConfigFile.DBConfig config, Qetesh.WebServerContext sc);
+			public override void Connect () throws Qetesh.Data.QDBError;
+			public override Gee.LinkedList<Gee.TreeMap<string?,string?>>? DirectQuery (string qText) throws Qetesh.Data.QDBError;
+			public override Qetesh.Data.QDataQuery NewQuery ();
 		}
 		[CCode (cheader_filename = "libqetesh.h")]
 		public class QMysqlDB : Qetesh.Data.QDatabase {
 			public QMysqlDB (Qetesh.ConfigFile.DBConfig config, Qetesh.WebServerContext sc);
 			public override Qetesh.Data.QDatabaseConn Connect () throws Qetesh.Data.QDBError;
+		}
+		[CCode (cheader_filename = "libqetesh.h")]
+		public class QMysqlQuery : Qetesh.Data.QDataQuery {
+			public class MysqlQueryParam : Qetesh.Data.QDataQuery.QueryParam {
+				public override Qetesh.Data.QDataQuery.QueryParam Equal (string val);
+				public override Qetesh.Data.QDataQuery.QueryParam GreaterThan (string val);
+				public override Qetesh.Data.QDataQuery.QueryParam LessThan (string val);
+				public override Qetesh.Data.QDataQuery.QueryParam Like (string val);
+				public string FieldComparator { get; private set; }
+				public string FieldName { get; private set; }
+				public string FieldValue { get; private set; }
+			}
+			public class MysqlQueryResult : Qetesh.Data.QDataQuery.QueryResult {
+				public override Gee.LinkedList<Gee.TreeMap<string,string>> Items { get; protected set; }
+			}
+			protected GLib.StringBuilder sql;
+			public QMysqlQuery (Qetesh.Data.QMysqlConn conn);
+			public override Qetesh.Data.QDataQuery Count ();
+			public override Qetesh.Data.QDataQuery Create ();
+			public override Qetesh.Data.QDataQuery DataSet (string setName);
+			public override Qetesh.Data.QDataQuery Delete ();
+			public override Qetesh.Data.QDataQuery.QueryResult Do ();
+			public override int DoInt ();
+			protected override Gee.LinkedList<Gee.TreeMap<string,string>> Fetch ();
+			public override Qetesh.Data.QDataQuery Read ();
+			public override Qetesh.Data.QDataQuery.QueryParam Set (string fieldName);
+			public override Qetesh.Data.QDataQuery Update ();
+			public override Qetesh.Data.QDataQuery.QueryParam Where (string fieldName);
+			protected Qetesh.Data.QMysqlConn db { get; set; }
 		}
 		[CCode (cheader_filename = "libqetesh.h")]
 		public errordomain QDBError {
@@ -209,6 +270,7 @@ namespace Qetesh {
 			POST,
 			PUT,
 			HEAD,
+			DELETE,
 			INVALID
 		}
 		public HTTPRequest (GLib.SocketConnection c, Qetesh.WebServerContext sc);
@@ -297,6 +359,7 @@ namespace Qetesh {
 		public class ManifestObject {
 			public class ManifestMethod {
 				public ManifestMethod (string name, string path, string mType, string rType);
+				public void DELETE ();
 				public void GET ();
 				public Qetesh.Data.DataObject.DataNode GetDescriptor ();
 				public void POST ();
@@ -333,6 +396,7 @@ namespace Qetesh {
 		public new void @set (string subpath, Qetesh.QWebNode node);
 		public string Path { get; set; }
 		public int size { get; }
+		public signal void DELETE (Qetesh.HTTPRequest req);
 		public signal void GET (Qetesh.HTTPRequest req);
 		public signal void POST (Qetesh.HTTPRequest req);
 		public signal void PUT (Qetesh.HTTPRequest req);

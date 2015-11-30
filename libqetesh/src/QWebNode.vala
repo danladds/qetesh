@@ -80,6 +80,9 @@ namespace Qetesh {
 		/// PUT request event
 		public signal void PUT(HTTPRequest req);
 		
+		/// DELETE request event
+		public signal void DELETE(HTTPRequest req);
+		
 		public ManifestObject Manifest;
 		
 
@@ -172,10 +175,17 @@ namespace Qetesh {
 				var obj = (DataObject) Object.new(typ);
 				obj._init(req.Data.GetConnection(dbName));
 				
+				req.ServerContext.Err.WriteMessage("PUT (UPDATE) method called", ErrorManager.QErrorClass.MODULE_DEBUG);
+				
 				try {
 					
 					obj.FromRequest(req);
+					
+					req.ServerContext.Err.WriteMessage("Object loaded; trying Update()", ErrorManager.QErrorClass.MODULE_DEBUG);
+					
 					obj.Update();
+					
+					req.ServerContext.Err.WriteMessage("Update() done", ErrorManager.QErrorClass.MODULE_DEBUG);
 					
 					req.HResponse.DataTree.Children.add(
 						new DataObject.DataNode(obj.PKeyName) { 
@@ -387,6 +397,11 @@ namespace Qetesh {
 				public void PUT() {
 					
 					HttpMethod = "PUT";
+				}
+				
+				public void DELETE() {
+					
+					HttpMethod = "DELETE";
 				}
 			}
 		}

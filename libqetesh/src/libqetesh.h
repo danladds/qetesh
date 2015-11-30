@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <gee.h>
+#include <mysql/mysql.h>
 
 G_BEGIN_DECLS
 
@@ -335,6 +336,27 @@ typedef struct _QeteshDataQMysqlDB QeteshDataQMysqlDB;
 typedef struct _QeteshDataQMysqlDBClass QeteshDataQMysqlDBClass;
 typedef struct _QeteshDataQMysqlDBPrivate QeteshDataQMysqlDBPrivate;
 typedef struct _QeteshDataQDatabaseConnPrivate QeteshDataQDatabaseConnPrivate;
+
+#define QETESH_DATA_TYPE_QDATA_QUERY (qetesh_data_qdata_query_get_type ())
+#define QETESH_DATA_QDATA_QUERY(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), QETESH_DATA_TYPE_QDATA_QUERY, QeteshDataQDataQuery))
+#define QETESH_DATA_QDATA_QUERY_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), QETESH_DATA_TYPE_QDATA_QUERY, QeteshDataQDataQueryClass))
+#define QETESH_DATA_IS_QDATA_QUERY(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), QETESH_DATA_TYPE_QDATA_QUERY))
+#define QETESH_DATA_IS_QDATA_QUERY_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), QETESH_DATA_TYPE_QDATA_QUERY))
+#define QETESH_DATA_QDATA_QUERY_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), QETESH_DATA_TYPE_QDATA_QUERY, QeteshDataQDataQueryClass))
+
+typedef struct _QeteshDataQDataQuery QeteshDataQDataQuery;
+typedef struct _QeteshDataQDataQueryClass QeteshDataQDataQueryClass;
+
+#define QETESH_DATA_TYPE_QMYSQL_CONN (qetesh_data_qmysql_conn_get_type ())
+#define QETESH_DATA_QMYSQL_CONN(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), QETESH_DATA_TYPE_QMYSQL_CONN, QeteshDataQMysqlConn))
+#define QETESH_DATA_QMYSQL_CONN_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), QETESH_DATA_TYPE_QMYSQL_CONN, QeteshDataQMysqlConnClass))
+#define QETESH_DATA_IS_QMYSQL_CONN(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), QETESH_DATA_TYPE_QMYSQL_CONN))
+#define QETESH_DATA_IS_QMYSQL_CONN_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), QETESH_DATA_TYPE_QMYSQL_CONN))
+#define QETESH_DATA_QMYSQL_CONN_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), QETESH_DATA_TYPE_QMYSQL_CONN, QeteshDataQMysqlConnClass))
+
+typedef struct _QeteshDataQMysqlConn QeteshDataQMysqlConn;
+typedef struct _QeteshDataQMysqlConnClass QeteshDataQMysqlConnClass;
+typedef struct _QeteshDataQMysqlConnPrivate QeteshDataQMysqlConnPrivate;
 typedef struct _QeteshDataDataManagerPrivate QeteshDataDataManagerPrivate;
 typedef struct _QeteshWebServerContextPrivate QeteshWebServerContextPrivate;
 typedef struct _QeteshWebAppContextPrivate QeteshWebAppContextPrivate;
@@ -417,6 +439,62 @@ typedef struct _QeteshQDateTimePrivate QeteshQDateTimePrivate;
 typedef struct _QeteshJSONReqestDataParser QeteshJSONReqestDataParser;
 typedef struct _QeteshJSONReqestDataParserClass QeteshJSONReqestDataParserClass;
 typedef struct _QeteshJSONReqestDataParserPrivate QeteshJSONReqestDataParserPrivate;
+typedef struct _QeteshDataQDataQueryPrivate QeteshDataQDataQueryPrivate;
+
+#define QETESH_DATA_QDATA_QUERY_TYPE_QUERY_RESULT (qetesh_data_qdata_query_query_result_get_type ())
+#define QETESH_DATA_QDATA_QUERY_QUERY_RESULT(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), QETESH_DATA_QDATA_QUERY_TYPE_QUERY_RESULT, QeteshDataQDataQueryQueryResult))
+#define QETESH_DATA_QDATA_QUERY_QUERY_RESULT_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), QETESH_DATA_QDATA_QUERY_TYPE_QUERY_RESULT, QeteshDataQDataQueryQueryResultClass))
+#define QETESH_DATA_QDATA_QUERY_IS_QUERY_RESULT(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), QETESH_DATA_QDATA_QUERY_TYPE_QUERY_RESULT))
+#define QETESH_DATA_QDATA_QUERY_IS_QUERY_RESULT_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), QETESH_DATA_QDATA_QUERY_TYPE_QUERY_RESULT))
+#define QETESH_DATA_QDATA_QUERY_QUERY_RESULT_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), QETESH_DATA_QDATA_QUERY_TYPE_QUERY_RESULT, QeteshDataQDataQueryQueryResultClass))
+
+typedef struct _QeteshDataQDataQueryQueryResult QeteshDataQDataQueryQueryResult;
+typedef struct _QeteshDataQDataQueryQueryResultClass QeteshDataQDataQueryQueryResultClass;
+
+#define QETESH_DATA_QDATA_QUERY_TYPE_QUERY_PARAM (qetesh_data_qdata_query_query_param_get_type ())
+#define QETESH_DATA_QDATA_QUERY_QUERY_PARAM(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), QETESH_DATA_QDATA_QUERY_TYPE_QUERY_PARAM, QeteshDataQDataQueryQueryParam))
+#define QETESH_DATA_QDATA_QUERY_QUERY_PARAM_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), QETESH_DATA_QDATA_QUERY_TYPE_QUERY_PARAM, QeteshDataQDataQueryQueryParamClass))
+#define QETESH_DATA_QDATA_QUERY_IS_QUERY_PARAM(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), QETESH_DATA_QDATA_QUERY_TYPE_QUERY_PARAM))
+#define QETESH_DATA_QDATA_QUERY_IS_QUERY_PARAM_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), QETESH_DATA_QDATA_QUERY_TYPE_QUERY_PARAM))
+#define QETESH_DATA_QDATA_QUERY_QUERY_PARAM_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), QETESH_DATA_QDATA_QUERY_TYPE_QUERY_PARAM, QeteshDataQDataQueryQueryParamClass))
+
+typedef struct _QeteshDataQDataQueryQueryParam QeteshDataQDataQueryQueryParam;
+typedef struct _QeteshDataQDataQueryQueryParamClass QeteshDataQDataQueryQueryParamClass;
+typedef struct _QeteshDataQDataQueryQueryParamPrivate QeteshDataQDataQueryQueryParamPrivate;
+typedef struct _QeteshDataQDataQueryQueryResultPrivate QeteshDataQDataQueryQueryResultPrivate;
+
+#define QETESH_DATA_TYPE_QMYSQL_QUERY (qetesh_data_qmysql_query_get_type ())
+#define QETESH_DATA_QMYSQL_QUERY(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), QETESH_DATA_TYPE_QMYSQL_QUERY, QeteshDataQMysqlQuery))
+#define QETESH_DATA_QMYSQL_QUERY_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), QETESH_DATA_TYPE_QMYSQL_QUERY, QeteshDataQMysqlQueryClass))
+#define QETESH_DATA_IS_QMYSQL_QUERY(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), QETESH_DATA_TYPE_QMYSQL_QUERY))
+#define QETESH_DATA_IS_QMYSQL_QUERY_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), QETESH_DATA_TYPE_QMYSQL_QUERY))
+#define QETESH_DATA_QMYSQL_QUERY_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), QETESH_DATA_TYPE_QMYSQL_QUERY, QeteshDataQMysqlQueryClass))
+
+typedef struct _QeteshDataQMysqlQuery QeteshDataQMysqlQuery;
+typedef struct _QeteshDataQMysqlQueryClass QeteshDataQMysqlQueryClass;
+typedef struct _QeteshDataQMysqlQueryPrivate QeteshDataQMysqlQueryPrivate;
+
+#define QETESH_DATA_QMYSQL_QUERY_TYPE_MYSQL_QUERY_PARAM (qetesh_data_qmysql_query_mysql_query_param_get_type ())
+#define QETESH_DATA_QMYSQL_QUERY_MYSQL_QUERY_PARAM(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), QETESH_DATA_QMYSQL_QUERY_TYPE_MYSQL_QUERY_PARAM, QeteshDataQMysqlQueryMysqlQueryParam))
+#define QETESH_DATA_QMYSQL_QUERY_MYSQL_QUERY_PARAM_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), QETESH_DATA_QMYSQL_QUERY_TYPE_MYSQL_QUERY_PARAM, QeteshDataQMysqlQueryMysqlQueryParamClass))
+#define QETESH_DATA_QMYSQL_QUERY_IS_MYSQL_QUERY_PARAM(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), QETESH_DATA_QMYSQL_QUERY_TYPE_MYSQL_QUERY_PARAM))
+#define QETESH_DATA_QMYSQL_QUERY_IS_MYSQL_QUERY_PARAM_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), QETESH_DATA_QMYSQL_QUERY_TYPE_MYSQL_QUERY_PARAM))
+#define QETESH_DATA_QMYSQL_QUERY_MYSQL_QUERY_PARAM_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), QETESH_DATA_QMYSQL_QUERY_TYPE_MYSQL_QUERY_PARAM, QeteshDataQMysqlQueryMysqlQueryParamClass))
+
+typedef struct _QeteshDataQMysqlQueryMysqlQueryParam QeteshDataQMysqlQueryMysqlQueryParam;
+typedef struct _QeteshDataQMysqlQueryMysqlQueryParamClass QeteshDataQMysqlQueryMysqlQueryParamClass;
+typedef struct _QeteshDataQMysqlQueryMysqlQueryParamPrivate QeteshDataQMysqlQueryMysqlQueryParamPrivate;
+
+#define QETESH_DATA_QMYSQL_QUERY_TYPE_MYSQL_QUERY_RESULT (qetesh_data_qmysql_query_mysql_query_result_get_type ())
+#define QETESH_DATA_QMYSQL_QUERY_MYSQL_QUERY_RESULT(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), QETESH_DATA_QMYSQL_QUERY_TYPE_MYSQL_QUERY_RESULT, QeteshDataQMysqlQueryMysqlQueryResult))
+#define QETESH_DATA_QMYSQL_QUERY_MYSQL_QUERY_RESULT_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), QETESH_DATA_QMYSQL_QUERY_TYPE_MYSQL_QUERY_RESULT, QeteshDataQMysqlQueryMysqlQueryResultClass))
+#define QETESH_DATA_QMYSQL_QUERY_IS_MYSQL_QUERY_RESULT(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), QETESH_DATA_QMYSQL_QUERY_TYPE_MYSQL_QUERY_RESULT))
+#define QETESH_DATA_QMYSQL_QUERY_IS_MYSQL_QUERY_RESULT_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), QETESH_DATA_QMYSQL_QUERY_TYPE_MYSQL_QUERY_RESULT))
+#define QETESH_DATA_QMYSQL_QUERY_MYSQL_QUERY_RESULT_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), QETESH_DATA_QMYSQL_QUERY_TYPE_MYSQL_QUERY_RESULT, QeteshDataQMysqlQueryMysqlQueryResultClass))
+
+typedef struct _QeteshDataQMysqlQueryMysqlQueryResult QeteshDataQMysqlQueryMysqlQueryResult;
+typedef struct _QeteshDataQMysqlQueryMysqlQueryResultClass QeteshDataQMysqlQueryMysqlQueryResultClass;
+typedef struct _QeteshDataQMysqlQueryMysqlQueryResultPrivate QeteshDataQMysqlQueryMysqlQueryResultPrivate;
 
 struct _QeteshWebserverlibqetesh {
 	GTypeInstance parent_instance;
@@ -608,6 +686,7 @@ typedef enum  {
 	QETESH_HTTP_REQUEST_REQUEST_METHOD_POST,
 	QETESH_HTTP_REQUEST_REQUEST_METHOD_PUT,
 	QETESH_HTTP_REQUEST_REQUEST_METHOD_HEAD,
+	QETESH_HTTP_REQUEST_REQUEST_METHOD_DELETE,
 	QETESH_HTTP_REQUEST_REQUEST_METHOD_INVALID
 } QeteshHTTPRequestRequestMethod;
 
@@ -723,8 +802,19 @@ struct _QeteshDataQDatabaseConn {
 struct _QeteshDataQDatabaseConnClass {
 	GTypeClass parent_class;
 	void (*finalize) (QeteshDataQDatabaseConn *self);
-	GeeLinkedList* (*Q) (QeteshDataQDatabaseConn* self, const gchar* qText, GError** error);
+	GeeLinkedList* (*DirectQuery) (QeteshDataQDatabaseConn* self, const gchar* qText, GError** error);
 	void (*Connect) (QeteshDataQDatabaseConn* self, GError** error);
+	QeteshDataQDataQuery* (*NewQuery) (QeteshDataQDatabaseConn* self);
+};
+
+struct _QeteshDataQMysqlConn {
+	QeteshDataQDatabaseConn parent_instance;
+	QeteshDataQMysqlConnPrivate * priv;
+	MYSQL* db;
+};
+
+struct _QeteshDataQMysqlConnClass {
+	QeteshDataQDatabaseConnClass parent_class;
 };
 
 struct _QeteshDataDataManager {
@@ -848,6 +938,82 @@ struct _QeteshJSONReqestDataParser {
 
 struct _QeteshJSONReqestDataParserClass {
 	GObjectClass parent_class;
+};
+
+struct _QeteshDataQDataQuery {
+	GObject parent_instance;
+	QeteshDataQDataQueryPrivate * priv;
+};
+
+struct _QeteshDataQDataQueryClass {
+	GObjectClass parent_class;
+	QeteshDataQDataQuery* (*Create) (QeteshDataQDataQuery* self);
+	QeteshDataQDataQuery* (*Read) (QeteshDataQDataQuery* self);
+	QeteshDataQDataQuery* (*Update) (QeteshDataQDataQuery* self);
+	QeteshDataQDataQuery* (*Delete) (QeteshDataQDataQuery* self);
+	QeteshDataQDataQuery* (*Count) (QeteshDataQDataQuery* self);
+	QeteshDataQDataQuery* (*DataSet) (QeteshDataQDataQuery* self, const gchar* setName);
+	QeteshDataQDataQueryQueryResult* (*Do) (QeteshDataQDataQuery* self);
+	gint (*DoInt) (QeteshDataQDataQuery* self);
+	QeteshDataQDataQueryQueryParam* (*Where) (QeteshDataQDataQuery* self, const gchar* fieldName);
+	QeteshDataQDataQueryQueryParam* (*Set) (QeteshDataQDataQuery* self, const gchar* fieldName);
+	GeeLinkedList* (*Fetch) (QeteshDataQDataQuery* self);
+};
+
+struct _QeteshDataQDataQueryQueryParam {
+	GTypeInstance parent_instance;
+	volatile int ref_count;
+	QeteshDataQDataQueryQueryParamPrivate * priv;
+};
+
+struct _QeteshDataQDataQueryQueryParamClass {
+	GTypeClass parent_class;
+	void (*finalize) (QeteshDataQDataQueryQueryParam *self);
+	QeteshDataQDataQueryQueryParam* (*Equal) (QeteshDataQDataQueryQueryParam* self, const gchar* val);
+	QeteshDataQDataQueryQueryParam* (*Like) (QeteshDataQDataQueryQueryParam* self, const gchar* val);
+	QeteshDataQDataQueryQueryParam* (*GreaterThan) (QeteshDataQDataQueryQueryParam* self, const gchar* val);
+	QeteshDataQDataQueryQueryParam* (*LessThan) (QeteshDataQDataQueryQueryParam* self, const gchar* val);
+};
+
+struct _QeteshDataQDataQueryQueryResult {
+	GTypeInstance parent_instance;
+	volatile int ref_count;
+	QeteshDataQDataQueryQueryResultPrivate * priv;
+};
+
+struct _QeteshDataQDataQueryQueryResultClass {
+	GTypeClass parent_class;
+	void (*finalize) (QeteshDataQDataQueryQueryResult *self);
+	GeeLinkedList* (*get_Items) (QeteshDataQDataQueryQueryResult* self);
+	void (*set_Items) (QeteshDataQDataQueryQueryResult* self, GeeLinkedList* value);
+};
+
+struct _QeteshDataQMysqlQuery {
+	QeteshDataQDataQuery parent_instance;
+	QeteshDataQMysqlQueryPrivate * priv;
+	GString* sql;
+};
+
+struct _QeteshDataQMysqlQueryClass {
+	QeteshDataQDataQueryClass parent_class;
+};
+
+struct _QeteshDataQMysqlQueryMysqlQueryParam {
+	QeteshDataQDataQueryQueryParam parent_instance;
+	QeteshDataQMysqlQueryMysqlQueryParamPrivate * priv;
+};
+
+struct _QeteshDataQMysqlQueryMysqlQueryParamClass {
+	QeteshDataQDataQueryQueryParamClass parent_class;
+};
+
+struct _QeteshDataQMysqlQueryMysqlQueryResult {
+	QeteshDataQDataQueryQueryResult parent_instance;
+	QeteshDataQMysqlQueryMysqlQueryResultPrivate * priv;
+};
+
+struct _QeteshDataQMysqlQueryMysqlQueryResultClass {
+	QeteshDataQDataQueryQueryResultClass parent_class;
 };
 
 
@@ -1030,12 +1196,10 @@ void qetesh_data_data_object_MapObject (QeteshDataDataObject* self, GeeTreeMap* 
 QeteshDataDataObjectDataNode* qetesh_data_data_object_ToNode (QeteshDataDataObject* self, QeteshDataDataObjectDataNodeTransform transform, void* transform_target);
 void qetesh_data_data_object_FromRequest (QeteshDataDataObject* self, QeteshHTTPRequest* req);
 void qetesh_data_data_object_FromNode (QeteshDataDataObject* self, QeteshDataDataObjectDataNode* data);
-void qetesh_data_data_object_LazyLink (QeteshDataDataObject* self, const gchar* localProp, const gchar* remoteProp);
 const gchar* qetesh_data_data_object_get_TableName (QeteshDataDataObject* self);
 void qetesh_data_data_object_set_TableName (QeteshDataDataObject* self, const gchar* value);
 const gchar* qetesh_data_data_object_get_PKeyName (QeteshDataDataObject* self);
 void qetesh_data_data_object_set_PKeyName (QeteshDataDataObject* self, const gchar* value);
-const gchar* qetesh_data_data_object_get_QueryTarget (QeteshDataDataObject* self);
 GType qetesh_qweb_node_get_type (void) G_GNUC_CONST;
 gpointer qetesh_qweb_node_manifest_object_ref (gpointer instance);
 void qetesh_qweb_node_manifest_object_unref (gpointer instance);
@@ -1085,11 +1249,16 @@ QeteshWebServerContext* qetesh_data_qdatabase_get_Context (QeteshDataQDatabase* 
 GType qetesh_data_qmysql_db_get_type (void) G_GNUC_CONST;
 QeteshDataQMysqlDB* qetesh_data_qmysql_db_new (QeteshConfigFileDBConfig* config, QeteshWebServerContext* sc);
 QeteshDataQMysqlDB* qetesh_data_qmysql_db_construct (GType object_type, QeteshConfigFileDBConfig* config, QeteshWebServerContext* sc);
-GeeLinkedList* qetesh_data_qdatabase_conn_Q (QeteshDataQDatabaseConn* self, const gchar* qText, GError** error);
+GType qetesh_data_qdata_query_get_type (void) G_GNUC_CONST;
+GeeLinkedList* qetesh_data_qdatabase_conn_DirectQuery (QeteshDataQDatabaseConn* self, const gchar* qText, GError** error);
 void qetesh_data_qdatabase_conn_Connect (QeteshDataQDatabaseConn* self, GError** error);
+QeteshDataQDataQuery* qetesh_data_qdatabase_conn_NewQuery (QeteshDataQDatabaseConn* self);
 QeteshDataQDatabaseConn* qetesh_data_qdatabase_conn_construct (GType object_type);
 gboolean qetesh_data_qdatabase_conn_get_IsConnected (QeteshDataQDatabaseConn* self);
 void qetesh_data_qdatabase_conn_set_IsConnected (QeteshDataQDatabaseConn* self, gboolean value);
+GType qetesh_data_qmysql_conn_get_type (void) G_GNUC_CONST;
+QeteshDataQMysqlConn* qetesh_data_qmysql_conn_new (QeteshConfigFileDBConfig* config, QeteshWebServerContext* sc);
+QeteshDataQMysqlConn* qetesh_data_qmysql_conn_construct (GType object_type, QeteshConfigFileDBConfig* config, QeteshWebServerContext* sc);
 QeteshDataDataManager* qetesh_data_data_manager_new (QeteshDataDBManager* dbm);
 QeteshDataDataManager* qetesh_data_data_manager_construct (GType object_type, QeteshDataDBManager* dbm);
 QeteshDataQDatabaseConn* qetesh_data_data_manager_GetConnection (QeteshDataDataManager* self, const gchar* dbNick, GError** error);
@@ -1170,6 +1339,7 @@ QeteshDataDataObjectDataNode* qetesh_qweb_node_manifest_object_manifest_method_G
 void qetesh_qweb_node_manifest_object_manifest_method_GET (QeteshQWebNodeManifestObjectManifestMethod* self);
 void qetesh_qweb_node_manifest_object_manifest_method_POST (QeteshQWebNodeManifestObjectManifestMethod* self);
 void qetesh_qweb_node_manifest_object_manifest_method_PUT (QeteshQWebNodeManifestObjectManifestMethod* self);
+void qetesh_qweb_node_manifest_object_manifest_method_DELETE (QeteshQWebNodeManifestObjectManifestMethod* self);
 const gchar* qetesh_qweb_node_manifest_object_manifest_method_get_Name (QeteshQWebNodeManifestObjectManifestMethod* self);
 void qetesh_qweb_node_manifest_object_manifest_method_set_Name (QeteshQWebNodeManifestObjectManifestMethod* self, const gchar* value);
 const gchar* qetesh_qweb_node_manifest_object_manifest_method_get_NodePath (QeteshQWebNodeManifestObjectManifestMethod* self);
@@ -1191,6 +1361,50 @@ void qetesh_request_data_parser_set_DataTree (QeteshRequestDataParser* self, Qet
 GType qetesh_json_reqest_data_parser_get_type (void) G_GNUC_CONST;
 QeteshJSONReqestDataParser* qetesh_json_reqest_data_parser_new (void);
 QeteshJSONReqestDataParser* qetesh_json_reqest_data_parser_construct (GType object_type);
+gpointer qetesh_data_qdata_query_query_result_ref (gpointer instance);
+void qetesh_data_qdata_query_query_result_unref (gpointer instance);
+GParamSpec* qetesh_data_qdata_query_param_spec_query_result (const gchar* name, const gchar* nick, const gchar* blurb, GType object_type, GParamFlags flags);
+void qetesh_data_qdata_query_value_set_query_result (GValue* value, gpointer v_object);
+void qetesh_data_qdata_query_value_take_query_result (GValue* value, gpointer v_object);
+gpointer qetesh_data_qdata_query_value_get_query_result (const GValue* value);
+GType qetesh_data_qdata_query_query_result_get_type (void) G_GNUC_CONST;
+gpointer qetesh_data_qdata_query_query_param_ref (gpointer instance);
+void qetesh_data_qdata_query_query_param_unref (gpointer instance);
+GParamSpec* qetesh_data_qdata_query_param_spec_query_param (const gchar* name, const gchar* nick, const gchar* blurb, GType object_type, GParamFlags flags);
+void qetesh_data_qdata_query_value_set_query_param (GValue* value, gpointer v_object);
+void qetesh_data_qdata_query_value_take_query_param (GValue* value, gpointer v_object);
+gpointer qetesh_data_qdata_query_value_get_query_param (const GValue* value);
+GType qetesh_data_qdata_query_query_param_get_type (void) G_GNUC_CONST;
+QeteshDataQDataQuery* qetesh_data_qdata_query_Create (QeteshDataQDataQuery* self);
+QeteshDataQDataQuery* qetesh_data_qdata_query_Read (QeteshDataQDataQuery* self);
+QeteshDataQDataQuery* qetesh_data_qdata_query_Update (QeteshDataQDataQuery* self);
+QeteshDataQDataQuery* qetesh_data_qdata_query_Delete (QeteshDataQDataQuery* self);
+QeteshDataQDataQuery* qetesh_data_qdata_query_Count (QeteshDataQDataQuery* self);
+QeteshDataQDataQuery* qetesh_data_qdata_query_DataSet (QeteshDataQDataQuery* self, const gchar* setName);
+QeteshDataQDataQueryQueryResult* qetesh_data_qdata_query_Do (QeteshDataQDataQuery* self);
+gint qetesh_data_qdata_query_DoInt (QeteshDataQDataQuery* self);
+QeteshDataQDataQueryQueryParam* qetesh_data_qdata_query_Where (QeteshDataQDataQuery* self, const gchar* fieldName);
+QeteshDataQDataQueryQueryParam* qetesh_data_qdata_query_Set (QeteshDataQDataQuery* self, const gchar* fieldName);
+GeeLinkedList* qetesh_data_qdata_query_Fetch (QeteshDataQDataQuery* self);
+QeteshDataQDataQuery* qetesh_data_qdata_query_construct (GType object_type);
+QeteshDataQDataQueryQueryParam* qetesh_data_qdata_query_query_param_Equal (QeteshDataQDataQueryQueryParam* self, const gchar* val);
+QeteshDataQDataQueryQueryParam* qetesh_data_qdata_query_query_param_Like (QeteshDataQDataQueryQueryParam* self, const gchar* val);
+QeteshDataQDataQueryQueryParam* qetesh_data_qdata_query_query_param_GreaterThan (QeteshDataQDataQueryQueryParam* self, const gchar* val);
+QeteshDataQDataQueryQueryParam* qetesh_data_qdata_query_query_param_LessThan (QeteshDataQDataQueryQueryParam* self, const gchar* val);
+QeteshDataQDataQueryQueryParam* qetesh_data_qdata_query_query_param_construct (GType object_type);
+QeteshDataQDataQueryQueryResult* qetesh_data_qdata_query_query_result_construct (GType object_type);
+GeeLinkedList* qetesh_data_qdata_query_query_result_get_Items (QeteshDataQDataQueryQueryResult* self);
+void qetesh_data_qdata_query_query_result_set_Items (QeteshDataQDataQueryQueryResult* self, GeeLinkedList* value);
+GType qetesh_data_qmysql_query_get_type (void) G_GNUC_CONST;
+QeteshDataQMysqlQuery* qetesh_data_qmysql_query_new (QeteshDataQMysqlConn* conn);
+QeteshDataQMysqlQuery* qetesh_data_qmysql_query_construct (GType object_type, QeteshDataQMysqlConn* conn);
+QeteshDataQMysqlConn* qetesh_data_qmysql_query_get_db (QeteshDataQMysqlQuery* self);
+void qetesh_data_qmysql_query_set_db (QeteshDataQMysqlQuery* self, QeteshDataQMysqlConn* value);
+GType qetesh_data_qmysql_query_mysql_query_param_get_type (void) G_GNUC_CONST;
+const gchar* qetesh_data_qmysql_query_mysql_query_param_get_FieldName (QeteshDataQMysqlQueryMysqlQueryParam* self);
+const gchar* qetesh_data_qmysql_query_mysql_query_param_get_FieldValue (QeteshDataQMysqlQueryMysqlQueryParam* self);
+const gchar* qetesh_data_qmysql_query_mysql_query_param_get_FieldComparator (QeteshDataQMysqlQueryMysqlQueryParam* self);
+GType qetesh_data_qmysql_query_mysql_query_result_get_type (void) G_GNUC_CONST;
 
 
 G_END_DECLS
