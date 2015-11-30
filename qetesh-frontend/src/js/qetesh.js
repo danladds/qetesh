@@ -155,7 +155,7 @@ var Qetesh = {
 
 			
 				proxy[methodName] = (function(
-					hMethod, nPath,	mType, rType
+					hMethod, nPath,	mType, rType, mName
 				) {
 					
 					return function(callback = null) {
@@ -180,23 +180,56 @@ var Qetesh = {
 									var arrayLen = inData.length;
 									for (var i = 0; i < arrayLen; ++i) {
 										
-										var proto = Qetesh.Data[realType].Obj();
+										var item = inData[i];
+										var proto = null;
 										
-										for (var prop in inData[i]) {
-				  
-											if( inData[i].hasOwnProperty(prop) ) {
+										// Iterate existing items (if there are any)
+										var prevCount = 0;
+										
+										if(_this["__" + mName] != null) prevCount = _this["__" + mName].length;
+										
+										for(var y = 0; y < prevCount; ++y) {
+												
+											var obj = _this["__" + mName][y];
+										
+											// Matched existing
+											if (obj[obj.PKeyName] == item[obj.PKeyName]) {
+												
+												proto = obj;
+											}
+										}
+										
+										if (proto == null) {
 											
-												proto[prop] = inData[i][prop];
+											proto = Qetesh.Data[realType].Obj();
+										}
+										
+										for (var prop in item) {
+			  
+											if( item.hasOwnProperty(prop) ) {
+											
+												proto[prop] = item[prop];
 											} 
 										}
 										
 										returnList.push(proto);
 									}
 									
+									if(
+										_this["__" + mName] != null &&
+										_this["__" + mName][0] != null &&
+										_this["__" + mName][0].boundQElement != null &&
+										_this["__" + mName][0].boundQElement.__parent != null
+									) {
+										_this["__" + mName][0].boundQElement.__parent.UpdateTaint();
+									}
+									
+									_this["__" + mName] = returnList;
+									
 									if (callback != null) callback(returnList);
 								}
-								// Single returns
-								else
+								// Single returns - self
+								else if (rType == "this")
 								{
 									var inObj;
 									
@@ -210,7 +243,48 @@ var Qetesh = {
 										
 											_this[prop] = inData[0][prop];
 										} 
-									} 
+									}
+									
+									_this["__" + mName] = this;
+									
+									if(_this.boundQElement != null) {
+										
+										_this.boundQElement.UpdateTaint();
+									}
+									
+									if (callback != null) callback(this);
+								}
+								// Single returns - other
+								else {
+									
+									var inObj;
+									var proto = null;
+									
+									if (inData instanceof Array) inObj = inData[0];
+									else inObj = inData;
+									
+									// If already loaded, this is a re-load
+									if(_this["__" + mName] != null) {
+										
+											proto = _this["__" + mName];
+									}
+									
+									if (proto == null) {
+										proto = Qetesh.Data[realType].Obj();
+									}
+										
+									for (var prop in inObj) {
+			  
+										if( inData[0].hasOwnProperty(prop) ) {
+										
+											proto[prop] = inData[0][prop];
+										} 
+									}
+									
+									if(proto.boundQElement != null) {
+										
+										proto.boundQElement.UpdateTaint();
+									}
 									
 									if (callback != null) callback(this);
 								}
@@ -248,7 +322,7 @@ var Qetesh = {
 							xh.send();
 						}
 					}
-				})(httpMethod, nodePath, methodType, returnType);
+				})(httpMethod, nodePath, methodType, returnType, methodName);
 				
 				
 			} 
@@ -545,65 +619,21 @@ var Qetesh = {
 				return this;
 			}
 			
-			var elem;
-			var container;
-			
-			// Already-expanded repeaters
-			if (this.__repeaterTemplate != null) {
+			// Repeaters - grab and remove template if not already expanded
+			if (this.__repeaterTemplate == null) {
 				
-				elem = this.__repeaterTemplate;
-				container = this.__repeaterContainer;
-			}
-			
-			// Arrays, repeater templates
-			else {
+				var elem;
+				var container;
 				
 				elem = this.__elements[0];
 				container = elem.parentNode;
-			}
-			
-			if (!(data instanceof Array)) {
 				
-				// Deep clone inc. subelements
-				var e = elem.cloneNode(true);
-				container.appendChild(e);
-				
-				var subobj = Qetesh.HTMLElement.Obj();
-				subobj.addElement(e);
-				
-				subobj.__parent = this;
-				this.__children.push(subobj);
-				
-				subobj.Bind(data);
-			}
-				
-			var datalen = data.length;
-			
-			// Each DataObject in array
-			for (var x = 0; x < datalen; ++x) {
-				
-				var item = data[x];
-				
-				// Deep clone inc. subelements
-				var e = elem.cloneNode(true);
-				container.appendChild(e);
-				
-				var subobj = Qetesh.HTMLElement.Obj();
-				subobj.addElement(e);
-				
-				subobj.__parent = this;
-				this.__children.push(subobj);
-				
-				subobj.Bind(item);
-				
-			}
-			
-			// Remove template item
-			if (this.__repeaterTemplate == null) {
 				container.removeChild(elem);
 				this.__repeaterContainer = container;
 				this.__repeaterTemplate = elem;
 			}
+			
+			this.Reset();
 			
 			return this;
 			
@@ -722,7 +752,7 @@ var Qetesh = {
 				if(this.__fields[m].FieldName == propName) {
 					
 					this.__fields[m].Transform(inTransform, outTransform);
-					this.Update(false);
+					this.Reset(false);
 				}
 			}
 			
@@ -741,6 +771,78 @@ var Qetesh = {
 			
 			var fieldCount = this.__fields.length;
 			
+			// Update child items to reflect data
+			if (this.__bindData instanceof Array) {
+				
+				var bindC = this.__bindData.length;
+				var elemC = this.__children.length;
+				
+				for(var dataIndex = 0; dataIndex < bindC; dataIndex++) {
+					
+					var matchedIndex = -1;
+					
+					for(var childIndex = 0; childIndex < elemC; childIndex++) {
+						
+						var keyName = this.__bindData[dataIndex].PKeyName;
+						
+						if(this.__bindData[dataIndex][keyName] == this.__children[childIndex].__bindData[keyName]) {
+							
+							matchedIndex = childIndex;
+						}
+					}
+					
+					if (matchedIndex == -1) {
+						
+						// Item doesn't currently exist
+						var item = this.__bindData[dataIndex];
+				
+						// Deep clone inc. subelements
+						var e = this.__repeaterTemplate.cloneNode(true);
+						this.__repeaterContainer.appendChild(e);
+						
+						var subobj = Qetesh.HTMLElement.Obj();
+						subobj.addElement(e);
+						
+						subobj.__parent = this;
+						this.__children.push(subobj);
+						
+						subobj.Bind(item);
+					}
+				}
+				
+				var removes = [];
+				
+				// Now iterate the other way for deletes
+				for(var childIndex = 0; childIndex < elemC; childIndex++) {
+					
+					var matchedIndex = 0;
+					
+					for(var dataIndex = 0; dataIndex < bindC; dataIndex++) {
+						
+						var keyName = this.__bindData[dataIndex].PKeyName;
+						
+						if(this.__bindData[dataIndex][keyName] == this.__children[childIndex].__bindData[keyName]) {
+							
+							matchedIndex = childIndex;
+						}
+					}
+					
+					if(matchedIndex == -1) {
+						
+						// Flag for removal
+						removes.push(childIndex)
+						
+					}
+				}
+				
+				var removeCount = removes.length;
+				
+				for(var r = 0; r < removeCount; ++r) {
+					
+					this.__children.splice(r, 1);
+				}
+			}
+			
 			for(var m = 0; m < fieldCount; ++m) {
 				
 				this.__fields[m].Reset();
@@ -753,26 +855,6 @@ var Qetesh = {
 				for(var i = 0; i < childLen; ++i) {
 					
 					this.__children[i].Reset(true);
-				}
-			}
-		},
-		
-		Update : function (deep = true) {
-			
-			var fieldCount = this.__fields.length;
-			
-			for(var m = 0; m < fieldCount; ++m) {
-				
-				this.__fields[m].Update();
-			}
-			
-			if (deep) {
-				
-				var childLen = this.__children.length;
-				
-				for(var i = 0; i < childLen; ++i) {
-					
-					this.__children[i].Update(true);
 				}
 			}
 		},
@@ -793,6 +875,26 @@ var Qetesh = {
 				for(var i = 0; i < childLen; ++i) {
 					
 					this.__children[i].Commit(true);
+				}
+			}
+		},
+		
+		UpdateTaint : function (deep = true) {
+			
+			var fieldCount = this.__fields.length;
+			
+			for(var m = 0; m < fieldCount; ++m) {
+				
+				this.__fields[m].UpdateTaint();
+			}
+			
+			if (deep) {
+				
+				var childLen = this.__children.length;
+				
+				for(var i = 0; i < childLen; ++i) {
+					
+					this.__children[i].UpdateTaint(true);
 				}
 			}
 		},
@@ -969,8 +1071,6 @@ var Qetesh = {
 				var _this = this;
 				
 				this.Load(function() {
-					
-					_this.boundQElement.Update();
 					
 					if(callback != null) callback(this);
 				});

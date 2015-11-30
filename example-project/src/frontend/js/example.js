@@ -48,9 +48,12 @@ $_qetesh.Ready(function(q) {
 			
 			view.Element('#invoice-list-reload').Click(function() {
 				
-				invoice.LoadAll(function(invoices) {
-					viewPane.Show('list');
-				});
+				invoice.LoadAll();
+			});
+			
+			view.Element('#invoice-list-reset').Click(function() {
+				
+				list.Reset();
 			});
 		});
 	});
@@ -69,12 +72,21 @@ $_qetesh.Ready(function(q) {
 			
 			
 			itemList.Transform("Price", printCurrency, parseCurrency);
+			
+			invoiceForm.Element('#invoice-reload').Click(function(invoice) {
+			
+				invoice.Reload();
+				
+				// Getting the items again automatically updates the data
+				// attached to their databound locations. We don't have to
+				// do anything else.
+				invoice.Items();
+			});
 		});
 		
-		// This is for elements that don't utilise bound data for their actions
 		invoiceForm.Element('#invoice-return').Click(function(invoice) {
 			
-			// Show from cached rendering 
+			// Show from cached rendering - still shows committed changes
 			viewPane.Show('list');
 			
 		});
@@ -89,27 +101,12 @@ $_qetesh.Ready(function(q) {
 			invoiceForm.Commit();
 		});
 		
-		invoiceForm.Element('#invoice-reload').Click(function(invoice) {
-			
-			invoice.Reload();
-		});
-		
 		invoiceForm.Element('#invoice-save').Click(function(invoice) {
 			
 			invoice.Update();
 		});
 		
-		/* - No need to load individually, as we already have it!
-		 * Need to demo Load() somewhere else though...
-		invoice.Load(function () {
-			
-			view.Bind(invoice);
-		});
-		*/
-		
 	});
-	
-	// Can define alternative functions for views, e.g. edit
 	
 	viewPane.Show('list');
 	

@@ -167,7 +167,7 @@ namespace Qetesh {
 				req.HResponse.DataTree.Children.add(obj.ToNode((n) => { }));
 			});
 			
-			Manifest.Method("Load", typeName, this["$n"]).GET();
+			Manifest.Method("Load", "this", this["$n"]).GET();
 			
 			// Update single
 			this["$n"].PUT.connect((req) => {
