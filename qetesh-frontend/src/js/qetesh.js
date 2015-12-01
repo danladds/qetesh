@@ -143,8 +143,27 @@ var Qetesh = {
 				
 				var methodDef = manifest[methodName];
 				
+				// Static values
 				if(methodDef.HttpMethod == null) {
-					proxy[methodName] = methodDef;
+					
+					(function (mName) {
+						Object.defineProperty(proxy, mName, {
+							
+							get : function() {
+								
+								return this["_" + mName];
+							},
+							
+							set: function(val) {
+								
+								this["_" + mName] = val;
+								this.SetTaint(mName);
+							}
+						});
+					})(methodName);
+					
+					proxy["_" + methodName] = methodDef;
+					proxy.__properties.push(methodName);
 					continue;
 				}
 				
@@ -178,13 +197,28 @@ var Qetesh = {
 										if (inData instanceof Array) inObj = inData[0];
 										else inObj = inData;
 										
-										if(inData != null) {
+										if(inObj != null && inObj.Success == "Y") {
 											
-											_this[_this.PKeyName] == inObj;
+											_this[_this.PKeyName] = inObj[_this.PKeyName];
+											
+											if(_this.boundQElement != null) {
+										
+												_this.boundQElement.CopyDown(_this.PKeyName);
+											}
 										}
 									}
 									
 									_this.__tainted = [];
+									
+									if (callback != null) callback(this);
+								}
+								// Implode returns
+								else if (rType == "implode") {
+									
+									_this[_this.PKeyName] = _this.__proto__.PKeyName;
+									_this.__deleteMe = true;
+									
+									if (callback != null) callback(this);
 								}
 								// Array returns
 								else if (rType.indexOf("[]") > 1) {
@@ -328,12 +362,14 @@ var Qetesh = {
 							if (this.__tainted.length > 0) {
 
 								// Always send primary key
-								this.__tainted.push(this.PKeyName);
+								this.SetTaint(this.PKeyName);
 								
 								var tLen = this.__tainted.length;
 								var outObj = { };
 								
 								for(var u = 0; u < tLen; ++u) {
+									
+									if(this.__tainted[u] == "PKeyName") continue;
 									
 									outObj[this.__tainted[u]] = this[this.__tainted[u]];
 								}
@@ -537,6 +573,7 @@ var Qetesh = {
 		__parent : null,
 		__children : [],
 		__fields : [],
+		__clickCallback : null,
 		
 		addElement : function(elem) {
 			
@@ -560,6 +597,8 @@ var Qetesh = {
 		
 		Click : function (callback) {
 			
+			this.__clickCallback = callback;
+			
 			// Repeaters etc. - re-call on children
 			if(this.__repeaterTemplate != null || this.__elements.length == 0) {
 				var childCount = this.__children.length;
@@ -581,8 +620,9 @@ var Qetesh = {
 				(function (elem, cb, _this, x) { 
 					
 					elem.onclick = function() {
-					
-						cb(_this._getQData());
+						
+						// Passing 'this' context of bound HTMLElement
+						_this.__clickCallback(_this._getQData());
 					
 					};
 				})(e, callback, this, i);
@@ -688,58 +728,68 @@ var Qetesh = {
 			}
 		},
 		
+		Remove : function () {
+			
+			
+			var len = this.__elements.length;
+			
+			for(var x = 0; x < len; ++x) {
+				this.__elements[x].parentNode.removeChild(this.__elements[x]);
+			}
+		},
+		
 		__bindItem : function(data, elem) {
 			
-			for (var propName in data) {
+			var propLen = data.__properties.length;
+			for (var di = 0; di < propLen; ++di) {
 				
-				if( data.hasOwnProperty(propName) || data.__proto__.hasOwnProperty(propName) ) {
+				var propName = data.__properties[di];
+
+				var tag;
+				var propVal = data[propName];
+				
+				// Is it a field value
+				var attr = "value=\"{" + propName + "}\"";
+				tag = elem.querySelector("input[" + attr + "]");
+				
+				if(tag != null) {
 					
-					var tag;
-					var propVal = data[propName];
+					var fld = Qetesh.BindField.Obj();
 					
-					// Is it a field value
-					var attr = "value=\"{" + propName + "}\"";
-					tag = elem.querySelector("input[" + attr + "]");
+					fld.FieldElement = tag;
+					fld.FieldName = propName;
+					fld.QElem = this;
+					fld.ObjElem = elem;
+					fld.Type = "input";
+					
+					tag.__qBindField = fld;
+					
+					tag.onchange = (function (f, t) {
+							
+						return function(ev) {
+							
+							f.UpdateState();
+						};
+					})(fld, tag);
+					
+					this.__fields.push(fld);
+				}
+				
+				else {
+					
+					tag = this._findTag("{" + propName + "}", elem);
 					
 					if(tag != null) {
-						
+					
 						var fld = Qetesh.BindField.Obj();
 						
 						fld.FieldElement = tag;
 						fld.FieldName = propName;
 						fld.QElem = this;
 						fld.ObjElem = elem;
-						fld.Type = "input";
-						
-						tag.__qBindField = fld;
-						
-						tag.onchange = (function (f, t) {
-								
-							return function(ev) {
-								
-								f.UpdateState();
-							};
-						})(fld, tag);
+						fld.Type = "text";
 						
 						this.__fields.push(fld);
-					}
-					
-					else {
-						
-						tag = this._findTag("{" + propName + "}", elem);
-						
-						if(tag != null) {
-						
-							var fld = Qetesh.BindField.Obj();
-							
-							fld.FieldElement = tag;
-							fld.FieldName = propName;
-							fld.QElem = this;
-							fld.ObjElem = elem;
-							fld.Type = "text";
-							
-							this.__fields.push(fld);
-						}
 					}
 				}
 			}
@@ -798,6 +848,15 @@ var Qetesh = {
 			}
 		},
 		
+		CopyDown : function(fieldname) {
+			
+			if(fieldname == null || fieldname == "") return;
+			
+			this.__bindDataState[fieldname] = this.__bindData[fieldname];
+			
+			this.Update();
+		},
+		
 		Reset : function (deep = true) {
 			
 			var fieldCount = this.__fields.length;
@@ -808,7 +867,14 @@ var Qetesh = {
 				var bindC = this.__bindData.length;
 				var elemC = this.__children.length;
 				
+				var deletes = [];
+				
 				for(var dataIndex = 0; dataIndex < bindC; dataIndex++) {
+					
+					if(this.__bindData[dataIndex].__deleteMe == true) {
+						
+						deletes.push(dataIndex);
+					}
 					
 					var matchedIndex = -1;
 					
@@ -838,15 +904,31 @@ var Qetesh = {
 						this.__children.push(subobj);
 						
 						subobj.Bind(item);
+						
+						if(this.__clickCallback != null) {
+							
+							subobj.Click(this.__clickCallback);
+						}
 					}
 				}
 				
-				var removes = [];
+				var deleteCount = deletes.length;
 				
-				// Now iterate the other way for deletes
+				for(var y = 0; y < deleteCount; ++y) {
+					
+					this.__bindData.splice(deletes[y], 1);
+					var deletedChild = this.__children.splice(deletes[y], 1);
+					deletedChild[0].Remove();
+				}
+				
+				bindC = this.__bindData.length;
+				elemC = this.__children.length;
+				var adds = [];
+				
+				// Now iterate the other way
 				for(var childIndex = 0; childIndex < elemC; childIndex++) {
 					
-					var matchedIndex = 0;
+					var matchedIndex = -1;
 					
 					for(var dataIndex = 0; dataIndex < bindC; dataIndex++) {
 						
@@ -860,17 +942,17 @@ var Qetesh = {
 					
 					if(matchedIndex == -1) {
 						
-						// Flag for removal
-						removes.push(childIndex)
+						// Flag for add
+						adds.push(childIndex)
 						
 					}
 				}
 				
-				var removeCount = removes.length;
+				var addCount = adds.length;
 				
-				for(var r = 0; r < removeCount; ++r) {
+				for(var a = 0; a < addCount; ++a) {
 					
-					this.__children.splice(r, 1);
+					this.__bindData.push(this.__children[adds[a]].__bindData);
 				}
 			}
 			
@@ -906,6 +988,26 @@ var Qetesh = {
 				for(var i = 0; i < childLen; ++i) {
 					
 					this.__children[i].Commit(true);
+				}
+			}
+		},
+		
+		Update : function (deep = true) {
+			
+			var fieldCount = this.__fields.length;
+			
+			for(var m = 0; m < fieldCount; ++m) {
+				
+				this.__fields[m].Update();
+			}
+			
+			if (deep) {
+				
+				var childLen = this.__children.length;
+				
+				for(var i = 0; i < childLen; ++i) {
+					
+					this.__children[i].Update(true);
 				}
 			}
 		},
@@ -1058,9 +1160,10 @@ var Qetesh = {
 		
 		Commit : function() {
 			
-			this.QElem.__bindData[this.FieldName] = this.QElem.__bindDataState[this.FieldName];
+			if(this.Taint == true) {
 			
-			if(this.Taint == true) this.QElem.__bindData.SetTaint(this.FieldName);
+				this.QElem.__bindData[this.FieldName] = this.QElem.__bindDataState[this.FieldName];
+			}
 			
 			this.UpdateTaint();
 		},
@@ -1082,6 +1185,8 @@ var Qetesh = {
 		PKeyName : "Id",
 		__fromMethod : null,
 		__tainted : [],
+		__properties : [],
+		__deleteMe : false,
 		
 		Obj : function() {
 		
@@ -1092,6 +1197,9 @@ var Qetesh = {
 		}, 
 		
 		Init : function () {
+			
+			this.__tainted = [];
+			this.__properties = [];
 			
 		},
 		
@@ -1123,15 +1231,47 @@ var Qetesh = {
 			}
 		},
 		
-		Save : function (callback = null) {
+		Save : function (createCallback = null, updateCallback = null) {
 			
 			if (this[this.PKeyName] == null || this[this.PKeyName] < 1) {
 				
-				this.Create(callback);
+				this.Create(createCallback);
+			}
+			else {
+				
+				this.Update(updateCallback);
+			}
+		},
+		
+		SaveExisting : function (callback = null) {
+			
+			if (this[this.PKeyName] == null || this[this.PKeyName] < 1) {
+				
+				// Twiddle thumbs
 			}
 			else {
 				
 				this.Update(callback);
+			}
+		},
+		
+		DeleteExisting : function (callback = null) {
+			
+			if (this[this.PKeyName] == null || this[this.PKeyName] < 1) {
+				
+				// Twiddle thumbs
+			}
+			else {
+				
+				this.Delete(callback);
+			}
+		},
+		
+		Commit : function () {
+			
+			if (this.boundQElement != null) {
+				
+				this.boundQElement.Commit();
 			}
 		}
 	

@@ -11,11 +11,13 @@
 
 	<table id="invoice-item">
 		<tr>
+			<th>ID</th>
 			<th>Item</th>
 			<th>Price</th>
 			<th></th>
 		</tr>
 		<tr class="invoiceitem-list-item">
+			<td><input type="text" class="invoiceitem-item" value="{Id}" disabled="disabled" /></td>
 			<td><input type="text" class="invoiceitem-name" value="{Description}" /></td>
 			<td><input type="text" class="invoiceitem-price" value="{Price}" /></td>
 			<td class="invoiceitem-save"></td>
@@ -41,6 +43,8 @@
 		<p>Qetesh uses a staging system where a copy is made of the data. Changes are instantly reflected in that copy when bound form fields are changed. The <strong>Commit()</strong> method pushes data from the staging copy to the underlying DataObject, which other views and your code interact with primarily.</p>
 		
 		<p>Operations like <strong>DataObject.Update()</strong>  use the underlying DataObject rather than the staging copy. In most situations you will want to commit and then update, sending the data to the server. However, in this demo, the functions are separate, meaning that changes entered into the form are not saved when Save is clicked unless Commit is clicked first. Changes will, however, be reflected in the current session after committing, even without saving.</p>
+		
+		<p>The individual item rows (InvoiceItems) do both commit and save when their own save button is clicked.</p>
 		
 		<p>Reload restores data from the server, but again, does not automatically reset.</p>
 		

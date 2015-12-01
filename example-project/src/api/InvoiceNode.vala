@@ -30,11 +30,26 @@ namespace QExample {
 	
 	public class InvoiceNode : QWebNode {
 		
+		// OnBind is called on all QWebNodes when they are bound into
+		// the URI tree. It's best to do most things then, because context.
 		public override void OnBind() {
 			
+			// Expose CRUD (Create, Read, Update, Delete) functions of
+			// the Invoice type, defined in ../data/Invoice.vala
+			// Params: type name to use on client side (i.e. class name without
+			// namespace); class type; database nick as as set in .conf file
 			ExposeCrud("Invoice", typeof(Invoice), "example").Lazy(
+			
+				// Lazy() exposes the "Items" property of Invoice,
+				// which is an array of InvoiceItem objects
+				// Defined in ../data/InvoiceItem.vala
+				// Params: Property name (as defined in class);
+				// item class type; client function return type
 				"Items", typeof(InvoiceItem), "InvoiceItem[]"
 			);
+			
+			// ExposeCrud and Lazy both return a LazyLinker object
+			// which can be chained with more Lazy() calls
 		}
 	} 
 }

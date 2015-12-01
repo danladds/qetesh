@@ -66,8 +66,23 @@ namespace Qetesh.Data {
 
 		public void Create() {
 			
-			//var query = db.NewQuery().DataSet(TableName).Create();
-			//this.setPKeyStr(query.DoInt().to_string());
+			var query = db.NewQuery().DataSet(TableName).Create();
+			
+			if(TaintedProperties.size == 0) {
+				
+				throw new QDBError.QUERY("Cannot create %s with no values".printf(TableName));
+			}
+			
+			foreach(var prop in TaintedProperties) {
+				
+				if(prop == PKeyName) continue;
+				if(prop == "PKeyName") continue;
+				
+				query.Set(prop).Equal(getPropStr(prop));
+			}
+			
+			
+			this.setPKeyStr(query.DoInt().to_string());
 		}
 		
 		public void Delete() {
@@ -149,21 +164,22 @@ namespace Qetesh.Data {
 				var val = Value(typeof(QDateTime));
 				this.get_property(pName, ref val);
 				var dObj = (QDateTime) val.get_object();
-				strVal = dObj.toString();
+				
+				if(dObj != null) {
+					strVal = dObj.toString();
+				}
 			}
 			
 			else {
 				
 				if (propertyType.is_a(typeof(DataObject))) {
+					var val = Value(typeof(DataObject));
+					this.get_property(pName, ref val);
+					var dObj = (DataObject) val.get_object();
 					
-					// Don't lazy load
-					// for automatic iterations
-					// Risk of creating an infinite loop
-					// if database references loop
-					// Just provide ID instead
-					// Client application can load by 
-					// trivial access, or using lambda
-					
+					if(dObj != null) {
+						strVal = dObj.getPropStr(dObj.PKeyName);
+					}
 				}
 			}
 			
@@ -218,7 +234,12 @@ namespace Qetesh.Data {
 				
 				if (propertyType.is_a(typeof(DataObject))) {
 					
+					var dObj = (DataObject) Object.new(propertyType);
+					dObj.setPropStr(dObj.PKeyName, inVal);
 					
+					var val = Value(typeof(DataObject));
+					val.set_object((Object) dObj);
+					this.set_property(pName, val);
 				}
 			}
 		}
@@ -326,10 +347,10 @@ namespace Qetesh.Data {
 			
 			foreach(var prop in TaintedProperties) {
 				
+				if(prop == PKeyName) continue;
+				if(prop == "PKeyName") continue;
 				query.Set(prop).Equal(getPropStr(prop));
 			}
-			
-			query.Do();
 		}
 		
 		public Gee.LinkedList<DataObject> MapObjectList(Gee.LinkedList<Gee.TreeMap<string?, string?>> rows) {

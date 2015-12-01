@@ -150,6 +150,38 @@ namespace Qetesh {
 			// Create new
 			POST.connect((req) => {
 				
+				var obj = (DataObject) Object.new(typ);
+				obj._init(req.Data.GetConnection(dbName));
+				
+				req.ServerContext.Err.WriteMessage("POST (CREATE) method called", ErrorManager.QErrorClass.MODULE_DEBUG);
+				
+				var ret = new DataObject.DataNode();
+				
+				try {
+					
+					obj.FromRequest(req);
+					
+					req.ServerContext.Err.WriteMessage("Object loaded; trying Create()", ErrorManager.QErrorClass.MODULE_DEBUG);
+					
+					obj.Create();
+					
+					req.ServerContext.Err.WriteMessage("Create() done", ErrorManager.QErrorClass.MODULE_DEBUG);
+
+					
+					ret.Children.add(new DataObject.DataNode ("Success") { Val = "Y" });
+					
+					ret.Children.add(new DataObject.DataNode (obj.PKeyName) { Val = obj.getPKeyStr() });
+					
+					req.HResponse.DataTree.Children.add(ret);
+				}
+				catch(Error e) {
+
+					ret.Children.add(new DataObject.DataNode ("Success") { Val = "N" });
+					
+					req.HResponse.DataTree.Children.add(ret);
+					
+					throw e;
+				}
 			});
 			
 			Manifest.Method("Create", "void", this).POST();
@@ -168,6 +200,19 @@ namespace Qetesh {
 			});
 			
 			Manifest.Method("Load", "this", this["$n"]).GET();
+			
+			// Delete
+			this["$n"].DELETE.connect((req) => { 
+				
+				var obj = (DataObject) Object.new(typ);
+				obj._init(req.Data.GetConnection(dbName));
+				
+				obj.setPKeyStr(req.PathArgs[0]);
+				
+				obj.Delete();
+			});
+			
+			Manifest.Method("Delete", "implode", this["$n"]).DELETE();
 			
 			// Update single
 			this["$n"].PUT.connect((req) => {

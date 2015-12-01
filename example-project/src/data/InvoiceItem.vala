@@ -26,7 +26,9 @@ using Qetesh;
 using Qetesh.Data;
 
 namespace QExample.Data {
-
+	
+	// Most things here are the same as Invoice.
+	// Just a simpler example
 	public class InvoiceItem : DataObject<Invoice> {
 		
 		public int Id { get; set; }

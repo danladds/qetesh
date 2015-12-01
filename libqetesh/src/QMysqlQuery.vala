@@ -66,7 +66,7 @@ namespace Qetesh.Data {
 		
 		public override QDataQuery Create() {
 			
-			baseQuery = "INSERT INTO `s` ";
+			baseQuery = "INSERT INTO `%s` SET  ";
 			queryType = QueryType.INSERT;
 			return this;
 		}
@@ -111,10 +111,11 @@ namespace Qetesh.Data {
 				
 				return db._lastInsertId;
 			}
-			else {
+			else if (queryType == QueryType.COUNT) {
 			
 				return int.parse(rSet[0]["COUNT(*)"]);
 			}
+			else return 0;
 		}
 		
 		public override QDataQuery.QueryParam Where(string fieldName) {

@@ -21,35 +21,64 @@
  * 
  */
 
-
+// Using both core and data (ORM)
 using Qetesh;
 using Qetesh.Data;
 
+// This is where the Qetesh server will try to load our load
+// Following line needs to be as-is, as the server looks for this
+// name and type
 Type mod_init (WebAppContext ctx) {
 	
+	// Return the type of our loader class
 	return typeof(ExampleLoader);
 }
 
+// Note interface
 public class ExampleLoader : QPlugin, Object {
 
 	public QWebApp GetModObject (WebAppContext ctx) {
 		
+		// Create our main object
+		// Can potentially do some early pre-init
+		// stuff here if required
 		return new QExample.QExample(ctx);
 	}
 }
 
+// Things above need to be in global namespace
+// Our normal namespace starts here
 namespace QExample {
 
+	// The class is your main client to the Qetesh server
+	// Note inherit
 	public class QExample : QWebApp {
 		
+		// Constructor format as parent
+		// Passed server context
 		public QExample(WebAppContext ctx) {
 			
+			// This is being called at module load time
+			// We're not serving a request yet
+			
+			// Note
 			base(ctx);
 			
+			// Write a simple message to the server log
+			// Things like DB errors should always be logged rather
+			// than outputted to the user
 			WriteMessage("QExample is go!", ErrorManager.QErrorClass.MODULE_DEBUG, "QExample");
 			
-			
+			// Set up a QWebNode that we've defined in /api/InvoiceNode.vala
+			// QWebNodes form a tree that prepresents a URI structure
+			// They also provide binding points for classes we want to
+			// expose to the client-side
 			RootNode["invoice"] = new InvoiceNode();
+			
+			// Set up a manifest node. QManifest is a built-in QWebNode
+			// This allows for the client JS object interfece
+			// Not needed if you're just using Qetesh as a JSON
+			// API server
 			RootNode["manifest"] = new QManifest();
 		}
 	}

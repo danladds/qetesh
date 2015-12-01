@@ -323,6 +323,10 @@ input[type=text].consec { border-left: none; }
 	background-position: center center;
 }
 
+#invoice-item tr td.invoiceitem-id input[type=text] {
+	width: 2em;
+}
+
 #invoice-item tr td.invoiceitem-save {
 	
 	background-image: url(../img/save.png);

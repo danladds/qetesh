@@ -61,8 +61,9 @@ namespace Qetesh {
 		
 		public void Parse(string inData) {
 			
-			// Sample: 
+			// Samples: 
 			//   {"Id":"1","Surname":"Smithsons"}
+			//   {"Price":499,"Description":"Camels","Id":"0"}
 			
 			DataTree = new DataObject.DataNode();
 			DataTree.IsArray = true;
@@ -75,7 +76,7 @@ namespace Qetesh {
 		
 		private void ParseValue(DataObject.DataNode node, string name) {
 			
-			if(index < 0) return;
+			if(index < 0) return; 
 			
 			if (data[index] == '{') {
 				index++;
@@ -90,11 +91,35 @@ namespace Qetesh {
 				index++;
 				ParseString(node, name);
 			}
+			else if (data[index].isdigit()) {
+				ParseNumber(node, name);
+			} 
 			else {
 				// Ignore it
 				index++;
 			}
 			
+		}
+		
+		private void ParseNumber (DataObject.DataNode node, string name) {
+			
+			var start = index;
+			
+			if(index < 0) return;
+			
+			do {
+				++index;
+				
+			} while (data[index + 1].isdigit());
+			
+			index++;
+			
+			var strNode = new DataObject.DataNode(name);
+			
+			strNode.Val = data.slice(start, index);				
+			node.Children.add(strNode);
+			
+			index++;
 		}
 		
 		private void ParseString (DataObject.DataNode node, string name) {
