@@ -71,7 +71,7 @@ namespace Qetesh.Data {
 			Validators = new Gee.HashMap<string, Validator>();
 		}
 		
-		public void Validate() throws ValidationError {
+		public void ValidateAll() throws ValidationError {
 			
 			bool valid = true;
 			
@@ -86,7 +86,24 @@ namespace Qetesh.Data {
 			if(valid == false) throw new ValidationError.INVALID_VALUE("Validate() failed");
 		}
 
-		public void Create() {
+		public void Create() throws ValidationError {
+			
+			foreach(string key in Validators.keys) {
+				
+				// Exclude PKey from create
+				if(key == "PKeyName" || key == PKeyName) {
+					
+					continue;
+				}
+				
+				if(!TaintedProperties.contains(key)) {
+					
+					if(Validators[key].Mandatory == true) {
+						
+						TaintedProperties.add(key);
+					}
+				}
+			}
 			
 			var query = db.NewQuery().DataSet(TableName).Create();
 			
@@ -95,19 +112,32 @@ namespace Qetesh.Data {
 				throw new QDBError.QUERY("Cannot create %s with no values".printf(TableName));
 			}
 			
+			bool valid = true;
+			
 			foreach(var prop in TaintedProperties) {
 				
 				if(prop == PKeyName) continue;
 				if(prop == "PKeyName") continue;
 				
+				if(!Validators[prop].Validate()) {
+					
+					valid = false;
+				}
+				
 				query.Set(prop).Equal(getPropStr(prop));
 			}
+			
+			if(valid == false)
+				throw new ValidationError.INVALID_VALUE("Create() validation failed");
 			
 			
 			this.setPKeyStr(query.DoInt().to_string());
 		}
 		
 		public void Delete() {
+			
+			if (!Validators[PKeyName].Validate())
+				throw new ValidationError.INVALID_VALUE("Delete(): Primary key not set");
 			
 			var query = db.NewQuery().DataSet(TableName).Delete();
 			
@@ -136,7 +166,10 @@ namespace Qetesh.Data {
 		 * Server side lazy loading
 		 * 
 		**/
-		protected Gee.LinkedList<DataObject> LazyLoadList(string propertyName, Type fType)  {
+		protected Gee.LinkedList<DataObject> LazyLoadList(string propertyName, Type fType) throws ValidationError {
+			
+			if (!Validators[PKeyName].Validate())
+				throw new ValidationError.INVALID_VALUE ("LazyLoadList(): Primary key not set");
 			
 			var proto = (DataObject) Object.new(fType);
 			proto._init(db);
@@ -203,9 +236,12 @@ namespace Qetesh.Data {
 			}
 		}
 		
-		public void Update() {
+		public void Update() throws ValidationError {
 			
 			var query = db.NewQuery().DataSet(TableName).Update();
+			
+			if (!Validators[PKeyName].Validate())
+				throw new ValidationError.INVALID_VALUE("Update(): Primary key not set");
 			
 			query.Where(PKeyName).Equal(getPKeyStr());
 			
@@ -216,12 +252,24 @@ namespace Qetesh.Data {
 				return;
 			}
 			
+			bool valid = true;
+			
 			foreach(var prop in TaintedProperties) {
+				
+				if(!Validators[prop].Validate()) {
+					
+					valid = false;
+				}
 				
 				if(prop == PKeyName) continue;
 				if(prop == "PKeyName") continue;
 				query.Set(prop).Equal(getPropStr(prop));
 			}
+			
+			if(valid == false)
+				throw new ValidationError.INVALID_VALUE("Update() validation failed");
+				
+			query.Do();
 		}
 		
 		internal string getPKeyStr() {
@@ -307,7 +355,6 @@ namespace Qetesh.Data {
 					var val = Value(typeof(DataObject));
 					this.get_property(pName, ref val);
 					var dObj = (DataObject) val.get_object();
-					dObj.__init();
 					
 					if(dObj != null) {
 						strVal = dObj.getPropStr(dObj.PKeyName);
@@ -320,7 +367,7 @@ namespace Qetesh.Data {
 			return strVal;
 		}
 		
-		private void _setPropStr(string pName, string inVal, Type propertyType) {
+		private void _setPropStr(string pName, string inVal, Type propertyType, bool mock = false) {
 			
 			if(Validators == null) new Gee.HashMap<string, Validator>();
 			
@@ -330,6 +377,8 @@ namespace Qetesh.Data {
 					
 					Validators[pName] = new StringValidator();
 				}
+				
+				if(mock) return;
 				
 				var vdr = (StringValidator) Validators[pName];
 					
@@ -348,6 +397,8 @@ namespace Qetesh.Data {
 					
 					Validators[pName] = new IntValidator();
 				}
+				
+				if(mock) return;
 				
 				var vdr = (IntValidator) Validators[pName];
 				
@@ -384,6 +435,8 @@ namespace Qetesh.Data {
 					Validators[pName] = new DoubleValidator();
 				}
 				
+				if(mock) return;
+				
 				var vdr = (DoubleValidator) Validators[pName];
 				
 				vdr.InValue = inVal;
@@ -401,6 +454,8 @@ namespace Qetesh.Data {
 					Validators[pName] = new DoubleValidator();
 				}
 				
+				if(mock) return;
+				
 				var vdr = (DoubleValidator) Validators[pName];
 				
 				vdr.InValue = inVal;
@@ -413,15 +468,24 @@ namespace Qetesh.Data {
 			
 			else if (propertyType.is_a(typeof(QDateTime))) {
 				
-				var dt = new QDateTime();
-				dt.fromString(inVal);
+				if(Validators[pName] == null) {
+					
+					Validators[pName] = new QDateTimeValidator();
+				}
+				
+				if(mock) return;
+				
+				var vdr = (QDateTimeValidator) Validators[pName];
+				vdr.Convert();
 				
 				var val = Value(typeof(QDateTime));
-				val.set_object((Object) dt);
+				val.set_object((Object) vdr.OutValue);
 				this.set_property(pName, val);
 			}
 			
 			else {
+				
+				if(mock) return;
 				
 				if (propertyType.is_a(typeof(DataObject))) {
 					
@@ -496,6 +560,8 @@ namespace Qetesh.Data {
 			
 			var dn = new DataNode(this.get_type().name());
 			
+			var validatorList = new DataNode("Validators");
+			
 			foreach (var prop in classObj.list_properties()) {
 				
 				string pName = prop.get_name();
@@ -525,9 +591,48 @@ namespace Qetesh.Data {
 				
 				var childNode = new DataNode(pName);
 				childNode.Val = _getPropStr(pName, propertyType);
+				
+				// Mock settings to establish default validators on
+				// unset fields
+				_setPropStr(pName, "", propertyType, true);
+				
+				DataNode vdNode;
+				DataNode testNode;
+				
+				if(Validators[pName] != null) {
+					
+					var validator = Validators[pName];
+					vdNode = new DataNode(pName);
+					
+					vdNode.Children.add(new DataNode("ValidatorClass", validator.Name));
+					
+					testNode = new DataNode("Tests");
+					
+					foreach(var t in validator.Tests) {
+						
+						testNode.Children.add(new DataNode(t.TestName, t.Comparator));
+					}
+					
+					vdNode.Children.add(testNode);
+					
+					validatorList.Children.add(vdNode);
+				}
+				else if(
+					propertyType == typeof(string) ||
+					propertyType == typeof(int) ||
+					propertyType == typeof(bool) ||
+					propertyType == typeof(float) ||
+					propertyType == typeof(double) ||
+					propertyType == typeof(QDateTime)
+				){
+					
+					throw new ValidationError.UNVALIDATED_FIELD(pName);
+				}
 					
 				dn.Children.add(childNode);
 			}
+			
+			dn.Children.add(validatorList);
 			
 			transform(dn);
 			
@@ -542,8 +647,6 @@ namespace Qetesh.Data {
 		public void FromNode(DataNode data) throws ValidationError {
 			
 			if (data.Children.size > 0) {
-				
-				Validate();
 			
 				foreach(var child in data.Children[0].Children) {
 					 
@@ -570,9 +673,12 @@ namespace Qetesh.Data {
 			public Gee.LinkedList<DataNode> Children { get; private set; }
 			public bool IsArray { get; set; }
 			
-			public DataNode (string name = "Data", bool isArray = false) {
+			public DataNode (string name = "Data", string? val = null) {
 				
-				IsArray = isArray;
+				if (val != null) {
+					Val = val;
+				}
+				
 				Name = name;
 				Children = new Gee.LinkedList<DataNode>();
 			}

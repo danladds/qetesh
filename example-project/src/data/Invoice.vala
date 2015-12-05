@@ -72,6 +72,8 @@ namespace QExample.Data {
 			
 			Validators["Forename"] = new StringValidator().Matches("^[A-Za-Z0-9]+$");
 			Validators["Surname"] = new StringValidator().Matches("^[A-Za-Z0-9]+$");
+			Validators["Issued"] = new QDateTimeValidator();
+			Validators["Total"] = new IntValidator().GreaterThan(0).LessThan(99999999);
 		}
 		
 		// Override NameTransform as here, which is called as a transform

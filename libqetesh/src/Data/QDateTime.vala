@@ -31,17 +31,67 @@ namespace Qetesh {
 		
 		public QDateTime() {
 			
-			dt = new DateTime(new TimeZone.local(), 0,0,0,0,0,0);
+			dt = new DateTime.now(new TimeZone.local());
 		}
 		
 		public void fromString(string inVal) {
 			
 			// Format: 2015-11-04 00:00:00
 			var mainParts = inVal.split(" ");
+			
+			if(mainParts.length != 2)
+				throw new ValidationError.INVALID_DATETIME_STRING("Invalid format");
+			
 			var dateParts = mainParts[0].split("-");
 			var timeParts = mainParts[1].split(":");
 			
-			dt = new DateTime(new TimeZone.local(), int.parse(dateParts[0]), int.parse(dateParts[1]), int.parse(dateParts[2]), int.parse(timeParts[0]), int.parse(timeParts[1]), int.parse(timeParts[2]));
+			if(dateParts.length != 3)
+				throw new ValidationError.INVALID_DATETIME_STRING("Invalid date format");
+				
+			if(timeParts.length != 3)
+				throw new ValidationError.INVALID_DATETIME_STRING("Invalid time format");
+				
+			int year = -1;
+			int month = -1;
+			int day = -1;
+			
+			int hour = -1;
+			int minute = -1;
+			int second = -1;
+			
+			year = int.parse(dateParts[0]);
+			month = int.parse(dateParts[1]);
+			day = int.parse(dateParts[2]);
+			
+			hour = int.parse(timeParts[0]);
+			minute = int.parse(timeParts[1]);
+			second = int.parse(timeParts[2]);
+			
+			if(
+				year < 0 ||
+				year > 60000 ||
+				month < 1 ||
+				month > 12 ||
+				day < 0 ||
+				day > 31 ||
+				hour < 0 ||
+				hour > 24 ||
+				minute < 0 ||
+				minute > 60 ||
+				second < 0 ||
+				second > 60
+			) {
+				
+				throw new ValidationError.INVALID_DATETIME_STRING("Invalid value");
+			}
+			
+			try {
+				dt = new DateTime(new TimeZone.local(), year, month, day, hour, minute, second);
+			}
+			catch(Error e) {
+				
+				throw new ValidationError.INVALID_DATETIME_STRING("Native DateTime conversion failed");
+			}
 		}
 		
 		public string toString() {

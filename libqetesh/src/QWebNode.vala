@@ -111,13 +111,20 @@ namespace Qetesh {
 		protected void ExposeProperties(string typeName, Type typ) {
 			
 			var proto = (DataObject) Object.new(typ);
+			proto.__init();
 			proto.Init();
 			
 			var defaults = proto.ToNode((n) => { });
 			
 			foreach(var node in defaults.Children) {
 				
-				Manifest.Prop(node.Name, node.Val);
+				if(node.Name == "Validators") {
+					
+					Manifest.ValidatorNode = node;
+				}
+				else {
+					Manifest.Prop(node.Name, node.Val);
+				}
 			}
 		}
 		
@@ -319,6 +326,8 @@ namespace Qetesh {
 				
 				var objBase = walker.AddObject(Manifest.TypeName, Manifest.PKeyName);
 				
+				objBase.Children.add(Manifest.ValidatorNode);
+				
 				foreach(var mm in Manifest.Methods)
 					objBase.Children.add(mm.GetDescriptor());
 					
@@ -362,6 +371,8 @@ namespace Qetesh {
 			
 			public Gee.LinkedList<ManifestMethod> Methods { get; private set; }
 			public Gee.HashMap<string, string> Props { get; private set; }
+			
+			public DataObject.DataNode ValidatorNode { get; set; }
 			
 			public ManifestObject(string typeName, string pKey) {
 				

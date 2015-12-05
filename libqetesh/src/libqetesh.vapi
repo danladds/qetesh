@@ -19,7 +19,7 @@ namespace Qetesh {
 		[CCode (cheader_filename = "libqetesh.h")]
 		public abstract class DataObject<TImp> : GLib.Object {
 			public class DataNode {
-				public DataNode (string name = "Data", bool isArray = false);
+				public DataNode (string name = "Data", string? val = null);
 				public Gee.LinkedList<Qetesh.Data.DataObject.DataNode> Children { get; private set; }
 				public bool IsArray { get; set; }
 				public string Name { get; set; }
@@ -44,21 +44,21 @@ namespace Qetesh {
 			public delegate void DataNodeTransform (Qetesh.Data.DataObject.DataNode n);
 			protected Gee.HashMap<string,Qetesh.Data.Validator> Validators;
 			public DataObject (Qetesh.Data.QDatabaseConn dbh);
-			public void Create ();
+			public void Create () throws Qetesh.Data.ValidationError;
 			public Qetesh.Data.DataObject CreateObject (Gee.TreeMap<string?,string?> datum);
 			public void Delete ();
 			public void FromNode (Qetesh.Data.DataObject.DataNode data) throws Qetesh.Data.ValidationError;
 			public void FromRequest (Qetesh.HTTPRequest req);
 			public abstract void Init ();
-			protected Gee.LinkedList<Qetesh.Data.DataObject> LazyLoadList (string propertyName, GLib.Type fType);
+			protected Gee.LinkedList<Qetesh.Data.DataObject> LazyLoadList (string propertyName, GLib.Type fType) throws Qetesh.Data.ValidationError;
 			public void Load ();
 			public Gee.LinkedList<Qetesh.Data.DataObject> LoadAll () throws Qetesh.Data.QDBError;
 			public void MapObject (Gee.TreeMap<string?,string?> datum);
 			public Gee.LinkedList<Qetesh.Data.DataObject> MapObjectList (Gee.LinkedList<Gee.TreeMap<string?,string?>> rows);
 			protected virtual string NameTransform (string fieldName);
 			public Qetesh.Data.DataObject.DataNode ToNode (Qetesh.Data.DataObject.DataNodeTransform transform);
-			public void Update ();
-			public void Validate () throws Qetesh.Data.ValidationError;
+			public void Update () throws Qetesh.Data.ValidationError;
+			public void ValidateAll () throws Qetesh.Data.ValidationError;
 			public string PKeyName { get; protected set; }
 			protected string TableName { get; set; }
 		}
@@ -120,6 +120,11 @@ namespace Qetesh {
 			public bool IsConnected { get; protected set; }
 		}
 		[CCode (cheader_filename = "libqetesh.h")]
+		public class QDateTimeValidator : Qetesh.Data.Validator<Qetesh.QDateTime> {
+			public QDateTimeValidator ();
+			public override void Convert ();
+		}
+		[CCode (cheader_filename = "libqetesh.h")]
 		public class QMysqlConn : Qetesh.Data.QDatabaseConn {
 			public QMysqlConn (Qetesh.ConfigFile.DBConfig config, Qetesh.WebServerContext sc);
 			public override void Connect () throws Qetesh.Data.QDBError;
@@ -175,6 +180,7 @@ namespace Qetesh {
 			public Qetesh.Data.ValidationTest.TestFunc Func;
 			public ValidationTest ();
 			public bool Run (T val);
+			public string Comparator { get; set; }
 			public bool Passed { get; set; }
 			public string TestName { get; set; }
 		}
@@ -185,6 +191,8 @@ namespace Qetesh {
 			public abstract void Convert ();
 			public bool Validate ();
 			public string InValue { get; set; }
+			public bool Mandatory { get; set; }
+			public string Name { get; set; }
 			public TField OutValue { get; set; }
 			public bool Passed { get; set; }
 		}
@@ -195,7 +203,9 @@ namespace Qetesh {
 		}
 		[CCode (cheader_filename = "libqetesh.h")]
 		public errordomain ValidationError {
-			INVALID_VALUE
+			INVALID_VALUE,
+			INVALID_DATETIME_STRING,
+			UNVALIDATED_FIELD
 		}
 	}
 	namespace Errors {
@@ -413,6 +423,7 @@ namespace Qetesh {
 			public string PKeyName { get; private set; }
 			public Gee.HashMap<string,string> Props { get; private set; }
 			public string TypeName { get; private set; }
+			public Qetesh.Data.DataObject.DataNode ValidatorNode { get; set; }
 		}
 		public class ManifestWalker {
 			public ManifestWalker (Qetesh.Data.DataObject.DataNode rNode);

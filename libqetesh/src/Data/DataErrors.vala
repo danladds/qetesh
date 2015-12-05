@@ -25,7 +25,9 @@ namespace Qetesh.Data {
 	
 	public errordomain ValidationError {
 		
-		INVALID_VALUE
+		INVALID_VALUE,
+		INVALID_DATETIME_STRING,
+		UNVALIDATED_FIELD
 	}
 	
 	

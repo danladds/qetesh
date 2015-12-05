@@ -55,12 +55,11 @@ namespace Qetesh {
 		}
 		
 		public void AddJson(Data.DataObject.DataNode node, bool parentIsArray = false) {
-			
 			/*
 			Context.Server.Err.WriteMessage(
-					"JSONResponse adding node: %s = %s".printf(node.Name, node.Val),
+					"JSONResponse adding node: %s = %s (%d)".printf(node.Name, node.Val, node.Children.size),
 					ErrorManager.QErrorClass.QETESH_DEBUG);
-			*/
+					*/
 			
 			if (!parentIsArray) {
 				

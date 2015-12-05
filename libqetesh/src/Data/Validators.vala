@@ -27,7 +27,10 @@ namespace Qetesh.Data {
 	
 	public abstract class Validator<TField> : Object {
 		
+		public string Name { get; set; }
+		
 		public bool Passed { get; set; default = false; }
+		public bool Mandatory { get; set; default = true; }
 		
 		public string InValue { get; set; }
 		public TField OutValue { get; set; }
@@ -67,6 +70,8 @@ namespace Qetesh.Data {
 		
 		public TestFunc Func;
 		
+		public string Comparator { get; set; default=""; }
+		
 		public bool Run(T val) {
 			
 			if (Func != null) {
@@ -83,11 +88,17 @@ namespace Qetesh.Data {
 	
 	public class IntValidator : Validator<int?> {
 		
+		public IntValidator() {
+			
+			Name = "INT";
+		}
+		
 		public IntValidator GreaterThan(int comp) {
 			
 			Tests.add(new ValidationTest<int?>() { 
 				
-				TestName = "INT_GT",
+				TestName = "GT",
+				Comparator = comp.to_string(),
 				Func = () => {
 					
 					this.Passed = (this.OutValue > comp);
@@ -102,8 +113,9 @@ namespace Qetesh.Data {
 			
 			Tests.add(new ValidationTest<int?>() { 
 				
-				TestName = "INT_LT",
-					Func = () => {
+				TestName = "LT",
+				Comparator = comp.to_string(),
+				Func = () => {
 						
 					this.Passed = (this.OutValue < comp);
 					return this.Passed;
@@ -117,7 +129,8 @@ namespace Qetesh.Data {
 			
 			Tests.add(new ValidationTest<int?>() { 
 				
-				TestName = "INT_EQUALS",
+				TestName = "EQUALS",
+				Comparator = comp.to_string(),
 				Func = () => {
 					
 					this.Passed = (this.OutValue == comp);
@@ -131,7 +144,7 @@ namespace Qetesh.Data {
 		public override void Convert() {
 			
 			var t = new ValidationTest<int?>();
-			t.TestName = "IS_INT";
+			t.TestName = "IS";
 			
 			if(InValue == "0") {
 				OutValue = 0;
@@ -155,11 +168,17 @@ namespace Qetesh.Data {
 	
 	public class StringValidator : Validator<string> {
 		
+		public StringValidator() {
+			
+			Name = "STRING";
+		}
+		
 		public StringValidator Contains(string comp) {
 			
 			Tests.add(new ValidationTest<string>() { 
 				
-				TestName = "STRING_CONTAINS",
+				TestName = "CONTAINS",
+				Comparator = comp,
 				Func = () => {
 					
 					this.Passed = (this.OutValue.contains(comp));
@@ -174,7 +193,8 @@ namespace Qetesh.Data {
 			
 			Tests.add(new ValidationTest<string>() { 
 				
-				TestName = "STRING_NOCONTAIN",
+				TestName = "NOCONTAIN",
+				Comparator = comp,
 				Func = () => {
 					
 					this.Passed = (!this.OutValue.contains(comp));
@@ -189,7 +209,8 @@ namespace Qetesh.Data {
 			
 			Tests.add(new ValidationTest<string>() { 
 				
-				TestName = "STRING_EQUALS",
+				TestName = "EQUALS",
+				Comparator = comp,
 				Func = () => {
 					
 					this.Passed = (this.OutValue == comp);
@@ -204,7 +225,8 @@ namespace Qetesh.Data {
 			
 			Tests.add(new ValidationTest<string>() { 
 				
-				TestName = "STRING_MATCHES",
+				TestName = "MATCHES",
+				Comparator = regex,
 				Func = () => {
 					
 					this.Passed = (Regex.match_simple(regex, this.OutValue));
@@ -218,7 +240,7 @@ namespace Qetesh.Data {
 		public override void Convert() {
 			
 			var t = new ValidationTest<string>();
-			t.TestName = "IS_STRING";
+			t.TestName = "IS";
 					
 			t.Passed = true;
 			OutValue = InValue;
@@ -229,11 +251,17 @@ namespace Qetesh.Data {
 	
 	public class DoubleValidator : Validator<double?> {
 		
+		public DoubleValidator() {
+			
+			Name = "DOUBLE";
+		}
+		
 		public DoubleValidator GreaterThan(double? comp) {
 			
 			Tests.add(new ValidationTest<double?>() { 
 				
-				TestName = "DOUBLE_GT",
+				TestName = "GT",
+				Comparator = comp.to_string(),
 				Func = () => {
 					
 					this.Passed = (this.OutValue > comp);
@@ -248,7 +276,8 @@ namespace Qetesh.Data {
 			
 			Tests.add(new ValidationTest<double?>() { 
 				
-				TestName = "DOUBLE_LT",
+				TestName = "LT",
+				Comparator = comp.to_string(),
 				Func = () => {
 					
 					this.Passed = (this.OutValue < comp);
@@ -263,7 +292,8 @@ namespace Qetesh.Data {
 			
 			Tests.add(new ValidationTest<double?>() { 
 				
-				TestName = "DOUBLE_GT",
+				TestName = "GT",
+				Comparator = comp.to_string(),
 				Func = () => {
 					
 					this.Passed = (this.OutValue > comp);
@@ -277,7 +307,7 @@ namespace Qetesh.Data {
 		public override void Convert() {
 			
 			var t = new ValidationTest<double?>();
-			t.TestName = "IS_DOUBLE";
+			t.TestName = "IS";
 			
 			double res;
 			
@@ -295,13 +325,18 @@ namespace Qetesh.Data {
 	
 	public class BoolValidator : Validator<bool?> {
 		
+		public BoolValidator() {
+			
+			Name = "BOOL";
+		}
+		
 		public override void Convert() {
 		
 			var val = InValue;
 			val = val.down();
 			
 			var t = new ValidationTest<bool?>();
-			t.TestName = "IS_BOOL";
+			t.TestName = "IS";
 			
 			if(val == "true") {
 				
@@ -318,6 +353,38 @@ namespace Qetesh.Data {
 				
 				t.Passed = false;
 			}
+			
+			Tests.add(t);
+		}
+	}
+	
+	public class QDateTimeValidator : Validator<QDateTime> {
+		
+		
+		public QDateTimeValidator() {
+			
+			Name = "QDATETIME";
+		}
+		
+		public override void Convert() {
+		
+			var val = InValue;
+			
+			var t = new ValidationTest<QDateTime>();
+			t.TestName = "IS";
+			
+			var dt = new QDateTime();
+			
+			try {
+				dt.fromString(InValue);
+			}
+			catch(ValidationError e) {
+				
+				t.Passed = true;
+			}
+			
+			OutValue = dt;
+			t.Passed = true;
 			
 			Tests.add(t);
 		}

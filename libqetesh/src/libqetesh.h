@@ -105,6 +105,17 @@ typedef struct _QeteshDataBoolValidator QeteshDataBoolValidator;
 typedef struct _QeteshDataBoolValidatorClass QeteshDataBoolValidatorClass;
 typedef struct _QeteshDataBoolValidatorPrivate QeteshDataBoolValidatorPrivate;
 
+#define QETESH_DATA_TYPE_QDATE_TIME_VALIDATOR (qetesh_data_qdate_time_validator_get_type ())
+#define QETESH_DATA_QDATE_TIME_VALIDATOR(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), QETESH_DATA_TYPE_QDATE_TIME_VALIDATOR, QeteshDataQDateTimeValidator))
+#define QETESH_DATA_QDATE_TIME_VALIDATOR_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), QETESH_DATA_TYPE_QDATE_TIME_VALIDATOR, QeteshDataQDateTimeValidatorClass))
+#define QETESH_DATA_IS_QDATE_TIME_VALIDATOR(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), QETESH_DATA_TYPE_QDATE_TIME_VALIDATOR))
+#define QETESH_DATA_IS_QDATE_TIME_VALIDATOR_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), QETESH_DATA_TYPE_QDATE_TIME_VALIDATOR))
+#define QETESH_DATA_QDATE_TIME_VALIDATOR_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), QETESH_DATA_TYPE_QDATE_TIME_VALIDATOR, QeteshDataQDateTimeValidatorClass))
+
+typedef struct _QeteshDataQDateTimeValidator QeteshDataQDateTimeValidator;
+typedef struct _QeteshDataQDateTimeValidatorClass QeteshDataQDateTimeValidatorClass;
+typedef struct _QeteshDataQDateTimeValidatorPrivate QeteshDataQDateTimeValidatorPrivate;
+
 #define QETESH_DATA_TYPE_DATA_OBJECT (qetesh_data_data_object_get_type ())
 #define QETESH_DATA_DATA_OBJECT(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), QETESH_DATA_TYPE_DATA_OBJECT, QeteshDataDataObject))
 #define QETESH_DATA_DATA_OBJECT_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), QETESH_DATA_TYPE_DATA_OBJECT, QeteshDataDataObjectClass))
@@ -543,7 +554,9 @@ struct _QeteshWebserverlibqeteshClass {
 };
 
 typedef enum  {
-	QETESH_DATA_VALIDATION_ERROR_INVALID_VALUE
+	QETESH_DATA_VALIDATION_ERROR_INVALID_VALUE,
+	QETESH_DATA_VALIDATION_ERROR_INVALID_DATETIME_STRING,
+	QETESH_DATA_VALIDATION_ERROR_UNVALIDATED_FIELD
 } QeteshDataValidationError;
 #define QETESH_DATA_VALIDATION_ERROR qetesh_data_validation_error_quark ()
 struct _QeteshQDateTime {
@@ -612,6 +625,15 @@ struct _QeteshDataBoolValidator {
 };
 
 struct _QeteshDataBoolValidatorClass {
+	QeteshDataValidatorClass parent_class;
+};
+
+struct _QeteshDataQDateTimeValidator {
+	QeteshDataValidator parent_instance;
+	QeteshDataQDateTimeValidatorPrivate * priv;
+};
+
+struct _QeteshDataQDateTimeValidatorClass {
 	QeteshDataValidatorClass parent_class;
 };
 
@@ -1113,8 +1135,12 @@ GType qetesh_data_validation_test_get_type (void) G_GNUC_CONST;
 QeteshDataValidator* qetesh_data_validator_construct (GType object_type, GType tfield_type, GBoxedCopyFunc tfield_dup_func, GDestroyNotify tfield_destroy_func);
 gboolean qetesh_data_validator_Validate (QeteshDataValidator* self);
 void qetesh_data_validator_Convert (QeteshDataValidator* self);
+const gchar* qetesh_data_validator_get_Name (QeteshDataValidator* self);
+void qetesh_data_validator_set_Name (QeteshDataValidator* self, const gchar* value);
 gboolean qetesh_data_validator_get_Passed (QeteshDataValidator* self);
 void qetesh_data_validator_set_Passed (QeteshDataValidator* self, gboolean value);
+gboolean qetesh_data_validator_get_Mandatory (QeteshDataValidator* self);
+void qetesh_data_validator_set_Mandatory (QeteshDataValidator* self, gboolean value);
 const gchar* qetesh_data_validator_get_InValue (QeteshDataValidator* self);
 void qetesh_data_validator_set_InValue (QeteshDataValidator* self, const gchar* value);
 gconstpointer qetesh_data_validator_get_OutValue (QeteshDataValidator* self);
@@ -1126,28 +1152,33 @@ const gchar* qetesh_data_validation_test_get_TestName (QeteshDataValidationTest*
 void qetesh_data_validation_test_set_TestName (QeteshDataValidationTest* self, const gchar* value);
 gboolean qetesh_data_validation_test_get_Passed (QeteshDataValidationTest* self);
 void qetesh_data_validation_test_set_Passed (QeteshDataValidationTest* self, gboolean value);
+const gchar* qetesh_data_validation_test_get_Comparator (QeteshDataValidationTest* self);
+void qetesh_data_validation_test_set_Comparator (QeteshDataValidationTest* self, const gchar* value);
 GType qetesh_data_int_validator_get_type (void) G_GNUC_CONST;
+QeteshDataIntValidator* qetesh_data_int_validator_new (void);
+QeteshDataIntValidator* qetesh_data_int_validator_construct (GType object_type);
 QeteshDataIntValidator* qetesh_data_int_validator_GreaterThan (QeteshDataIntValidator* self, gint comp);
 QeteshDataIntValidator* qetesh_data_int_validator_LessThan (QeteshDataIntValidator* self, gint comp);
 QeteshDataIntValidator* qetesh_data_int_validator_Equals (QeteshDataIntValidator* self, gint comp);
-QeteshDataIntValidator* qetesh_data_int_validator_new (void);
-QeteshDataIntValidator* qetesh_data_int_validator_construct (GType object_type);
 GType qetesh_data_string_validator_get_type (void) G_GNUC_CONST;
+QeteshDataStringValidator* qetesh_data_string_validator_new (void);
+QeteshDataStringValidator* qetesh_data_string_validator_construct (GType object_type);
 QeteshDataStringValidator* qetesh_data_string_validator_Contains (QeteshDataStringValidator* self, const gchar* comp);
 QeteshDataStringValidator* qetesh_data_string_validator_DoesntContain (QeteshDataStringValidator* self, const gchar* comp);
 QeteshDataStringValidator* qetesh_data_string_validator_Equals (QeteshDataStringValidator* self, const gchar* comp);
 QeteshDataStringValidator* qetesh_data_string_validator_Matches (QeteshDataStringValidator* self, const gchar* regex);
-QeteshDataStringValidator* qetesh_data_string_validator_new (void);
-QeteshDataStringValidator* qetesh_data_string_validator_construct (GType object_type);
 GType qetesh_data_double_validator_get_type (void) G_GNUC_CONST;
+QeteshDataDoubleValidator* qetesh_data_double_validator_new (void);
+QeteshDataDoubleValidator* qetesh_data_double_validator_construct (GType object_type);
 QeteshDataDoubleValidator* qetesh_data_double_validator_GreaterThan (QeteshDataDoubleValidator* self, gdouble* comp);
 QeteshDataDoubleValidator* qetesh_data_double_validator_LessThan (QeteshDataDoubleValidator* self, gdouble* comp);
 QeteshDataDoubleValidator* qetesh_data_double_validator_Equals (QeteshDataDoubleValidator* self, gdouble* comp);
-QeteshDataDoubleValidator* qetesh_data_double_validator_new (void);
-QeteshDataDoubleValidator* qetesh_data_double_validator_construct (GType object_type);
 GType qetesh_data_bool_validator_get_type (void) G_GNUC_CONST;
 QeteshDataBoolValidator* qetesh_data_bool_validator_new (void);
 QeteshDataBoolValidator* qetesh_data_bool_validator_construct (GType object_type);
+GType qetesh_data_qdate_time_validator_get_type (void) G_GNUC_CONST;
+QeteshDataQDateTimeValidator* qetesh_data_qdate_time_validator_new (void);
+QeteshDataQDateTimeValidator* qetesh_data_qdate_time_validator_construct (GType object_type);
 GType qetesh_data_data_object_get_type (void) G_GNUC_CONST;
 gpointer qetesh_data_qdatabase_conn_ref (gpointer instance);
 void qetesh_data_qdatabase_conn_unref (gpointer instance);
@@ -1158,14 +1189,14 @@ gpointer qetesh_data_value_get_qdatabase_conn (const GValue* value);
 GType qetesh_data_qdatabase_conn_get_type (void) G_GNUC_CONST;
 QeteshDataDataObject* qetesh_data_data_object_construct (GType object_type, GType timp_type, GBoxedCopyFunc timp_dup_func, GDestroyNotify timp_destroy_func, QeteshDataQDatabaseConn* dbh);
 void qetesh_data_data_object_Init (QeteshDataDataObject* self);
-void qetesh_data_data_object_Validate (QeteshDataDataObject* self, GError** error);
-void qetesh_data_data_object_Create (QeteshDataDataObject* self);
+void qetesh_data_data_object_ValidateAll (QeteshDataDataObject* self, GError** error);
+void qetesh_data_data_object_Create (QeteshDataDataObject* self, GError** error);
 void qetesh_data_data_object_Delete (QeteshDataDataObject* self);
 GQuark qetesh_data_qdb_error_quark (void);
 GeeLinkedList* qetesh_data_data_object_LoadAll (QeteshDataDataObject* self, GError** error);
-GeeLinkedList* qetesh_data_data_object_LazyLoadList (QeteshDataDataObject* self, const gchar* propertyName, GType fType);
+GeeLinkedList* qetesh_data_data_object_LazyLoadList (QeteshDataDataObject* self, const gchar* propertyName, GType fType, GError** error);
 void qetesh_data_data_object_Load (QeteshDataDataObject* self);
-void qetesh_data_data_object_Update (QeteshDataDataObject* self);
+void qetesh_data_data_object_Update (QeteshDataDataObject* self, GError** error);
 GeeLinkedList* qetesh_data_data_object_MapObjectList (QeteshDataDataObject* self, GeeLinkedList* rows);
 QeteshDataDataObject* qetesh_data_data_object_CreateObject (QeteshDataDataObject* self, GeeTreeMap* datum);
 gchar* qetesh_data_data_object_NameTransform (QeteshDataDataObject* self, const gchar* fieldName);
@@ -1196,8 +1227,8 @@ GType qetesh_qweb_node_manifest_object_get_type (void) G_GNUC_CONST;
 GType qetesh_data_data_object_lazy_node_get_type (void) G_GNUC_CONST;
 QeteshDataDataObjectLazyNode* qetesh_data_data_object_lazy_node_new (void);
 QeteshDataDataObjectLazyNode* qetesh_data_data_object_lazy_node_construct (GType object_type);
-QeteshDataDataObjectDataNode* qetesh_data_data_object_data_node_new (const gchar* name, gboolean isArray);
-QeteshDataDataObjectDataNode* qetesh_data_data_object_data_node_construct (GType object_type, const gchar* name, gboolean isArray);
+QeteshDataDataObjectDataNode* qetesh_data_data_object_data_node_new (const gchar* name, const gchar* val);
+QeteshDataDataObjectDataNode* qetesh_data_data_object_data_node_construct (GType object_type, const gchar* name, const gchar* val);
 const gchar* qetesh_data_data_object_data_node_get_Name (QeteshDataDataObjectDataNode* self);
 void qetesh_data_data_object_data_node_set_Name (QeteshDataDataObjectDataNode* self, const gchar* value);
 const gchar* qetesh_data_data_object_data_node_get_Val (QeteshDataDataObjectDataNode* self);
@@ -1412,6 +1443,8 @@ const gchar* qetesh_qweb_node_manifest_object_get_TypeName (QeteshQWebNodeManife
 const gchar* qetesh_qweb_node_manifest_object_get_PKeyName (QeteshQWebNodeManifestObject* self);
 GeeLinkedList* qetesh_qweb_node_manifest_object_get_Methods (QeteshQWebNodeManifestObject* self);
 GeeHashMap* qetesh_qweb_node_manifest_object_get_Props (QeteshQWebNodeManifestObject* self);
+QeteshDataDataObjectDataNode* qetesh_qweb_node_manifest_object_get_ValidatorNode (QeteshQWebNodeManifestObject* self);
+void qetesh_qweb_node_manifest_object_set_ValidatorNode (QeteshQWebNodeManifestObject* self, QeteshDataDataObjectDataNode* value);
 QeteshQWebNodeManifestObjectManifestMethod* qetesh_qweb_node_manifest_object_manifest_method_new (const gchar* name, const gchar* path, const gchar* mType, const gchar* rType);
 QeteshQWebNodeManifestObjectManifestMethod* qetesh_qweb_node_manifest_object_manifest_method_construct (GType object_type, const gchar* name, const gchar* path, const gchar* mType, const gchar* rType);
 QeteshDataDataObjectDataNode* qetesh_qweb_node_manifest_object_manifest_method_GetDescriptor (QeteshQWebNodeManifestObjectManifestMethod* self);
