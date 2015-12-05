@@ -34,9 +34,6 @@ namespace Qetesh {
 		/// Application Module
 		public AppModule Mod { get; set; }
 		
-		/// Event manager
-		public EventManager Events { get; set; }
-		
 		/// Server context
 		public WebServerContext Server { get; set; }
 	}

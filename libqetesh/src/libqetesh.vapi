@@ -3,6 +3,11 @@
 namespace Qetesh {
 	namespace Data {
 		[CCode (cheader_filename = "libqetesh.h")]
+		public class BoolValidator : Qetesh.Data.Validator<bool?> {
+			public BoolValidator ();
+			public override void Convert ();
+		}
+		[CCode (cheader_filename = "libqetesh.h")]
 		public class DBManager : GLib.Object {
 			public DBManager (Qetesh.WebServerContext sc);
 		}
@@ -37,11 +42,12 @@ namespace Qetesh {
 				public LazyNode ();
 			}
 			public delegate void DataNodeTransform (Qetesh.Data.DataObject.DataNode n);
+			protected Gee.HashMap<string,Qetesh.Data.Validator> Validators;
 			public DataObject (Qetesh.Data.QDatabaseConn dbh);
 			public void Create ();
 			public Qetesh.Data.DataObject CreateObject (Gee.TreeMap<string?,string?> datum);
 			public void Delete ();
-			public void FromNode (Qetesh.Data.DataObject.DataNode data);
+			public void FromNode (Qetesh.Data.DataObject.DataNode data) throws Qetesh.Data.ValidationError;
 			public void FromRequest (Qetesh.HTTPRequest req);
 			public abstract void Init ();
 			protected Gee.LinkedList<Qetesh.Data.DataObject> LazyLoadList (string propertyName, GLib.Type fType);
@@ -52,8 +58,25 @@ namespace Qetesh {
 			protected virtual string NameTransform (string fieldName);
 			public Qetesh.Data.DataObject.DataNode ToNode (Qetesh.Data.DataObject.DataNodeTransform transform);
 			public void Update ();
+			public void Validate () throws Qetesh.Data.ValidationError;
 			public string PKeyName { get; protected set; }
 			protected string TableName { get; set; }
+		}
+		[CCode (cheader_filename = "libqetesh.h")]
+		public class DoubleValidator : Qetesh.Data.Validator<double?> {
+			public DoubleValidator ();
+			public override void Convert ();
+			public Qetesh.Data.DoubleValidator Equals (double? comp);
+			public Qetesh.Data.DoubleValidator GreaterThan (double? comp);
+			public Qetesh.Data.DoubleValidator LessThan (double? comp);
+		}
+		[CCode (cheader_filename = "libqetesh.h")]
+		public class IntValidator : Qetesh.Data.Validator<int?> {
+			public IntValidator ();
+			public override void Convert ();
+			public Qetesh.Data.IntValidator Equals (int comp);
+			public Qetesh.Data.IntValidator GreaterThan (int comp);
+			public Qetesh.Data.IntValidator LessThan (int comp);
 		}
 		[CCode (cheader_filename = "libqetesh.h")]
 		public abstract class QDataQuery : GLib.Object {
@@ -138,12 +161,50 @@ namespace Qetesh {
 			protected Qetesh.Data.QMysqlConn db { get; set; }
 		}
 		[CCode (cheader_filename = "libqetesh.h")]
+		public class StringValidator : Qetesh.Data.Validator<string> {
+			public StringValidator ();
+			public Qetesh.Data.StringValidator Contains (string comp);
+			public override void Convert ();
+			public Qetesh.Data.StringValidator DoesntContain (string comp);
+			public Qetesh.Data.StringValidator Equals (string comp);
+			public Qetesh.Data.StringValidator Matches (string regex);
+		}
+		[CCode (cheader_filename = "libqetesh.h")]
+		public class ValidationTest<T> : GLib.Object {
+			public delegate bool TestFunc ();
+			public Qetesh.Data.ValidationTest.TestFunc Func;
+			public ValidationTest ();
+			public bool Run (T val);
+			public bool Passed { get; set; }
+			public string TestName { get; set; }
+		}
+		[CCode (cheader_filename = "libqetesh.h")]
+		public abstract class Validator<TField> : GLib.Object {
+			public Gee.LinkedList<Qetesh.Data.ValidationTest> Tests;
+			public Validator ();
+			public abstract void Convert ();
+			public bool Validate ();
+			public string InValue { get; set; }
+			public TField OutValue { get; set; }
+			public bool Passed { get; set; }
+		}
+		[CCode (cheader_filename = "libqetesh.h")]
 		public errordomain QDBError {
 			CONNECT,
 			QUERY
 		}
+		[CCode (cheader_filename = "libqetesh.h")]
+		public errordomain ValidationError {
+			INVALID_VALUE
+		}
 	}
 	namespace Errors {
+		[CCode (cheader_filename = "libqetesh.h")]
+		public errordomain ParserError {
+			INVALID_CHAR,
+			INVALID_NAME,
+			INVALID_VALUE
+		}
 		[CCode (cheader_filename = "libqetesh.h")]
 		public errordomain QError {
 			UNSPECIFIED
@@ -246,24 +307,6 @@ namespace Qetesh {
 		public bool ErrToConsole { get; set; }
 	}
 	[CCode (cheader_filename = "libqetesh.h")]
-	public class EventManager : GLib.Object {
-		public void CallEvents (string? clientId = null);
-		public string GetEventCode ();
-		public void RegisterEvent (Qetesh.QEvent ev, string? clientId = null);
-	}
-	[CCode (cheader_filename = "libqetesh.h")]
-	public class HTMLElement : GLib.Object {
-		public delegate void PropogateCallback (Qetesh.Data.DataObject datum, Qetesh.HTMLElement elem);
-		public void Attach (Qetesh.QEvent ev);
-		public Qetesh.HTMLElement Propogate ();
-		public Qetesh.HTMLElement Replicate (int copies);
-		public new Qetesh.HTMLElement? @get (string selector);
-		public string Content { get; set; }
-		public string Selector { get; set; }
-		public string Val { get; set; }
-		public int size { get; }
-	}
-	[CCode (cheader_filename = "libqetesh.h")]
 	public class HTTPRequest : GLib.Object {
 		public enum RequestMethod {
 			GET,
@@ -332,14 +375,6 @@ namespace Qetesh {
 		public string toString ();
 	}
 	[CCode (cheader_filename = "libqetesh.h")]
-	public class QEvent {
-		public QEvent (string type);
-		public void Fire (Qetesh.HTTPRequest req);
-		public string ClientEventType { get; set; }
-		public Qetesh.HTTPRequest Request { get; private set; }
-		public signal void EventFire (Qetesh.QEvent ev);
-	}
-	[CCode (cheader_filename = "libqetesh.h")]
 	public class QManifest : Qetesh.QWebNode {
 		public QManifest ();
 		public override void OnBind ();
@@ -404,7 +439,6 @@ namespace Qetesh {
 	[CCode (cheader_filename = "libqetesh.h")]
 	public class WebAppContext : GLib.Object {
 		public WebAppContext ();
-		public Qetesh.EventManager Events { get; set; }
 		public Qetesh.AppModule Mod { get; set; }
 		public Qetesh.WebServerContext Server { get; set; }
 	}

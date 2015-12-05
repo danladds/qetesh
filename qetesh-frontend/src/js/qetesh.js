@@ -1276,6 +1276,138 @@ var Qetesh = {
 		}
 	
 	},
+	
+	Validator {
+		
+		Obj : function() {
+		
+			var obj = Object.create(this);
+			obj.Init();
+				
+			return obj;
+		}, 
+		
+		Init : function () {
+			
+			
+			
+		},
+	},
+	
+	Validation : {
+		
+		Pass : true,
+		Messages : []
+		
+		Obj : function() {
+		
+			var obj = Object.create(this);
+			obj.Init();
+				
+			return obj;
+		}, 
+		
+		Init : function () {
+			
+			this.Messages = [];
+			this.pass = true;
+		},
+		
+		TestResult : {
+		
+			Pass : false,
+			Messages : []
+			
+			Obj : function() {
+			
+				var obj = Object.create(this);
+				obj.Init();
+					
+				return obj;
+			}, 
+			
+			Init : function () {
+				
+				this.Messages = [];
+				this.pass = true;
+			},
+		},
+	},
+	
+	IntValidator = {
+		
+		Obj : function () {
+			
+			var _this = Validator.Obj();
+			
+			_this.Validate = function(valie) {
+				
+			}
+		}
+	},
+	
+	StringValidator {
+		
+		Obj : function () {
+			
+			var _this = Validator.Obj();
+			
+			_this.Validate = function(valie) {
+				
+			}
+		}
+	},
+	
+	FloatValidator {
+		
+		Obj : function () {
+			
+			var _this = Validator.Obj();
+			
+			_this.Validate = function(valie) {
+				
+			}
+		}
+	},
+	
+	DateTimeValidator {
+		
+		Obj : function () {
+			
+			var _this = Validator.Obj();
+			
+			_this.Validate = function(valie) {
+				
+			}
+		}
+		
+	},
+	
+	DoubleValidator {
+		
+		Obj : function () {
+			
+			var _this = Validator.Obj();
+			
+			_this.Validate = function(valie) {
+				
+			}
+		}
+		
+	},
+	
+	BoolValidator {
+		
+		Obj : function () {
+			
+			var _this = Validator.Obj();
+			
+			_this.Validate = function(valie) {
+				
+			}
+		}
+		
+	}
 };
 
 var $_qetesh = Qetesh.Obj();

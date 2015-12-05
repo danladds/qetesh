@@ -81,8 +81,7 @@ namespace Qetesh {
 			// Create managers
 			Context = new WebAppContext();
 			Context.Server = sc;
-			
-			Context.Events = new EventManager();
+			;
 			Context.Mod = this;
 			
 			// Instantiate the app object

@@ -1,5 +1,5 @@
 /*
- * QDataPack.vala
+ * Errors.vala
  * 
  * Copyright 2014 Dan Ladds <Dan@el-topo.co.uk>
  * 
@@ -21,24 +21,34 @@
  * 
  */
 
-using Qetesh.Data;
-
-namespace Qetesh {
-
-	/**
-	 * Data communication packet
-	 * 
-	 * Communication vector object for transmission of data to and from
-	 * the Javascript frontend. Can be transformed for transmission
-	 * via XML, JSON etc.
-	 * 
-	**/
-	public class QDataPack: GLib.Object {
+namespace Qetesh.Errors {
+	
+	public errordomain ParserError {
 		
-		public QDataPack (WebAppContext ctx) {
-			
-			
-		}
-		
+		INVALID_CHAR,
+		INVALID_NAME,
+		INVALID_VALUE
+	}
+	
+	
+	public errordomain QError {
+		UNSPECIFIED
+	}
+	
+	public errordomain QFileError {
+		ACCESS,
+		READ,
+		WRITE,
+		FORMAT
+	}
+	
+	public errordomain QModuleError {
+		LOAD,
+		CONFIG,
+		STRUCTURE
+	}
+	
+	public errordomain QSanityError {
+		UNSPECIFIED
 	}
 }

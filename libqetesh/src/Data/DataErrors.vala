@@ -1,5 +1,5 @@
 /*
- * QException.vala
+ * Errors.vala
  * 
  * Copyright 2014 Dan Ladds <Dan@el-topo.co.uk>
  * 
@@ -21,26 +21,12 @@
  * 
  */
 
-namespace Qetesh.Errors {
+namespace Qetesh.Data {
 	
-	public errordomain QError {
-		UNSPECIFIED
+	public errordomain ValidationError {
+		
+		INVALID_VALUE
 	}
 	
-	public errordomain QFileError {
-		ACCESS,
-		READ,
-		WRITE,
-		FORMAT
-	}
 	
-	public errordomain QModuleError {
-		LOAD,
-		CONFIG,
-		STRUCTURE
-	}
-	
-	public errordomain QSanityError {
-		UNSPECIFIED
-	}
 }

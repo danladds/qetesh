@@ -44,6 +44,8 @@ namespace QExample.Data {
 		public override void Init () {
 				
 				TableName = "invoiceitem";
+				
+				Validators["Description"] = new StringValidator().Matches("^[A-Za-Z0-9]+$");
 		}
 		
 		public override string NameTransform(string fieldName) {

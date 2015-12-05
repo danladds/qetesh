@@ -37,6 +37,8 @@ namespace Qetesh.Data {
 		
 		protected string TableName { get; set; }
 		
+		protected Gee.HashMap<string, Validator> Validators;
+		
 		/// Primary key name
 		public string PKeyName { get; protected set; default="Id"; }
 		
@@ -55,13 +57,33 @@ namespace Qetesh.Data {
 			lazySingleMap = new Gee.HashMap<string, int>();
 			lazyCache = new Gee.HashMap<string, Gee.LinkedList<DataObject>>();
 			
+			__init();
+			Init();
+		}
+		
+		internal void __init() {
+			
 			// Defaults
 			TableName = this.get_type().to_string();
 			PKeyName = "Id";
 			
 			TaintedProperties = new Gee.LinkedList<string>();
+			Validators = new Gee.HashMap<string, Validator>();
+		}
+		
+		public void Validate() throws ValidationError {
 			
-			Init();
+			bool valid = true;
+			
+			foreach(string key in Validators.keys) {
+				
+				if(!Validators[key].Validate()) {
+					
+					valid = false;
+				}
+			}
+			
+			if(valid == false) throw new ValidationError.INVALID_VALUE("Validate() failed");
 		}
 
 		public void Create() {
@@ -91,6 +113,115 @@ namespace Qetesh.Data {
 			
 			query.Where(PKeyName).Equal(getPKeyStr());
 			query.Do();
+		}
+		
+		
+		public Gee.LinkedList<DataObject> LoadAll() throws Qetesh.Data.QDBError {
+			
+			Gee.LinkedList<DataObject> returnList;
+			
+			var query = db.NewQuery().DataSet(TableName).Read();
+			var res = query.Do();
+			
+			returnList = MapObjectList(res.Items);
+			
+			return returnList;
+		}
+		
+		internal Gee.LinkedList<DataObject> _lazyLoadList(string propertyName, Type fType) {
+			return LazyLoadList(propertyName, fType);
+		}
+		
+		/**
+		 * Server side lazy loading
+		 * 
+		**/
+		protected Gee.LinkedList<DataObject> LazyLoadList(string propertyName, Type fType)  {
+			
+			var proto = (DataObject) Object.new(fType);
+			proto._init(db);
+			
+			// Set criteron field, default first property of own type			
+			var fClassObj = (ObjectClass) fType.class_ref();
+			var fieldName = "";
+			
+			foreach (var prop in fClassObj.list_properties()) {
+			
+				if (prop.value_type.is_a(this.get_type())) {
+					
+					/// TODO: Error
+					fieldName = prop.get_name();	
+					break;
+				}
+			}
+			
+			var colName = proto.NameTransform(fieldName);
+			
+			Gee.LinkedList<DataObject> returnList;
+			
+			var query = db.NewQuery().DataSet(proto.TableName).Read();
+			
+			query.Where(colName).Equal(getPKeyStr());
+			
+			var res = query.Do();
+			
+			returnList = proto.MapObjectList(res.Items);
+			
+			foreach(var obj in returnList) {
+				
+				var val = Value(typeof(Object));
+				val.set_object(this);
+				obj.set_property(fieldName, val);
+			}
+			
+			return returnList;
+		}
+		
+		/*
+		protected DataObject LazyLoad(string propertyName) {
+			
+			
+		}
+		* */
+		
+		public void Load() {
+			
+			var query = db.NewQuery().DataSet(TableName).Read();
+			
+			query.Where(PKeyName).Equal(getPKeyStr());
+			
+			var res = query.Do();
+			
+			if (res.Items.size == 0) {
+				
+				// Todo: throw exception
+			}
+			else {
+			
+				// Map into self
+				MapObject(res.Items[0]);
+			}
+		}
+		
+		public void Update() {
+			
+			var query = db.NewQuery().DataSet(TableName).Update();
+			
+			query.Where(PKeyName).Equal(getPKeyStr());
+			
+			if(TaintedProperties.size == 0) {
+				
+				// No need to error, just nothing to do. What we're being
+				// asked is legal but will have zero effect.
+				return;
+			}
+			
+			foreach(var prop in TaintedProperties) {
+				
+				if(prop == PKeyName) continue;
+				if(prop == "PKeyName") continue;
+				query.Set(prop).Equal(getPropStr(prop));
+			}
 		}
 		
 		internal string getPKeyStr() {
@@ -176,6 +307,7 @@ namespace Qetesh.Data {
 					var val = Value(typeof(DataObject));
 					this.get_property(pName, ref val);
 					var dObj = (DataObject) val.get_object();
+					dObj.__init();
 					
 					if(dObj != null) {
 						strVal = dObj.getPropStr(dObj.PKeyName);
@@ -190,33 +322,92 @@ namespace Qetesh.Data {
 		
 		private void _setPropStr(string pName, string inVal, Type propertyType) {
 			
+			if(Validators == null) new Gee.HashMap<string, Validator>();
+			
 			if (propertyType == typeof(string)) {
+				
+				if(Validators[pName] == null) {
+					
+					Validators[pName] = new StringValidator();
+				}
+				
+				var vdr = (StringValidator) Validators[pName];
+					
+				vdr.InValue = inVal;
+				vdr.Convert();
+				
 				var val = Value(typeof(string));
-				val.set_string(inVal);
+				val.set_string(vdr.OutValue);
 				this.set_property(pName, val);
+				
 			}
 			
 			else if (propertyType == typeof(int)) {
+				
+				if(Validators[pName] == null) {
+					
+					Validators[pName] = new IntValidator();
+				}
+				
+				var vdr = (IntValidator) Validators[pName];
+				
+				vdr.InValue = inVal;
+				vdr.Convert();
+				
 				var val = Value(typeof(int));
-				val.set_int(int.parse(inVal));
+				val.set_int(vdr.OutValue);
 				this.set_property(pName, val);
+				
 			}
 			
 			else if (propertyType == typeof(bool)) {
+				
+				if(Validators[pName] == null) {
+					
+					Validators[pName] = new BoolValidator();
+				}
+				
+				var vdr = (BoolValidator) Validators[pName];
+				
+				vdr.InValue = inVal;
+				vdr.Convert();
+				
 				var val = Value(typeof(bool));
-				val.set_boolean(bool.parse(inVal));
+				val.set_boolean(vdr.OutValue);
 				this.set_property(pName, val);
 			}
 			
 			else if (propertyType == typeof(float)) {
+				
+				if(Validators[pName] == null) {
+					
+					Validators[pName] = new DoubleValidator();
+				}
+				
+				var vdr = (DoubleValidator) Validators[pName];
+				
+				vdr.InValue = inVal;
+				vdr.Convert();
+				
 				var val = Value(typeof(float));
-				val.set_float((float) double.parse(inVal));
+				val.set_float((float) vdr.OutValue);
 				this.set_property(pName, val);
 			}
 			
 			else if (propertyType == typeof(double)) {
+				
+				if(Validators[pName] == null) {
+					
+					Validators[pName] = new DoubleValidator();
+				}
+				
+				var vdr = (DoubleValidator) Validators[pName];
+				
+				vdr.InValue = inVal;
+				vdr.Convert();
+				
 				var val = Value(typeof(double));
-				val.set_double(double.parse(inVal));
+				val.set_double(vdr.OutValue);
 				this.set_property(pName, val);
 			}
 			
@@ -235,121 +426,13 @@ namespace Qetesh.Data {
 				if (propertyType.is_a(typeof(DataObject))) {
 					
 					var dObj = (DataObject) Object.new(propertyType);
+					dObj.__init();
 					dObj.setPropStr(dObj.PKeyName, inVal);
 					
 					var val = Value(typeof(DataObject));
 					val.set_object((Object) dObj);
 					this.set_property(pName, val);
 				}
-			}
-		}
-		
-	
-		public Gee.LinkedList<DataObject> LoadAll() throws Qetesh.Data.QDBError {
-			
-			Gee.LinkedList<DataObject> returnList;
-			
-			var query = db.NewQuery().DataSet(TableName).Read();
-			var res = query.Do();
-			
-			returnList = MapObjectList(res.Items);
-			
-			return returnList;
-		}
-		
-		internal Gee.LinkedList<DataObject> _lazyLoadList(string propertyName, Type fType) {
-			return LazyLoadList(propertyName, fType);
-		}
-		
-		/**
-		 * Server side lazy loading
-		 * 
-		**/
-		protected Gee.LinkedList<DataObject> LazyLoadList(string propertyName, Type fType) {
-			
-			var proto = (DataObject) Object.new(fType);
-			proto._init(db);
-			
-			// Set criteron field, default first property of own type			
-			var fClassObj = (ObjectClass) fType.class_ref();
-			var fieldName = "";
-			
-			foreach (var prop in fClassObj.list_properties()) {
-			
-				if (prop.value_type.is_a(this.get_type())) {
-					
-					/// TODO: Error
-					fieldName = prop.get_name();	
-					break;
-				}
-			}
-			
-			var colName = proto.NameTransform(fieldName);
-			
-			Gee.LinkedList<DataObject> returnList;
-			
-			var query = db.NewQuery().DataSet(proto.TableName).Read();
-			
-			query.Where(colName).Equal(getPKeyStr());
-			
-			var res = query.Do();
-			
-			returnList = proto.MapObjectList(res.Items);
-			
-			foreach(var obj in returnList) {
-				
-				var val = Value(typeof(Object));
-				val.set_object(this);
-				obj.set_property(fieldName, val);
-			}
-			
-			return returnList;
-		}
-		
-		/*
-		protected DataObject LazyLoad(string propertyName) {
-			
-			
-		}
-		* */
-		
-		public void Load() {
-			
-			var query = db.NewQuery().DataSet(TableName).Read();
-			
-			query.Where(PKeyName).Equal(getPKeyStr());
-			
-			var res = query.Do();
-			
-			if (res.Items.size == 0) {
-				
-				// Todo: throw exception
-			}
-			else {
-			
-				// Map into self
-				MapObject(res.Items[0]);
-			}
-		}
-		
-		public void Update() {
-			
-			var query = db.NewQuery().DataSet(TableName).Update();
-			
-			query.Where(PKeyName).Equal(getPKeyStr());
-			
-			if(TaintedProperties.size == 0) {
-				
-				// No need to error, just nothing to do. What we're being
-				// asked is legal but will have zero effect.
-				return;
-			}
-			
-			foreach(var prop in TaintedProperties) {
-				
-				if(prop == PKeyName) continue;
-				if(prop == "PKeyName") continue;
-				query.Set(prop).Equal(getPropStr(prop));
 			}
 		}
 		
@@ -456,12 +539,14 @@ namespace Qetesh.Data {
 			FromNode(req.RequestData.DataTree);
 		}
 		
-		public void FromNode(DataNode data) {
+		public void FromNode(DataNode data) throws ValidationError {
 			
 			if (data.Children.size > 0) {
+				
+				Validate();
 			
 				foreach(var child in data.Children[0].Children) {
-					
+					 
 					if(
 						child.Name != null && child.Name != "" &
 						child.Val != null & child.Val != ""

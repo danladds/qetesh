@@ -125,12 +125,15 @@ namespace Qetesh {
 			
 			
 			var proto = (DataObject) Object.new(typ);
+			proto.__init();
 			proto.Init();
 			
 			Manifest = new ManifestObject(typeName, proto.PKeyName);
 			
 			// Read list
 			GET.connect((req) => {
+				
+				req.ServerContext.Err.WriteMessage("GET (READ) method called", ErrorManager.QErrorClass.MODULE_DEBUG);
 				
 				var obj = (DataObject) Object.new(typ);
 				obj._init(req.Data.GetConnection(dbName));

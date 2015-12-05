@@ -69,6 +69,9 @@ namespace QExample.Data {
 			
 			TableName = "invoice";
 			Issued = new QDateTime();
+			
+			Validators["Forename"] = new StringValidator().Matches("^[A-Za-Z0-9]+$");
+			Validators["Surname"] = new StringValidator().Matches("^[A-Za-Z0-9]+$");
 		}
 		
 		// Override NameTransform as here, which is called as a transform
