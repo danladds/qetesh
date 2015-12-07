@@ -98,12 +98,12 @@ namespace Qetesh.Data {
 			return this;
 		}
 		
-		public override QDataQuery.QueryResult Do() {
+		public override QDataQuery.QueryResult Do() throws QDBError {
 
 			return (QDataQuery.QueryResult) new MysqlQueryResult (Fetch());
 		}
 		
-		public override int DoInt() {
+		public override int DoInt() throws QDBError {
 			
 			var rSet = Fetch();
 			
@@ -115,7 +115,10 @@ namespace Qetesh.Data {
 			
 				return int.parse(rSet[0]["COUNT(*)"]);
 			}
-			else return 0;
+			else {
+				
+				throw new QDBError.QUERY("DB result will not be an int");
+			}
 		}
 		
 		public override QDataQuery.QueryParam Where(string fieldName) {
@@ -134,7 +137,7 @@ namespace Qetesh.Data {
 			return (QDataQuery.QueryParam) param;
 		}
 		
-		protected override Gee.LinkedList<Gee.TreeMap<string, string>> Fetch() {
+		protected override Gee.LinkedList<Gee.TreeMap<string, string>> Fetch() throws QDBError {
 			
 			sql.append(baseQuery.printf(tableName));
 			

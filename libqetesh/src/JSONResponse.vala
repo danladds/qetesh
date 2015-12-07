@@ -54,7 +54,7 @@ namespace Qetesh {
 			AddJson(this.DataTree, true);
 		}
 		
-		public void AddJson(Data.DataObject.DataNode node, bool parentIsArray = false) {
+		public void AddJson(Data.DataNode node, bool parentIsArray = false) {
 			/*
 			Context.Server.Err.WriteMessage(
 					"JSONResponse adding node: %s = %s (%d)".printf(node.Name, node.Val, node.Children.size),

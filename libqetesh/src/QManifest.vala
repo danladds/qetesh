@@ -33,13 +33,13 @@ namespace Qetesh {
 	**/
 	public class QManifest : QWebNode {
 		
-		private DataObject.DataNode ManifestRoot;
+		private DataNode ManifestRoot;
 		
 		public QManifest() {
 			
 			base();
 			
-			ManifestRoot = new DataObject.DataNode("Manifest");
+			ManifestRoot = new DataNode("Manifest");
 		}
 		
 		public override void OnBind() {

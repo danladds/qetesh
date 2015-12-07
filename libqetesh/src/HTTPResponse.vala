@@ -24,6 +24,8 @@
  * 
  * 
  */
+ 
+using Qetesh.Data;
 
 namespace Qetesh {
 
@@ -40,7 +42,7 @@ namespace Qetesh {
 		
 		protected WebAppContext Context { get; private set; }
 		
-		public Data.DataObject.DataNode DataTree { get; private set; }
+		public DataNode DataTree { get; private set; }
 		public Gee.LinkedList<string> Messages { get; private set; }
 		
 		public HTTPResponse(WebAppContext ctx) {
@@ -51,7 +53,7 @@ namespace Qetesh {
 			Content = new StringBuilder();
 			Context = ctx;
 			
-			DataTree = new Data.DataObject.DataNode();
+			DataTree = new Data.DataNode();
 			DataTree.IsArray = true;
 			Messages = new Gee.LinkedList<string>();
 		}

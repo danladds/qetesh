@@ -36,13 +36,13 @@ namespace Qetesh.Data {
 		
 		public abstract QDataQuery DataSet(string setName);
 		
-		public abstract QueryResult Do();
-		public abstract int DoInt();
+		public abstract QueryResult Do() throws QDBError;
+		public abstract int DoInt() throws QDBError;
 		
 		public abstract QueryParam Where(string fieldName);
 		public abstract QueryParam Set(string fieldName);
 		
-		protected abstract Gee.LinkedList<Gee.TreeMap<string, string>> Fetch();
+		protected abstract Gee.LinkedList<Gee.TreeMap<string, string>> Fetch() throws QDBError;
 		
 		public abstract class QueryParam {
 			

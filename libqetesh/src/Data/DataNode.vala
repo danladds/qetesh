@@ -1,5 +1,5 @@
 /*
- * RequestDataParser.vala
+ * DataNode.vala
  * 
  * Copyright 2014 Dan Ladds <Dan@el-topo.co.uk>
  * 
@@ -21,14 +21,25 @@
  * 
  */
 
-using Qetesh.Data;
+using Qetesh;
 
-namespace Qetesh {
+namespace Qetesh.Data {
+
+	public class DataNode {
+				
+		public string Name { get; set; }
+		public string Val { get; set; }
+		public Gee.LinkedList<DataNode> Children { get; private set; }
+		public bool IsArray { get; set; }
 		
-	public interface RequestDataParser : GLib.Object {
-		
-		public abstract Data.DataNode DataTree { get; protected set; }
-		
-		public abstract void Parse(string inData) throws ParserError;
+		public DataNode (string name = "Data", string? val = null) {
+			
+			if (val != null) {
+				Val = val;
+			}
+			
+			Name = name;
+			Children = new Gee.LinkedList<DataNode>();
+		}
 	}
 }

@@ -57,6 +57,25 @@ namespace Qetesh.Data {
 			return Passed;
 		}
 		
+		public string DumpResult() {
+			
+			var res = new StringBuilder();
+			
+			res.append(this.Name);
+			res.append(" : ");
+			
+			foreach(var t in Tests) {
+				res.append(t.TestName);
+				res.append(": ");
+				res.append((t.Passed ? "Passed" : "Failed"));
+				res.append(" (%s) \n".printf(t.Comparator));
+			}
+			
+			res.append("  [%s] \n".printf(InValue));
+			
+			return res.str;
+		}
+		
 		// Read from string input to output type
 		public abstract void Convert();
 	}
@@ -79,7 +98,9 @@ namespace Qetesh.Data {
 				
 			}
 			else {
-				Passed = false;
+				
+				// Pre-done tests like Convert()
+				Passed = true;
 			}
 			
 			return Passed;
@@ -229,7 +250,11 @@ namespace Qetesh.Data {
 				Comparator = regex,
 				Func = () => {
 					
-					this.Passed = (Regex.match_simple(regex, this.OutValue));
+					this.Passed = Regex.match_simple(
+						regex, this.OutValue,
+						RegexCompileFlags.JAVASCRIPT_COMPAT
+					);
+					
 					return this.Passed;
 				}
 			});

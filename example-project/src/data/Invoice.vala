@@ -70,8 +70,8 @@ namespace QExample.Data {
 			TableName = "invoice";
 			Issued = new QDateTime();
 			
-			Validators["Forename"] = new StringValidator().Matches("^[A-Za-Z0-9]+$");
-			Validators["Surname"] = new StringValidator().Matches("^[A-Za-Z0-9]+$");
+			Validators["Forename"] = new StringValidator().Matches("^[A-Za-z0-9 ]+$");
+			Validators["Surname"] = new StringValidator().Matches("^[A-Za-z0-9 ]+$");
 			Validators["Issued"] = new QDateTimeValidator();
 			Validators["Total"] = new IntValidator().GreaterThan(0).LessThan(99999999);
 		}

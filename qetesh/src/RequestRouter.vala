@@ -34,7 +34,7 @@ namespace Qetesh.WebServer {
 		public HTTPRequest Req { get; private set; }
 		private WebServerContext context;
 
-		public RequestRouter (HTTPRequest req, WebServerContext cxt) {
+		public RequestRouter (HTTPRequest req, WebServerContext cxt) throws QRouterError {
 			
 			context = cxt;
 			Req = req;
@@ -49,18 +49,39 @@ namespace Qetesh.WebServer {
 			/// TODO: verify validity of drop
 			context.Err.WriteMessage("Dropping root", ErrorManager.QErrorClass.QETESH_DEBUG);
 			
-			Posix.setgid(mod.ExecGroup);
-			Posix.setuid(mod.ExecUser);
+			if(Posix.getuid() == 0) {
+				Posix.setgid(mod.ExecGroup);
+				Posix.setuid(mod.ExecUser);
+				
+				context.Err.WriteMessage("Dropping root", ErrorManager.QErrorClass.QETESH_DEBUG);
+				
+				if(Posix.getuid() == 0) {
+					
+					throw new QRouterError.USER("Unable to drop privilege");
+				}
+			}
 			
 			if (mod != null) {
 
 				context.Err.WriteMessage("Sending request to module for handling", ErrorManager.QErrorClass.QETESH_DEBUG);
 				
-				mod.Handle(Req);
+				try {
+					mod.Handle(Req);
+				}
+				catch(QModuleError e) {
+					
+					throw new QRouterError.MODULE("Error during module handing:\n %s".printf(e.message));
+				}
 				
-				Req.Respond();
+				try {
+					Req.Respond();
+				}
+				catch(QResponseError e) {
+					
+					throw new QRouterError.RESPONSE("Error during response:\n %s".printf(e.message));
+				}
 			}
-			else context.Err.WriteMessage("Module seek for host returned empty", ErrorManager.QErrorClass.MODULE_CRITICAL);
+			else throw new QRouterError.MODULE("Module seek for host returned empty");
 			
 		}
 			

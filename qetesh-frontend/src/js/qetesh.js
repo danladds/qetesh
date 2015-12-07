@@ -1279,6 +1279,11 @@ var Qetesh = {
 	
 	Validator {
 		
+		Name : "",
+		Passed : false,
+		Mandatory : true,
+		Tests : [],
+		
 		Obj : function() {
 		
 			var obj = Object.create(this);
@@ -1292,12 +1297,17 @@ var Qetesh = {
 			
 			
 		},
+		
+		Validate : function () {
+			
+		}
 	},
 	
-	Validation : {
+	ValidationTest : {
 		
-		Pass : true,
-		Messages : []
+		Passed : false,
+		Func : function() { return false },
+		Comparator : "",
 		
 		Obj : function() {
 		
@@ -1313,25 +1323,10 @@ var Qetesh = {
 			this.pass = true;
 		},
 		
-		TestResult : {
-		
-			Pass : false,
-			Messages : []
+		Run : function() {
 			
-			Obj : function() {
 			
-				var obj = Object.create(this);
-				obj.Init();
-					
-				return obj;
-			}, 
-			
-			Init : function () {
-				
-				this.Messages = [];
-				this.pass = true;
-			},
-		},
+		}
 	},
 	
 	IntValidator = {

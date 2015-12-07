@@ -11,9 +11,7 @@
  * framework to the application and responses back again.
  * 
  *  - Qetesh has few web server features inbuilt. It cannot even serve
- * files at this stage. It doesn't have request rate limiting. Its 
- * purpose is entirely to serve the data and events layers of the 
- * framework. For everything else, there's Apache.
+ * files at this stage. Its purpose is entirely to serve the data and events layers * of the framework. For everything else, there's Apache etc.
  * 
  * - The server package also contains the frontend files for the
  * framework.
@@ -69,7 +67,21 @@ namespace Qetesh.WebServer {
 			}
 		}
 		
-		private WebServerContext context;
+		public WebServerContext SContext {
+			
+			get {
+				return context;
+			}
+			
+			set { 
+				context = value;
+			}
+		}
+		
+		private WebServerContext context { get; set; }
+		
+		public int MaxThreads { get; private set; }
+		public int CurrentThreads { get; private set; }
 		
 		/// Server instance
 		public static Server Current { get; private set; }
@@ -85,9 +97,21 @@ namespace Qetesh.WebServer {
 		*/
 		public static int main(string[] args) {
 			
-			Current = new Server();
-			Current.Listen();
+			try {
+				Current = new Server();
+				Current.Listen();
+			} catch (CriticalServerError e) {
 				
+				Current.SContext.Err.WriteMessage("Server aborting due to fatal error:\n %s".printf(e.message), ErrorManager.QErrorClass.QETESH_DEBUG);
+				
+				return 1;
+			} catch (Error e) {
+				
+				Current.SContext.Err.WriteMessage("Server aborting due to fatal and unexpected error:\n %s".printf(e.message), ErrorManager.QErrorClass.QETESH_CRITICAL);
+				
+				return 1;
+			}
+			
 			return 0;
 		}
 		
@@ -97,7 +121,7 @@ namespace Qetesh.WebServer {
 		 * Create an instance of the Server class, which will proceed
 		 * to load modules and read its config file
 		**/
-		private Server () {
+		private Server () throws CriticalServerError {
 			
 			context = new WebServerContext();
 			
@@ -110,16 +134,31 @@ namespace Qetesh.WebServer {
 			
 			// Read config file
 			context.Err.WriteMessage("Loading config file...", ErrorManager.QErrorClass.QETESH_DEBUG);
-			context.Configuration = new ConfigFile(context);
 			
-			// Test databases
+			try {
+				context.Configuration = new ConfigFile(context);
+			} catch (QFileError e) {
+				
+				throw new CriticalServerError.NOPE("Error loading config file:\n %s".printf(e.message));
+			}
+			
+			// Test databases - does its own error handling
 			context.Err.WriteMessage("Loading databases...", ErrorManager.QErrorClass.QETESH_DEBUG);
 			context.Databases = new Data.DBManager(context);
 			
 			// Load modules
 			context.Err.WriteMessage("Loading modules...", ErrorManager.QErrorClass.QETESH_DEBUG);
+			
+			// Does its own error handling
 			context.Modules = new ModuleManager(context);
-			context.Modules.LoadModules();
+			
+			try {
+				context.Modules.LoadModules();
+				
+			} catch(QModuleError e) {
+				
+				throw new CriticalServerError.NOPE("Error loading modules:\n %s".printf(e.message));
+			}
 		}
 		
 		/** 
@@ -131,13 +170,21 @@ namespace Qetesh.WebServer {
 		 * @param port Port to listen on
 		 * 
 		**/
-		public void Listen() {
+		public void Listen() throws CriticalServerError {
+			
+			MaxThreads = context.Configuration.MaxThreads;
+			CurrentThreads = 0;
+			ThreadedSocketService service;
 			
 			// ThreadedSocketService is a stock Vala class
-			var service = new ThreadedSocketService(context.Configuration.MaxThreads);
+			try {
+				service = new ThreadedSocketService(MaxThreads);
+			} catch (Error e) {
+				
+				throw new CriticalServerError.NOPE("Unable to start TCP server: %s".printf(e.message));
+			}
 			
-			/// TODO: actually implement thread limit!
-			context.Err.WriteMessage("Starting with %d max threads".printf(context.Configuration.MaxThreads), ErrorManager.QErrorClass.QETESH_DEBUG);
+			context.Err.WriteMessage("Starting with %d max threads".printf(MaxThreads), ErrorManager.QErrorClass.QETESH_DEBUG);
 			
 			try {
 				context.Err.WriteMessage("Listening on port %d".printf(context.Configuration.ListenPort), ErrorManager.QErrorClass.QETESH_DEBUG);
@@ -145,10 +192,8 @@ namespace Qetesh.WebServer {
 				service.add_inet_port(context.Configuration.ListenPort, new Source(context.Configuration.ListenPort));
 			
 			
-				// Dispatch to thread
-				// FORK WARNING \|/
-				//               |
-				//               |
+				// Method attached here will be executed in a
+				// new thread per request
 				service.run.connect(DispatchRequest);
 			
 				// Start listening
@@ -156,12 +201,10 @@ namespace Qetesh.WebServer {
 			
 			}
 			catch (Error e) {
-				context.Err.WriteMessage("Error while trying to listen on port: %s".printf(e.message), ErrorManager.QErrorClass.QETESH_CRITICAL);
-				return;
+				throw new CriticalServerError.NOPE("Error while trying to listen on port:\n %s".printf(e.message));
 			}
 			
-			// Run a main loop to stop the main thread from closing while we're listening
-			context.Err.WriteMessage("Starting main loop...", ErrorManager.QErrorClass.QETESH_DEBUG);
+			context.Err.WriteMessage("Main thread going for a stroll...", ErrorManager.QErrorClass.QETESH_DEBUG);
 			
 			// This thread can just sit here until told to close
 			var loop = new MainLoop();
@@ -182,15 +225,33 @@ namespace Qetesh.WebServer {
 		**/
 		public bool DispatchRequest(SocketConnection c, Object s) {
 
+			HTTPRequest req;
+			RequestRouter router;
+
 			context.Err.WriteMessage("\n\n\nServer Dispatching Request", ErrorManager.QErrorClass.QETESH_DEBUG);
 			
-			var req = new HTTPRequest(c, context);
-			req.Handle();
+			try {
+				req = new HTTPRequest(c, context);
+				req.Handle();
+				
+			} catch (QRequestError e) {
+				
+				context.Err.WriteMessage("Request init error:\n %s".printf(e.message), ErrorManager.QErrorClass.QETESH_CRITICAL);
+				
+				return false;
+			}
 			
 			context.Err.WriteMessage("\n\n\nServer Routing Request", ErrorManager.QErrorClass.QETESH_DEBUG);
 			
-			// Route request
-			var router = new RequestRouter(req, context);
+			try {
+				
+				// Route request
+				router = new RequestRouter(req, context);
+			} catch(QRouterError e) {
+				
+				context.Err.WriteMessage("Request routing error: %s".printf(e.message), ErrorManager.QErrorClass.QETESH_ERROR);
+				return false;
+			}
 
 			return false;
 		}

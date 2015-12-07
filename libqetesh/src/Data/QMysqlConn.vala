@@ -74,7 +74,7 @@ namespace Qetesh.Data {
 				throw new QDBError.QUERY("MySQL error performing query: %s; %s".printf(qText, db.error()));
 			}
 			
-			Result res = db.use_result();
+			Result? res = db.use_result();
 			
 			if(res != null) {
 			
@@ -99,6 +99,10 @@ namespace Qetesh.Data {
 					
 					result.add(hash);
 				}
+			}
+			else {
+				
+				throw new QDBError.QUERY("Query allegedly executed, but for some reason, we didn't get anything back. This shouldn't happen.");
 			}
 			
 			return result;

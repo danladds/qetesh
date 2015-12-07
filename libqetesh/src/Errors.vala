@@ -21,7 +21,11 @@
  * 
  */
 
-namespace Qetesh.Errors {
+namespace Qetesh {
+	
+	public errordomain CriticalServerError {
+		NOPE
+	}
 	
 	public errordomain ParserError {
 		
@@ -29,7 +33,6 @@ namespace Qetesh.Errors {
 		INVALID_NAME,
 		INVALID_VALUE
 	}
-	
 	
 	public errordomain QError {
 		UNSPECIFIED
@@ -45,10 +48,33 @@ namespace Qetesh.Errors {
 	public errordomain QModuleError {
 		LOAD,
 		CONFIG,
-		STRUCTURE
+		STRUCTURE,
+		RUN,
+		CRITICAL
+	}
+	
+	public errordomain ManifestError {
+		COMPOSE
 	}
 	
 	public errordomain QSanityError {
 		UNSPECIFIED
+	}
+	
+	public errordomain QRouterError {
+		MODULE,
+		USER,
+		RESPONSE
+	}
+	
+	public errordomain QRequestError {
+		CRITICAL,
+		HEADERS,
+		BODY,
+		PATH
+	}
+	
+	public errordomain QResponseError {
+		CRITICAL
 	}
 }

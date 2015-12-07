@@ -37,7 +37,7 @@ namespace Qetesh.Data {
 		
 		protected string TableName { get; set; }
 		
-		protected Gee.HashMap<string, Validator> Validators;
+		public Gee.HashMap<string, Validator> Validators;
 		
 		/// Primary key name
 		public string PKeyName { get; protected set; default="Id"; }
@@ -86,7 +86,7 @@ namespace Qetesh.Data {
 			if(valid == false) throw new ValidationError.INVALID_VALUE("Validate() failed");
 		}
 
-		public void Create() throws ValidationError {
+		public void Create() throws ValidationError, QDBError {
 			
 			foreach(string key in Validators.keys) {
 				
@@ -112,6 +112,7 @@ namespace Qetesh.Data {
 				throw new QDBError.QUERY("Cannot create %s with no values".printf(TableName));
 			}
 			
+			var validationErrors = new StringBuilder();
 			bool valid = true;
 			
 			foreach(var prop in TaintedProperties) {
@@ -122,22 +123,23 @@ namespace Qetesh.Data {
 				if(!Validators[prop].Validate()) {
 					
 					valid = false;
+					validationErrors.append(Validators[prop].DumpResult());
 				}
 				
 				query.Set(prop).Equal(getPropStr(prop));
 			}
 			
 			if(valid == false)
-				throw new ValidationError.INVALID_VALUE("Create() validation failed");
+				throw new ValidationError.INVALID_VALUE("Create() validation failed \n %s".printf(validationErrors.str));
 			
 			
 			this.setPKeyStr(query.DoInt().to_string());
 		}
 		
-		public void Delete() {
+		public void Delete() throws QDBError, ValidationError {
 			
 			if (!Validators[PKeyName].Validate())
-				throw new ValidationError.INVALID_VALUE("Delete(): Primary key not set");
+				throw new ValidationError.INVALID_VALUE("Delete(): Primary key not set \n %s".printf(Validators[PKeyName].DumpResult()));
 			
 			var query = db.NewQuery().DataSet(TableName).Delete();
 			
@@ -146,7 +148,7 @@ namespace Qetesh.Data {
 		}
 		
 		
-		public Gee.LinkedList<DataObject> LoadAll() throws Qetesh.Data.QDBError {
+		public Gee.LinkedList<DataObject> LoadAll() throws QDBError {
 			
 			Gee.LinkedList<DataObject> returnList;
 			
@@ -158,7 +160,7 @@ namespace Qetesh.Data {
 			return returnList;
 		}
 		
-		internal Gee.LinkedList<DataObject> _lazyLoadList(string propertyName, Type fType) {
+		internal Gee.LinkedList<DataObject> _lazyLoadList(string propertyName, Type fType) throws QDBError, ValidationError {
 			return LazyLoadList(propertyName, fType);
 		}
 		
@@ -166,10 +168,10 @@ namespace Qetesh.Data {
 		 * Server side lazy loading
 		 * 
 		**/
-		protected Gee.LinkedList<DataObject> LazyLoadList(string propertyName, Type fType) throws ValidationError {
+		protected Gee.LinkedList<DataObject> LazyLoadList(string propertyName, Type fType) throws ValidationError, QDBError {
 			
 			if (!Validators[PKeyName].Validate())
-				throw new ValidationError.INVALID_VALUE ("LazyLoadList(): Primary key not set");
+				throw new ValidationError.INVALID_VALUE ("LazyLoadList(): Primary key not set \n %s".printf(Validators[PKeyName].DumpResult()));
 			
 			var proto = (DataObject) Object.new(fType);
 			proto._init(db);
@@ -217,7 +219,7 @@ namespace Qetesh.Data {
 		}
 		* */
 		
-		public void Load() {
+		public void Load() throws QDBError {
 			
 			var query = db.NewQuery().DataSet(TableName).Read();
 			
@@ -236,7 +238,7 @@ namespace Qetesh.Data {
 			}
 		}
 		
-		public void Update() throws ValidationError {
+		public void Update() throws ValidationError, QDBError {
 			
 			var query = db.NewQuery().DataSet(TableName).Update();
 			
@@ -252,12 +254,14 @@ namespace Qetesh.Data {
 				return;
 			}
 			
+			var validationErrors = new StringBuilder();
 			bool valid = true;
 			
 			foreach(var prop in TaintedProperties) {
 				
 				if(!Validators[prop].Validate()) {
 					
+					validationErrors.append(Validators[prop].DumpResult());
 					valid = false;
 				}
 				
@@ -267,7 +271,7 @@ namespace Qetesh.Data {
 			}
 			
 			if(valid == false)
-				throw new ValidationError.INVALID_VALUE("Update() validation failed");
+				throw new ValidationError.INVALID_VALUE("Update() validation failed \n %s".printf(validationErrors.str));
 				
 			query.Do();
 		}
@@ -476,6 +480,8 @@ namespace Qetesh.Data {
 				if(mock) return;
 				
 				var vdr = (QDateTimeValidator) Validators[pName];
+				
+				vdr.InValue = inVal;
 				vdr.Convert();
 				
 				var val = Value(typeof(QDateTime));
@@ -554,7 +560,7 @@ namespace Qetesh.Data {
 		
 		public delegate void DataNodeTransform(DataNode n);
 		
-		public DataNode ToNode(DataNodeTransform transform) {
+		public DataNode GetValidatorNode() throws ValidationError {
 			
 			var classObj = (ObjectClass) this.get_type().class_ref();
 			
@@ -588,9 +594,6 @@ namespace Qetesh.Data {
 					
 					continue;
 				}
-				
-				var childNode = new DataNode(pName);
-				childNode.Val = _getPropStr(pName, propertyType);
 				
 				// Mock settings to establish default validators on
 				// unset fields
@@ -626,20 +629,60 @@ namespace Qetesh.Data {
 					propertyType == typeof(QDateTime)
 				){
 					
-					throw new ValidationError.UNVALIDATED_FIELD(pName);
+					throw new ValidationError.UNVALIDATED_FIELD("Unvalidated field" + pName);
 				}
-					
-				dn.Children.add(childNode);
 			}
 			
 			dn.Children.add(validatorList);
+			
+			return dn;
+		}
+		
+		public DataNode ToNode(DataNodeTransform transform) {
+			
+			var classObj = (ObjectClass) this.get_type().class_ref();
+			
+			var dn = new DataNode(this.get_type().name());
+			
+			foreach (var prop in classObj.list_properties()) {
+				
+				string pName = prop.get_name();
+				
+				if(
+					pName == "timp-type" ||
+					pName == "timp-dup-func" ||
+					pName == "timp-destroy-func" ||
+					pName == "t-type" ||
+					pName == "t-dup-func" ||
+					pName == "t-destroy-func" ||
+					pName == "QueryTarget" ||
+					pName == "Links" ||
+					pName == "TableName"
+				){
+					continue;
+				}
+				
+				/// Todo - exclude all non-public fields
+				
+				Type propertyType = prop.value_type;
+				
+				if(propertyType.is_a(typeof(Gee.AbstractList))) {
+					
+					continue;
+				}
+				
+				var childNode = new DataNode(pName);
+				childNode.Val = _getPropStr(pName, propertyType);
+					
+				dn.Children.add(childNode);
+			}
 			
 			transform(dn);
 			
 			return dn;
 		}
 		
-		public void FromRequest(HTTPRequest req) {
+		public void FromRequest(HTTPRequest req) throws ValidationError {
 			
 			FromNode(req.RequestData.DataTree);
 		}
@@ -664,24 +707,6 @@ namespace Qetesh.Data {
 		public class LazyNode : QWebNode {
 			
 			
-		}
-		
-		public class DataNode {
-			
-			public string Name { get; set; }
-			public string Val { get; set; }
-			public Gee.LinkedList<DataNode> Children { get; private set; }
-			public bool IsArray { get; set; }
-			
-			public DataNode (string name = "Data", string? val = null) {
-				
-				if (val != null) {
-					Val = val;
-				}
-				
-				Name = name;
-				Children = new Gee.LinkedList<DataNode>();
-			}
 		}
 		
 		public class InheritInfo {

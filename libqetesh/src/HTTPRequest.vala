@@ -90,14 +90,24 @@ namespace Qetesh {
 		/// $n 
 		public Gee.LinkedList<string> PathArgs { get; private set; }
 		
-		// Map of request key: value
+		/// Map of request key: value
 		public Map<string,string> Headers { get; private set; }
 		
-		// The response to the request
+		/// The response to the request
 		public HTTPResponse HResponse { get; private set; }
 		
-		// Data tree built from request
+		/// Data tree built from request
 		public RequestDataParser RequestData { get; private set; }
+		
+		// Could make these next few configurable in future
+		/// Max header lines to process
+		public int MaxHeaderLines { get; private set; default = 20; }
+		
+		public int MaxContentLength { get; private set; default = 999999999; }
+		
+		public int MaxRequestTime { get; private set; default = 60; }
+		
+		public int MaxResponseTime { get; private set; default = 300; }
 		
 		/**
 		 * Recieve a new request
@@ -106,7 +116,7 @@ namespace Qetesh {
 		 * @param sc Populated context from server
 		 * 
 		**/ 
-		public HTTPRequest (SocketConnection c, WebServerContext sc) {
+		public HTTPRequest (SocketConnection c, WebServerContext sc) throws QRequestError {
 			
 			conn = c;
 			ServerContext = sc;
@@ -117,8 +127,14 @@ namespace Qetesh {
 			// We don't get the App context until we're routed to
 			// an application
 			
-			httpIn = new DataInputStream(c.input_stream);
-			httpOut = new DataOutputStream(c.output_stream);
+			try {
+				httpIn = new DataInputStream(c.input_stream);
+				httpOut = new DataOutputStream(c.output_stream);
+			}
+			catch(Error e) {
+				
+				throw new QRequestError.CRITICAL("Unable to get data streams: %s".printf(e.message));
+			}
 		}
 		
 		
@@ -127,7 +143,7 @@ namespace Qetesh {
 		 * 
 		 *  @param headers Header text lines
 		**/
-		private void ReadHeaders(ArrayList<string> headers) {
+		private void ReadHeaders(ArrayList<string> headers) throws QRequestError {
 			
 			ServerContext.Err.WriteMessage("Processing header lines...", ErrorManager.QErrorClass.QETESH_DEBUG);
 
@@ -188,7 +204,7 @@ namespace Qetesh {
 		* Process request headers and data
 		**/
 		 
-		public void Handle() {
+		public void Handle() throws QRequestError {
 			
 			/* 
 			 * Here's an example of what we're expecting in the input stream:
@@ -232,24 +248,34 @@ namespace Qetesh {
 			
 			if(Headers.has_key("Content-Length")) {
 				
+				int cl = int.parse(Headers["Content-Length"]);
+					
+				if(cl < 1 || cl > MaxContentLength)
+					throw new QRequestError.HEADERS("Invalid request content length: %s".printf(Headers["Content-Length"]));
+				
 				try {
-
-					Bytes rd = httpIn.read_bytes ((size_t) int.parse(Headers["Content-Length"]), null);
+					Bytes rd = httpIn.read_bytes ((size_t) cl, null);
 					
 					requestData = (string) rd.get_data();
 					
 					ServerContext.Err.WriteMessage("B: %s".printf(requestData), ErrorManager.QErrorClass.QETESH_DEBUG);
 				}
 				catch (Error e) {
-					ServerContext.Err.WriteMessage("Error reading input body", ErrorManager.QErrorClass.QETESH_CRITICAL);
-					return;
+					throw new QRequestError.HEADERS("Error reading input body: \n%s");
 				}
 			}
 			
 			ServerContext.Err.WriteMessage("Parsing request data structure...", ErrorManager.QErrorClass.QETESH_DEBUG);
 			
 			RequestData = new JSONReqestDataParser();
-			RequestData.Parse(requestData);
+			
+			try {
+				RequestData.Parse(requestData);
+			}
+			catch (ParserError e) {
+				
+				throw new QRequestError.HEADERS("Error parsing request body:\n %s".printf(e.message));
+			}
 			
 			ServerContext.Err.WriteMessage("Done...", ErrorManager.QErrorClass.QETESH_DEBUG);
 		}

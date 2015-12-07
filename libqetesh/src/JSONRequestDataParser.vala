@@ -27,7 +27,7 @@ namespace Qetesh {
 
 	public class JSONReqestDataParser : GLib.Object, RequestDataParser {
 		
-		public Data.DataObject.DataNode DataTree { get; protected set; }
+		public Data.DataNode DataTree { get; protected set; }
 		
 		// Space skipping, one-way, one-pass index
 		private int index {
@@ -59,13 +59,13 @@ namespace Qetesh {
 		private int _index;
 		private string data;
 		
-		public void Parse(string inData) {
+		public void Parse(string inData) throws ParserError {
 			
 			// Samples: 
 			//   {"Id":"1","Surname":"Smithsons"}
 			//   {"Price":499,"Description":"Camels","Id":"0"}
 			
-			DataTree = new DataObject.DataNode();
+			DataTree = new DataNode();
 			DataTree.IsArray = true;
 			
 			index = 0;
@@ -74,7 +74,7 @@ namespace Qetesh {
 			ParseArrayItem(DataTree);
 		}
 		
-		private void ParseValue(DataObject.DataNode node, string name) {
+		private void ParseValue(DataNode node, string name) throws ParserError {
 			
 			if(index < 0) return; 
 			
@@ -95,13 +95,12 @@ namespace Qetesh {
 				ParseNumber(node, name);
 			} 
 			else {
-				// Ignore it
-				index++;
+				throw new ParserError.INVALID_CHAR("Unxpected char (%c); expected value".printf(data[index]));
 			}
 			
 		}
 		
-		private void ParseNumber (DataObject.DataNode node, string name) {
+		private void ParseNumber (DataNode node, string name) throws ParserError {
 			
 			var start = index;
 			
@@ -114,7 +113,7 @@ namespace Qetesh {
 			
 			index++;
 			
-			var strNode = new DataObject.DataNode(name);
+			var strNode = new DataNode(name);
 			
 			strNode.Val = data.slice(start, index);				
 			node.Children.add(strNode);
@@ -122,11 +121,11 @@ namespace Qetesh {
 			index++;
 		}
 		
-		private void ParseString (DataObject.DataNode node, string name) {
+		private void ParseString (DataNode node, string name) throws ParserError {
 			
 			if(index < 0) return;
 			
-			var strNode = new DataObject.DataNode(name);
+			var strNode = new DataNode(name);
 			
 			var close = data.index_of("\"", index);
 				strNode.Val = data.slice(index, close);
@@ -136,7 +135,7 @@ namespace Qetesh {
 			node.Children.add(strNode);
 		}
 		
-		private void ParseAttribute (DataObject.DataNode node) {
+		private void ParseAttribute (DataNode node) throws ParserError {
 			
 			if(index < 0) return;
 			
@@ -152,26 +151,26 @@ namespace Qetesh {
 					ParseValue(node, name);
 				}
 				else {
-					index++;
+					throw new ParserError.INVALID_CHAR("Unxpected char (%c); expected :".printf(data[index]));
 				}
 			}
 			else {
-				index++;
+				throw new ParserError.INVALID_CHAR("Unxpected char (%c); expected \"".printf(data[index]));
 			}
 			
 		}
 		
-		private void ParseArray (DataObject.DataNode node, string name) {
+		private void ParseArray (DataNode node, string name) throws ParserError {
 			
 			if(index < 0) return;
 			
-			var arrNode = new DataObject.DataNode(name);
+			var arrNode = new DataNode(name);
 			node.Children.add(arrNode);
 			
 			ParseArrayItem(node);
 		}
 		
-		private void ParseArrayItem (DataObject.DataNode node) {
+		private void ParseArrayItem (DataNode node) throws ParserError {
 			
 			ParseValue(node, "(Array Item)");
 			
@@ -182,22 +181,22 @@ namespace Qetesh {
 				index++;
 			}
 			else {
-				index++;
+				throw new ParserError.INVALID_CHAR("Unxpected char (%c); expected , or ]".printf(data[index]));
 			}
 		}
 		
 		
-		private void ParseObject (DataObject.DataNode node, string name) {
+		private void ParseObject (DataNode node, string name) throws ParserError {
 			
 			if(index < 0) return;
-			var objNode = new DataObject.DataNode(name);
+			var objNode = new DataNode(name);
 			node.Children.add(objNode);
 			
 			ParseObjectItem(objNode);
 			
 		}
 		
-		private void ParseObjectItem (DataObject.DataNode node) {
+		private void ParseObjectItem (DataNode node) throws ParserError {
 			
 			ParseAttribute(node);
 			
@@ -210,7 +209,7 @@ namespace Qetesh {
 				index++;
 			}
 			else {
-				index++;
+				throw new ParserError.INVALID_CHAR("Unxpected char (%c); expected , or }".printf(data[index]));
 			}
 		}
 	}

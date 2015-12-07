@@ -34,38 +34,46 @@ namespace Qetesh {
 			dt = new DateTime.now(new TimeZone.local());
 		}
 		
-		public void fromString(string inVal) {
+		public void fromString(string? inVal) throws ValidationError {
+			
+			if(inVal == null)
+				throw new ValidationError.INVALID_DATETIME_STRING("Null date");
 			
 			// Format: 2015-11-04 00:00:00
 			var mainParts = inVal.split(" ");
 			
-			if(mainParts.length != 2)
+			if(mainParts.length < 1 || mainParts.length > 2)
 				throw new ValidationError.INVALID_DATETIME_STRING("Invalid format");
-			
-			var dateParts = mainParts[0].split("-");
-			var timeParts = mainParts[1].split(":");
-			
-			if(dateParts.length != 3)
-				throw new ValidationError.INVALID_DATETIME_STRING("Invalid date format");
-				
-			if(timeParts.length != 3)
-				throw new ValidationError.INVALID_DATETIME_STRING("Invalid time format");
 				
 			int year = -1;
 			int month = -1;
 			int day = -1;
 			
-			int hour = -1;
-			int minute = -1;
-			int second = -1;
+			int hour = 0;
+			int minute = 0;
+			int second = 0;
 			
+			var dateParts = mainParts[0].split("-");
+			
+			if(mainParts.length == 2) {
+				var timeParts = mainParts[1].split(":");
+				
+				if(timeParts.length != 3)
+					throw new ValidationError.INVALID_DATETIME_STRING("Invalid time format");
+				
+				hour = int.parse(timeParts[0]);
+				minute = int.parse(timeParts[1]);
+				second = int.parse(timeParts[2]);
+			}
+			
+			if(dateParts.length != 3)
+				throw new ValidationError.INVALID_DATETIME_STRING("Invalid date format");
+				
 			year = int.parse(dateParts[0]);
 			month = int.parse(dateParts[1]);
 			day = int.parse(dateParts[2]);
 			
-			hour = int.parse(timeParts[0]);
-			minute = int.parse(timeParts[1]);
-			second = int.parse(timeParts[2]);
+			
 			
 			if(
 				year < 0 ||
@@ -82,7 +90,7 @@ namespace Qetesh {
 				second > 60
 			) {
 				
-				throw new ValidationError.INVALID_DATETIME_STRING("Invalid value");
+				throw new ValidationError.INVALID_DATETIME_STRING("Invalid value: %s".printf(inVal));
 			}
 			
 			try {

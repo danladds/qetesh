@@ -63,7 +63,7 @@ namespace Qetesh {
 		* @param module nickname, for identification
 		* @param loader name of the module loader class
 		**/
-		public AppModule (string modPath, string nick, string loader,  WebServerContext sc, int execUser, int execGroup) throws Errors.QModuleError {
+		public AppModule (string modPath, string nick, string loader,  WebServerContext sc, int execUser, int execGroup) throws QModuleError {
 			
 			Nick = nick;
 			loaderName = loader;
@@ -76,12 +76,11 @@ namespace Qetesh {
 			module = Module.open(path, ModuleFlags.BIND_LAZY);
 			
 			// Check that it actually happened :)
-			if (module == null) throw new Errors.QModuleError.LOAD("Unable to load module");
+			if (module == null) throw new QModuleError.LOAD("Unable to load module");
 			
 			// Create managers
 			Context = new WebAppContext();
 			Context.Server = sc;
-			;
 			Context.Mod = this;
 			
 			// Instantiate the app object
@@ -93,7 +92,7 @@ namespace Qetesh {
 		/**
 		* Handle a request
 		**/
-		public void Handle(HTTPRequest req) {
+		public void Handle(HTTPRequest req) throws QModuleError {
 			
 			req.Route(Context, new JSONResponse(Context));
 			
@@ -104,18 +103,25 @@ namespace Qetesh {
 			if (node != null) {
 				
 				Context.Server.Err.WriteMessage("Found node: %s".printf(node.Path), ErrorManager.QErrorClass.QETESH_DEBUG);
-			
-				if (req.Method == HTTPRequest.RequestMethod.GET) {
-					node.GET(req);
+				
+				try {
+					
+					if (req.Method == HTTPRequest.RequestMethod.GET) {
+						node.GET(req);
+					}
+					else if (req.Method == HTTPRequest.RequestMethod.POST) {
+						node.POST(req);
+					}
+					else if (req.Method == HTTPRequest.RequestMethod.PUT) {
+						node.PUT(req);
+					}
+					else if (req.Method == HTTPRequest.RequestMethod.DELETE) {
+						node.DELETE(req);
+					}
 				}
-				else if (req.Method == HTTPRequest.RequestMethod.POST) {
-					node.POST(req);
-				}
-				else if (req.Method == HTTPRequest.RequestMethod.PUT) {
-					node.PUT(req);
-				}
-				else if (req.Method == HTTPRequest.RequestMethod.DELETE) {
-					node.DELETE(req);
+				catch(Error e) {
+					
+					Context.Server.Err.WriteMessage("Unexpected error in module: %s \n %s".printf(Nick, e.message), ErrorManager.QErrorClass.MODULE_ERROR);
 				}
 			}
 			else {
@@ -132,14 +138,14 @@ namespace Qetesh {
 		* @returns Web app object
 		**/
 		
-		public QWebApp GetApp() throws Errors.QModuleError {
+		public QWebApp GetApp() throws QModuleError {
 			
 			Context.Server.Err.WriteMessage("AppModule attempting to get app object", ErrorManager.QErrorClass.QETESH_DEBUG);
 			
 			// Find the init function
 			void* initFunc = null;
 			if (!module.symbol("mod_init", out initFunc)) {
-				throw new Errors.QModuleError.LOAD("Unable to get init symbol from module");
+				throw new QModuleError.LOAD("Unable to get init symbol from module");
 			}
 			
 			// Get the type from the init function and try to create it
@@ -151,6 +157,9 @@ namespace Qetesh {
 			
 			// Create loader object
 			QPlugin p = (QPlugin) Object.new(Type.from_name(loaderName));
+			
+			if(p == null)
+				throw new QModuleError.CRITICAL("Unable to create object");
 			
 			Context.Server.Err.WriteMessage("Created loader object", ErrorManager.QErrorClass.QETESH_DEBUG);
 			

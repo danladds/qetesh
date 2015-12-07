@@ -137,15 +137,15 @@ typedef struct _QeteshDataDataObjectPrivate QeteshDataDataObjectPrivate;
 typedef struct _QeteshDataQDatabaseConn QeteshDataQDatabaseConn;
 typedef struct _QeteshDataQDatabaseConnClass QeteshDataQDatabaseConnClass;
 
-#define QETESH_DATA_DATA_OBJECT_TYPE_DATA_NODE (qetesh_data_data_object_data_node_get_type ())
-#define QETESH_DATA_DATA_OBJECT_DATA_NODE(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), QETESH_DATA_DATA_OBJECT_TYPE_DATA_NODE, QeteshDataDataObjectDataNode))
-#define QETESH_DATA_DATA_OBJECT_DATA_NODE_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), QETESH_DATA_DATA_OBJECT_TYPE_DATA_NODE, QeteshDataDataObjectDataNodeClass))
-#define QETESH_DATA_DATA_OBJECT_IS_DATA_NODE(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), QETESH_DATA_DATA_OBJECT_TYPE_DATA_NODE))
-#define QETESH_DATA_DATA_OBJECT_IS_DATA_NODE_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), QETESH_DATA_DATA_OBJECT_TYPE_DATA_NODE))
-#define QETESH_DATA_DATA_OBJECT_DATA_NODE_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), QETESH_DATA_DATA_OBJECT_TYPE_DATA_NODE, QeteshDataDataObjectDataNodeClass))
+#define QETESH_DATA_TYPE_DATA_NODE (qetesh_data_data_node_get_type ())
+#define QETESH_DATA_DATA_NODE(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), QETESH_DATA_TYPE_DATA_NODE, QeteshDataDataNode))
+#define QETESH_DATA_DATA_NODE_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), QETESH_DATA_TYPE_DATA_NODE, QeteshDataDataNodeClass))
+#define QETESH_DATA_IS_DATA_NODE(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), QETESH_DATA_TYPE_DATA_NODE))
+#define QETESH_DATA_IS_DATA_NODE_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), QETESH_DATA_TYPE_DATA_NODE))
+#define QETESH_DATA_DATA_NODE_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), QETESH_DATA_TYPE_DATA_NODE, QeteshDataDataNodeClass))
 
-typedef struct _QeteshDataDataObjectDataNode QeteshDataDataObjectDataNode;
-typedef struct _QeteshDataDataObjectDataNodeClass QeteshDataDataObjectDataNodeClass;
+typedef struct _QeteshDataDataNode QeteshDataDataNode;
+typedef struct _QeteshDataDataNodeClass QeteshDataDataNodeClass;
 
 #define QETESH_TYPE_HTTP_REQUEST (qetesh_http_request_get_type ())
 #define QETESH_HTTP_REQUEST(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), QETESH_TYPE_HTTP_REQUEST, QeteshHTTPRequest))
@@ -188,7 +188,6 @@ typedef struct _QeteshQWebNodeManifestObjectClass QeteshQWebNodeManifestObjectCl
 typedef struct _QeteshDataDataObjectLazyNode QeteshDataDataObjectLazyNode;
 typedef struct _QeteshDataDataObjectLazyNodeClass QeteshDataDataObjectLazyNodeClass;
 typedef struct _QeteshDataDataObjectLazyNodePrivate QeteshDataDataObjectLazyNodePrivate;
-typedef struct _QeteshDataDataObjectDataNodePrivate QeteshDataDataObjectDataNodePrivate;
 
 #define QETESH_DATA_DATA_OBJECT_TYPE_INHERIT_INFO (qetesh_data_data_object_inherit_info_get_type ())
 #define QETESH_DATA_DATA_OBJECT_INHERIT_INFO(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), QETESH_DATA_DATA_OBJECT_TYPE_INHERIT_INFO, QeteshDataDataObjectInheritInfo))
@@ -343,6 +342,7 @@ typedef struct _QeteshDataQMysqlQueryMysqlQueryParamPrivate QeteshDataQMysqlQuer
 typedef struct _QeteshDataQMysqlQueryMysqlQueryResult QeteshDataQMysqlQueryMysqlQueryResult;
 typedef struct _QeteshDataQMysqlQueryMysqlQueryResultClass QeteshDataQMysqlQueryMysqlQueryResultClass;
 typedef struct _QeteshDataQMysqlQueryMysqlQueryResultPrivate QeteshDataQMysqlQueryMysqlQueryResultPrivate;
+typedef struct _QeteshDataDataNodePrivate QeteshDataDataNodePrivate;
 
 #define QETESH_TYPE_HTTP_RESPONSE (qetesh_http_response_get_type ())
 #define QETESH_HTTP_RESPONSE(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), QETESH_TYPE_HTTP_RESPONSE, QeteshHTTPResponse))
@@ -654,7 +654,7 @@ typedef enum  {
 	QETESH_DATA_QDB_ERROR_QUERY
 } QeteshDataQDBError;
 #define QETESH_DATA_QDB_ERROR qetesh_data_qdb_error_quark ()
-typedef void (*QeteshDataDataObjectDataNodeTransform) (QeteshDataDataObjectDataNode* n, void* user_data);
+typedef void (*QeteshDataDataObjectDataNodeTransform) (QeteshDataDataNode* n, void* user_data);
 struct _QeteshQWebNode {
 	GObject parent_instance;
 	QeteshQWebNodePrivate * priv;
@@ -675,17 +675,6 @@ struct _QeteshDataDataObjectLazyNode {
 
 struct _QeteshDataDataObjectLazyNodeClass {
 	QeteshQWebNodeClass parent_class;
-};
-
-struct _QeteshDataDataObjectDataNode {
-	GTypeInstance parent_instance;
-	volatile int ref_count;
-	QeteshDataDataObjectDataNodePrivate * priv;
-};
-
-struct _QeteshDataDataObjectDataNodeClass {
-	GTypeClass parent_class;
-	void (*finalize) (QeteshDataDataObjectDataNode *self);
 };
 
 struct _QeteshDataDataObjectInheritInfo {
@@ -771,11 +760,11 @@ struct _QeteshDataQDataQueryClass {
 	QeteshDataQDataQuery* (*Delete) (QeteshDataQDataQuery* self);
 	QeteshDataQDataQuery* (*Count) (QeteshDataQDataQuery* self);
 	QeteshDataQDataQuery* (*DataSet) (QeteshDataQDataQuery* self, const gchar* setName);
-	QeteshDataQDataQueryQueryResult* (*Do) (QeteshDataQDataQuery* self);
-	gint (*DoInt) (QeteshDataQDataQuery* self);
+	QeteshDataQDataQueryQueryResult* (*Do) (QeteshDataQDataQuery* self, GError** error);
+	gint (*DoInt) (QeteshDataQDataQuery* self, GError** error);
 	QeteshDataQDataQueryQueryParam* (*Where) (QeteshDataQDataQuery* self, const gchar* fieldName);
 	QeteshDataQDataQueryQueryParam* (*Set) (QeteshDataQDataQuery* self, const gchar* fieldName);
-	GeeLinkedList* (*Fetch) (QeteshDataQDataQuery* self);
+	GeeLinkedList* (*Fetch) (QeteshDataQDataQuery* self, GError** error);
 };
 
 struct _QeteshDataQDataQueryQueryParam {
@@ -834,6 +823,17 @@ struct _QeteshDataQMysqlQueryMysqlQueryResultClass {
 	QeteshDataQDataQueryQueryResultClass parent_class;
 };
 
+struct _QeteshDataDataNode {
+	GTypeInstance parent_instance;
+	volatile int ref_count;
+	QeteshDataDataNodePrivate * priv;
+};
+
+struct _QeteshDataDataNodeClass {
+	GTypeClass parent_class;
+	void (*finalize) (QeteshDataDataNode *self);
+};
+
 struct _QeteshHTTPResponse {
 	GObject parent_instance;
 	QeteshHTTPResponsePrivate * priv;
@@ -873,11 +873,24 @@ typedef enum  {
 	QETESH_HTTP_REQUEST_REQUEST_METHOD_INVALID
 } QeteshHTTPRequestRequestMethod;
 
+typedef enum  {
+	QETESH_QREQUEST_ERROR_CRITICAL,
+	QETESH_QREQUEST_ERROR_HEADERS,
+	QETESH_QREQUEST_ERROR_BODY,
+	QETESH_QREQUEST_ERROR_PATH
+} QeteshQRequestError;
+#define QETESH_QREQUEST_ERROR qetesh_qrequest_error_quark ()
+typedef enum  {
+	QETESH_PARSER_ERROR_INVALID_CHAR,
+	QETESH_PARSER_ERROR_INVALID_NAME,
+	QETESH_PARSER_ERROR_INVALID_VALUE
+} QeteshParserError;
+#define QETESH_PARSER_ERROR qetesh_parser_error_quark ()
 struct _QeteshRequestDataParserIface {
 	GTypeInterface parent_iface;
-	void (*Parse) (QeteshRequestDataParser* self, const gchar* inData);
-	QeteshDataDataObjectDataNode* (*get_DataTree) (QeteshRequestDataParser* self);
-	void (*set_DataTree) (QeteshRequestDataParser* self, QeteshDataDataObjectDataNode* value);
+	void (*Parse) (QeteshRequestDataParser* self, const gchar* inData, GError** error);
+	QeteshDataDataNode* (*get_DataTree) (QeteshRequestDataParser* self);
+	void (*set_DataTree) (QeteshRequestDataParser* self, QeteshDataDataNode* value);
 };
 
 struct _QeteshQWebApp {
@@ -913,11 +926,13 @@ struct _QeteshAppModuleClass {
 };
 
 typedef enum  {
-	QETESH_ERRORS_QMODULE_ERROR_LOAD,
-	QETESH_ERRORS_QMODULE_ERROR_CONFIG,
-	QETESH_ERRORS_QMODULE_ERROR_STRUCTURE
-} QeteshErrorsQModuleError;
-#define QETESH_ERRORS_QMODULE_ERROR qetesh_errors_qmodule_error_quark ()
+	QETESH_QMODULE_ERROR_LOAD,
+	QETESH_QMODULE_ERROR_CONFIG,
+	QETESH_QMODULE_ERROR_STRUCTURE,
+	QETESH_QMODULE_ERROR_RUN,
+	QETESH_QMODULE_ERROR_CRITICAL
+} QeteshQModuleError;
+#define QETESH_QMODULE_ERROR qetesh_qmodule_error_quark ()
 struct _QeteshQPluginIface {
 	GTypeInterface parent_iface;
 	QeteshQWebApp* (*GetModObject) (QeteshQPlugin* self, QeteshWebAppContext* ctx);
@@ -932,6 +947,10 @@ struct _QeteshModuleManagerClass {
 	GObjectClass parent_class;
 };
 
+typedef enum  {
+	QETESH_MANIFEST_ERROR_COMPOSE
+} QeteshManifestError;
+#define QETESH_MANIFEST_ERROR qetesh_manifest_error_quark ()
 struct _QeteshQWebNodeLazyExposer {
 	GTypeInstance parent_instance;
 	volatile int ref_count;
@@ -1044,6 +1063,13 @@ struct _QeteshConfigFileClass {
 	GObjectClass parent_class;
 };
 
+typedef enum  {
+	QETESH_QFILE_ERROR_ACCESS,
+	QETESH_QFILE_ERROR_READ,
+	QETESH_QFILE_ERROR_WRITE,
+	QETESH_QFILE_ERROR_FORMAT
+} QeteshQFileError;
+#define QETESH_QFILE_ERROR qetesh_qfile_error_quark ()
 struct _QeteshConfigFileModConfig {
 	GTypeInstance parent_instance;
 	volatile int ref_count;
@@ -1094,26 +1120,27 @@ struct _QeteshFileParserIface {
 };
 
 typedef enum  {
-	QETESH_ERRORS_PARSER_ERROR_INVALID_CHAR,
-	QETESH_ERRORS_PARSER_ERROR_INVALID_NAME,
-	QETESH_ERRORS_PARSER_ERROR_INVALID_VALUE
-} QeteshErrorsParserError;
-#define QETESH_ERRORS_PARSER_ERROR qetesh_errors_parser_error_quark ()
+	QETESH_CRITICAL_SERVER_ERROR_NOPE
+} QeteshCriticalServerError;
+#define QETESH_CRITICAL_SERVER_ERROR qetesh_critical_server_error_quark ()
 typedef enum  {
-	QETESH_ERRORS_QERROR_UNSPECIFIED
-} QeteshErrorsQError;
-#define QETESH_ERRORS_QERROR qetesh_errors_qerror_quark ()
+	QETESH_QERROR_UNSPECIFIED
+} QeteshQError;
+#define QETESH_QERROR qetesh_qerror_quark ()
 typedef enum  {
-	QETESH_ERRORS_QFILE_ERROR_ACCESS,
-	QETESH_ERRORS_QFILE_ERROR_READ,
-	QETESH_ERRORS_QFILE_ERROR_WRITE,
-	QETESH_ERRORS_QFILE_ERROR_FORMAT
-} QeteshErrorsQFileError;
-#define QETESH_ERRORS_QFILE_ERROR qetesh_errors_qfile_error_quark ()
+	QETESH_QSANITY_ERROR_UNSPECIFIED
+} QeteshQSanityError;
+#define QETESH_QSANITY_ERROR qetesh_qsanity_error_quark ()
 typedef enum  {
-	QETESH_ERRORS_QSANITY_ERROR_UNSPECIFIED
-} QeteshErrorsQSanityError;
-#define QETESH_ERRORS_QSANITY_ERROR qetesh_errors_qsanity_error_quark ()
+	QETESH_QROUTER_ERROR_MODULE,
+	QETESH_QROUTER_ERROR_USER,
+	QETESH_QROUTER_ERROR_RESPONSE
+} QeteshQRouterError;
+#define QETESH_QROUTER_ERROR qetesh_qrouter_error_quark ()
+typedef enum  {
+	QETESH_QRESPONSE_ERROR_CRITICAL
+} QeteshQResponseError;
+#define QETESH_QRESPONSE_ERROR qetesh_qresponse_error_quark ()
 
 gpointer qetesh_webserver_libqetesh_ref (gpointer instance);
 void qetesh_webserver_libqetesh_unref (gpointer instance);
@@ -1128,12 +1155,13 @@ GQuark qetesh_data_validation_error_quark (void);
 GType qetesh_qdate_time_get_type (void) G_GNUC_CONST;
 QeteshQDateTime* qetesh_qdate_time_new (void);
 QeteshQDateTime* qetesh_qdate_time_construct (GType object_type);
-void qetesh_qdate_time_fromString (QeteshQDateTime* self, const gchar* inVal);
+void qetesh_qdate_time_fromString (QeteshQDateTime* self, const gchar* inVal, GError** error);
 gchar* qetesh_qdate_time_toString (QeteshQDateTime* self);
 GType qetesh_data_validator_get_type (void) G_GNUC_CONST;
 GType qetesh_data_validation_test_get_type (void) G_GNUC_CONST;
 QeteshDataValidator* qetesh_data_validator_construct (GType object_type, GType tfield_type, GBoxedCopyFunc tfield_dup_func, GDestroyNotify tfield_destroy_func);
 gboolean qetesh_data_validator_Validate (QeteshDataValidator* self);
+gchar* qetesh_data_validator_DumpResult (QeteshDataValidator* self);
 void qetesh_data_validator_Convert (QeteshDataValidator* self);
 const gchar* qetesh_data_validator_get_Name (QeteshDataValidator* self);
 void qetesh_data_validator_set_Name (QeteshDataValidator* self, const gchar* value);
@@ -1190,28 +1218,29 @@ GType qetesh_data_qdatabase_conn_get_type (void) G_GNUC_CONST;
 QeteshDataDataObject* qetesh_data_data_object_construct (GType object_type, GType timp_type, GBoxedCopyFunc timp_dup_func, GDestroyNotify timp_destroy_func, QeteshDataQDatabaseConn* dbh);
 void qetesh_data_data_object_Init (QeteshDataDataObject* self);
 void qetesh_data_data_object_ValidateAll (QeteshDataDataObject* self, GError** error);
-void qetesh_data_data_object_Create (QeteshDataDataObject* self, GError** error);
-void qetesh_data_data_object_Delete (QeteshDataDataObject* self);
 GQuark qetesh_data_qdb_error_quark (void);
+void qetesh_data_data_object_Create (QeteshDataDataObject* self, GError** error);
+void qetesh_data_data_object_Delete (QeteshDataDataObject* self, GError** error);
 GeeLinkedList* qetesh_data_data_object_LoadAll (QeteshDataDataObject* self, GError** error);
 GeeLinkedList* qetesh_data_data_object_LazyLoadList (QeteshDataDataObject* self, const gchar* propertyName, GType fType, GError** error);
-void qetesh_data_data_object_Load (QeteshDataDataObject* self);
+void qetesh_data_data_object_Load (QeteshDataDataObject* self, GError** error);
 void qetesh_data_data_object_Update (QeteshDataDataObject* self, GError** error);
 GeeLinkedList* qetesh_data_data_object_MapObjectList (QeteshDataDataObject* self, GeeLinkedList* rows);
 QeteshDataDataObject* qetesh_data_data_object_CreateObject (QeteshDataDataObject* self, GeeTreeMap* datum);
 gchar* qetesh_data_data_object_NameTransform (QeteshDataDataObject* self, const gchar* fieldName);
 void qetesh_data_data_object_MapObject (QeteshDataDataObject* self, GeeTreeMap* datum);
-gpointer qetesh_data_data_object_data_node_ref (gpointer instance);
-void qetesh_data_data_object_data_node_unref (gpointer instance);
-GParamSpec* qetesh_data_data_object_param_spec_data_node (const gchar* name, const gchar* nick, const gchar* blurb, GType object_type, GParamFlags flags);
-void qetesh_data_data_object_value_set_data_node (GValue* value, gpointer v_object);
-void qetesh_data_data_object_value_take_data_node (GValue* value, gpointer v_object);
-gpointer qetesh_data_data_object_value_get_data_node (const GValue* value);
-GType qetesh_data_data_object_data_node_get_type (void) G_GNUC_CONST;
-QeteshDataDataObjectDataNode* qetesh_data_data_object_ToNode (QeteshDataDataObject* self, QeteshDataDataObjectDataNodeTransform transform, void* transform_target);
+gpointer qetesh_data_data_node_ref (gpointer instance);
+void qetesh_data_data_node_unref (gpointer instance);
+GParamSpec* qetesh_data_param_spec_data_node (const gchar* name, const gchar* nick, const gchar* blurb, GType object_type, GParamFlags flags);
+void qetesh_data_value_set_data_node (GValue* value, gpointer v_object);
+void qetesh_data_value_take_data_node (GValue* value, gpointer v_object);
+gpointer qetesh_data_value_get_data_node (const GValue* value);
+GType qetesh_data_data_node_get_type (void) G_GNUC_CONST;
+QeteshDataDataNode* qetesh_data_data_object_GetValidatorNode (QeteshDataDataObject* self, GError** error);
+QeteshDataDataNode* qetesh_data_data_object_ToNode (QeteshDataDataObject* self, QeteshDataDataObjectDataNodeTransform transform, void* transform_target);
 GType qetesh_http_request_get_type (void) G_GNUC_CONST;
-void qetesh_data_data_object_FromRequest (QeteshDataDataObject* self, QeteshHTTPRequest* req);
-void qetesh_data_data_object_FromNode (QeteshDataDataObject* self, QeteshDataDataObjectDataNode* data, GError** error);
+void qetesh_data_data_object_FromRequest (QeteshDataDataObject* self, QeteshHTTPRequest* req, GError** error);
+void qetesh_data_data_object_FromNode (QeteshDataDataObject* self, QeteshDataDataNode* data, GError** error);
 const gchar* qetesh_data_data_object_get_TableName (QeteshDataDataObject* self);
 void qetesh_data_data_object_set_TableName (QeteshDataDataObject* self, const gchar* value);
 const gchar* qetesh_data_data_object_get_PKeyName (QeteshDataDataObject* self);
@@ -1227,15 +1256,6 @@ GType qetesh_qweb_node_manifest_object_get_type (void) G_GNUC_CONST;
 GType qetesh_data_data_object_lazy_node_get_type (void) G_GNUC_CONST;
 QeteshDataDataObjectLazyNode* qetesh_data_data_object_lazy_node_new (void);
 QeteshDataDataObjectLazyNode* qetesh_data_data_object_lazy_node_construct (GType object_type);
-QeteshDataDataObjectDataNode* qetesh_data_data_object_data_node_new (const gchar* name, const gchar* val);
-QeteshDataDataObjectDataNode* qetesh_data_data_object_data_node_construct (GType object_type, const gchar* name, const gchar* val);
-const gchar* qetesh_data_data_object_data_node_get_Name (QeteshDataDataObjectDataNode* self);
-void qetesh_data_data_object_data_node_set_Name (QeteshDataDataObjectDataNode* self, const gchar* value);
-const gchar* qetesh_data_data_object_data_node_get_Val (QeteshDataDataObjectDataNode* self);
-void qetesh_data_data_object_data_node_set_Val (QeteshDataDataObjectDataNode* self, const gchar* value);
-GeeLinkedList* qetesh_data_data_object_data_node_get_Children (QeteshDataDataObjectDataNode* self);
-gboolean qetesh_data_data_object_data_node_get_IsArray (QeteshDataDataObjectDataNode* self);
-void qetesh_data_data_object_data_node_set_IsArray (QeteshDataDataObjectDataNode* self, gboolean value);
 gpointer qetesh_data_data_object_inherit_info_ref (gpointer instance);
 void qetesh_data_data_object_inherit_info_unref (gpointer instance);
 GParamSpec* qetesh_data_data_object_param_spec_inherit_info (const gchar* name, const gchar* nick, const gchar* blurb, GType object_type, GParamFlags flags);
@@ -1305,11 +1325,11 @@ QeteshDataQDataQuery* qetesh_data_qdata_query_Update (QeteshDataQDataQuery* self
 QeteshDataQDataQuery* qetesh_data_qdata_query_Delete (QeteshDataQDataQuery* self);
 QeteshDataQDataQuery* qetesh_data_qdata_query_Count (QeteshDataQDataQuery* self);
 QeteshDataQDataQuery* qetesh_data_qdata_query_DataSet (QeteshDataQDataQuery* self, const gchar* setName);
-QeteshDataQDataQueryQueryResult* qetesh_data_qdata_query_Do (QeteshDataQDataQuery* self);
-gint qetesh_data_qdata_query_DoInt (QeteshDataQDataQuery* self);
+QeteshDataQDataQueryQueryResult* qetesh_data_qdata_query_Do (QeteshDataQDataQuery* self, GError** error);
+gint qetesh_data_qdata_query_DoInt (QeteshDataQDataQuery* self, GError** error);
 QeteshDataQDataQueryQueryParam* qetesh_data_qdata_query_Where (QeteshDataQDataQuery* self, const gchar* fieldName);
 QeteshDataQDataQueryQueryParam* qetesh_data_qdata_query_Set (QeteshDataQDataQuery* self, const gchar* fieldName);
-GeeLinkedList* qetesh_data_qdata_query_Fetch (QeteshDataQDataQuery* self);
+GeeLinkedList* qetesh_data_qdata_query_Fetch (QeteshDataQDataQuery* self, GError** error);
 QeteshDataQDataQuery* qetesh_data_qdata_query_construct (GType object_type);
 QeteshDataQDataQueryQueryParam* qetesh_data_qdata_query_query_param_Equal (QeteshDataQDataQueryQueryParam* self, const gchar* val);
 QeteshDataQDataQueryQueryParam* qetesh_data_qdata_query_query_param_Like (QeteshDataQDataQueryQueryParam* self, const gchar* val);
@@ -1329,6 +1349,15 @@ const gchar* qetesh_data_qmysql_query_mysql_query_param_get_FieldName (QeteshDat
 const gchar* qetesh_data_qmysql_query_mysql_query_param_get_FieldValue (QeteshDataQMysqlQueryMysqlQueryParam* self);
 const gchar* qetesh_data_qmysql_query_mysql_query_param_get_FieldComparator (QeteshDataQMysqlQueryMysqlQueryParam* self);
 GType qetesh_data_qmysql_query_mysql_query_result_get_type (void) G_GNUC_CONST;
+QeteshDataDataNode* qetesh_data_data_node_new (const gchar* name, const gchar* val);
+QeteshDataDataNode* qetesh_data_data_node_construct (GType object_type, const gchar* name, const gchar* val);
+const gchar* qetesh_data_data_node_get_Name (QeteshDataDataNode* self);
+void qetesh_data_data_node_set_Name (QeteshDataDataNode* self, const gchar* value);
+const gchar* qetesh_data_data_node_get_Val (QeteshDataDataNode* self);
+void qetesh_data_data_node_set_Val (QeteshDataDataNode* self, const gchar* value);
+GeeLinkedList* qetesh_data_data_node_get_Children (QeteshDataDataNode* self);
+gboolean qetesh_data_data_node_get_IsArray (QeteshDataDataNode* self);
+void qetesh_data_data_node_set_IsArray (QeteshDataDataNode* self, gboolean value);
 GType qetesh_http_response_get_type (void) G_GNUC_CONST;
 #define QETESH_HTTP_RESPONSE_DEFAULT_RM "OK"
 #define QETESH_HTTP_RESPONSE_DEFAULT_CODE 200
@@ -1344,17 +1373,18 @@ void qetesh_http_response_set_ResponseMessage (QeteshHTTPResponse* self, const g
 const gchar* qetesh_http_response_get_ContentType (QeteshHTTPResponse* self);
 void qetesh_http_response_set_ContentType (QeteshHTTPResponse* self, const gchar* value);
 QeteshWebAppContext* qetesh_http_response_get_Context (QeteshHTTPResponse* self);
-QeteshDataDataObjectDataNode* qetesh_http_response_get_DataTree (QeteshHTTPResponse* self);
+QeteshDataDataNode* qetesh_http_response_get_DataTree (QeteshHTTPResponse* self);
 GeeLinkedList* qetesh_http_response_get_Messages (QeteshHTTPResponse* self);
 GType qetesh_json_response_get_type (void) G_GNUC_CONST;
 QeteshJSONResponse* qetesh_json_response_new (QeteshWebAppContext* ctx);
 QeteshJSONResponse* qetesh_json_response_construct (GType object_type, QeteshWebAppContext* ctx);
 void qetesh_json_response_Tab (QeteshJSONResponse* self);
-void qetesh_json_response_AddJson (QeteshJSONResponse* self, QeteshDataDataObjectDataNode* node, gboolean parentIsArray);
+void qetesh_json_response_AddJson (QeteshJSONResponse* self, QeteshDataDataNode* node, gboolean parentIsArray);
 GType qetesh_http_request_request_method_get_type (void) G_GNUC_CONST;
-QeteshHTTPRequest* qetesh_http_request_new (GSocketConnection* c, QeteshWebServerContext* sc);
-QeteshHTTPRequest* qetesh_http_request_construct (GType object_type, GSocketConnection* c, QeteshWebServerContext* sc);
-void qetesh_http_request_Handle (QeteshHTTPRequest* self);
+GQuark qetesh_qrequest_error_quark (void);
+QeteshHTTPRequest* qetesh_http_request_new (GSocketConnection* c, QeteshWebServerContext* sc, GError** error);
+QeteshHTTPRequest* qetesh_http_request_construct (GType object_type, GSocketConnection* c, QeteshWebServerContext* sc, GError** error);
+void qetesh_http_request_Handle (QeteshHTTPRequest* self, GError** error);
 void qetesh_http_request_Route (QeteshHTTPRequest* self, QeteshWebAppContext* cxt, QeteshHTTPResponse* resp);
 void qetesh_http_request_Respond (QeteshHTTPRequest* self);
 QeteshWebServerContext* qetesh_http_request_get_ServerContext (QeteshHTTPRequest* self);
@@ -1371,18 +1401,23 @@ const gchar* qetesh_http_request_get_UserAgent (QeteshHTTPRequest* self);
 GeeLinkedList* qetesh_http_request_get_PathArgs (QeteshHTTPRequest* self);
 GeeMap* qetesh_http_request_get_Headers (QeteshHTTPRequest* self);
 QeteshHTTPResponse* qetesh_http_request_get_HResponse (QeteshHTTPRequest* self);
+GQuark qetesh_parser_error_quark (void);
 GType qetesh_request_data_parser_get_type (void) G_GNUC_CONST;
 QeteshRequestDataParser* qetesh_http_request_get_RequestData (QeteshHTTPRequest* self);
+gint qetesh_http_request_get_MaxHeaderLines (QeteshHTTPRequest* self);
+gint qetesh_http_request_get_MaxContentLength (QeteshHTTPRequest* self);
+gint qetesh_http_request_get_MaxRequestTime (QeteshHTTPRequest* self);
+gint qetesh_http_request_get_MaxResponseTime (QeteshHTTPRequest* self);
 GType qetesh_qweb_app_get_type (void) G_GNUC_CONST;
 QeteshQWebApp* qetesh_qweb_app_new (QeteshWebAppContext* ctx);
 QeteshQWebApp* qetesh_qweb_app_construct (GType object_type, QeteshWebAppContext* ctx);
 GType qetesh_error_manager_qerror_class_get_type (void) G_GNUC_CONST;
 void qetesh_qweb_app_WriteMessage (QeteshQWebApp* self, const gchar* message, QeteshErrorManagerQErrorClass errorClass, const gchar* modName);
 GType qetesh_app_module_get_type (void) G_GNUC_CONST;
-GQuark qetesh_errors_qmodule_error_quark (void);
+GQuark qetesh_qmodule_error_quark (void);
 QeteshAppModule* qetesh_app_module_new (const gchar* modPath, const gchar* nick, const gchar* loader, QeteshWebServerContext* sc, gint execUser, gint execGroup, GError** error);
 QeteshAppModule* qetesh_app_module_construct (GType object_type, const gchar* modPath, const gchar* nick, const gchar* loader, QeteshWebServerContext* sc, gint execUser, gint execGroup, GError** error);
-void qetesh_app_module_Handle (QeteshAppModule* self, QeteshHTTPRequest* req);
+void qetesh_app_module_Handle (QeteshAppModule* self, QeteshHTTPRequest* req, GError** error);
 QeteshQWebApp* qetesh_app_module_GetApp (QeteshAppModule* self, GError** error);
 void qetesh_app_module_ExposeData (QeteshAppModule* self, GeeList* data);
 const gchar* qetesh_app_module_get_Nick (QeteshAppModule* self);
@@ -1395,7 +1430,7 @@ QeteshQWebApp* qetesh_qplugin_GetModObject (QeteshQPlugin* self, QeteshWebAppCon
 GType qetesh_module_manager_get_type (void) G_GNUC_CONST;
 QeteshModuleManager* qetesh_module_manager_new (QeteshWebServerContext* c);
 QeteshModuleManager* qetesh_module_manager_construct (GType object_type, QeteshWebServerContext* c);
-void qetesh_module_manager_LoadModules (QeteshModuleManager* self);
+void qetesh_module_manager_LoadModules (QeteshModuleManager* self, GError** error);
 QeteshAppModule* qetesh_module_manager_GetHostModule (QeteshModuleManager* self, const gchar* host);
 QeteshQWebNode* qetesh_qweb_node_get (QeteshQWebNode* self, const gchar* subpath);
 void qetesh_qweb_node_set (QeteshQWebNode* self, const gchar* subpath, QeteshQWebNode* node);
@@ -1403,7 +1438,9 @@ void qetesh_qweb_node_OnBind (QeteshQWebNode* self);
 QeteshQWebNode* qetesh_qweb_node_new (const gchar* path);
 QeteshQWebNode* qetesh_qweb_node_construct (GType object_type, const gchar* path);
 gchar* qetesh_qweb_node_GetFullPath (QeteshQWebNode* self);
-void qetesh_qweb_node_ExposeProperties (QeteshQWebNode* self, const gchar* typeName, GType typ);
+GQuark qetesh_manifest_error_quark (void);
+void qetesh_qweb_node_ExposeProperties (QeteshQWebNode* self, const gchar* typeName, GType typ, GError** error);
+QeteshDataDataNode* qetesh_qweb_node_GetValidationResults (QeteshDataDataObject* proto, const gchar* message);
 gpointer qetesh_qweb_node_lazy_exposer_ref (gpointer instance);
 void qetesh_qweb_node_lazy_exposer_unref (gpointer instance);
 GParamSpec* qetesh_qweb_node_param_spec_lazy_exposer (const gchar* name, const gchar* nick, const gchar* blurb, GType object_type, GParamFlags flags);
@@ -1411,7 +1448,7 @@ void qetesh_qweb_node_value_set_lazy_exposer (GValue* value, gpointer v_object);
 void qetesh_qweb_node_value_take_lazy_exposer (GValue* value, gpointer v_object);
 gpointer qetesh_qweb_node_value_get_lazy_exposer (const GValue* value);
 GType qetesh_qweb_node_lazy_exposer_get_type (void) G_GNUC_CONST;
-QeteshQWebNodeLazyExposer* qetesh_qweb_node_ExposeCrud (QeteshQWebNode* self, const gchar* typeName, GType typ, const gchar* dbName);
+QeteshQWebNodeLazyExposer* qetesh_qweb_node_ExposeCrud (QeteshQWebNode* self, const gchar* typeName, GType typ, const gchar* dbName, GError** error);
 gpointer qetesh_qweb_node_manifest_walker_ref (gpointer instance);
 void qetesh_qweb_node_manifest_walker_unref (gpointer instance);
 GParamSpec* qetesh_qweb_node_param_spec_manifest_walker (const gchar* name, const gchar* nick, const gchar* blurb, GType object_type, GParamFlags flags);
@@ -1423,10 +1460,10 @@ void qetesh_qweb_node_WalkManifests (QeteshQWebNode* self, QeteshQWebNodeManifes
 gint qetesh_qweb_node_get_size (QeteshQWebNode* self);
 const gchar* qetesh_qweb_node_get_Path (QeteshQWebNode* self);
 void qetesh_qweb_node_set_Path (QeteshQWebNode* self, const gchar* value);
-QeteshQWebNodeLazyExposer* qetesh_qweb_node_lazy_exposer_Lazy (QeteshQWebNodeLazyExposer* self, const gchar* propertyName, GType fType, const gchar* returnType);
-QeteshQWebNodeManifestWalker* qetesh_qweb_node_manifest_walker_new (QeteshDataDataObjectDataNode* rNode);
-QeteshQWebNodeManifestWalker* qetesh_qweb_node_manifest_walker_construct (GType object_type, QeteshDataDataObjectDataNode* rNode);
-QeteshDataDataObjectDataNode* qetesh_qweb_node_manifest_walker_AddObject (QeteshQWebNodeManifestWalker* self, const gchar* tName, const gchar* pKey);
+QeteshQWebNodeLazyExposer* qetesh_qweb_node_lazy_exposer_Lazy (QeteshQWebNodeLazyExposer* self, const gchar* propertyName, GType fType, const gchar* returnType, GError** error);
+QeteshQWebNodeManifestWalker* qetesh_qweb_node_manifest_walker_new (QeteshDataDataNode* rNode);
+QeteshQWebNodeManifestWalker* qetesh_qweb_node_manifest_walker_construct (GType object_type, QeteshDataDataNode* rNode);
+QeteshDataDataNode* qetesh_qweb_node_manifest_walker_AddObject (QeteshQWebNodeManifestWalker* self, const gchar* tName, const gchar* pKey);
 QeteshQWebNodeManifestObject* qetesh_qweb_node_manifest_object_new (const gchar* typeName, const gchar* pKey);
 QeteshQWebNodeManifestObject* qetesh_qweb_node_manifest_object_construct (GType object_type, const gchar* typeName, const gchar* pKey);
 void qetesh_qweb_node_manifest_object_Prop (QeteshQWebNodeManifestObject* self, const gchar* name, const gchar* def);
@@ -1443,11 +1480,11 @@ const gchar* qetesh_qweb_node_manifest_object_get_TypeName (QeteshQWebNodeManife
 const gchar* qetesh_qweb_node_manifest_object_get_PKeyName (QeteshQWebNodeManifestObject* self);
 GeeLinkedList* qetesh_qweb_node_manifest_object_get_Methods (QeteshQWebNodeManifestObject* self);
 GeeHashMap* qetesh_qweb_node_manifest_object_get_Props (QeteshQWebNodeManifestObject* self);
-QeteshDataDataObjectDataNode* qetesh_qweb_node_manifest_object_get_ValidatorNode (QeteshQWebNodeManifestObject* self);
-void qetesh_qweb_node_manifest_object_set_ValidatorNode (QeteshQWebNodeManifestObject* self, QeteshDataDataObjectDataNode* value);
+QeteshDataDataNode* qetesh_qweb_node_manifest_object_get_ValidatorNode (QeteshQWebNodeManifestObject* self);
+void qetesh_qweb_node_manifest_object_set_ValidatorNode (QeteshQWebNodeManifestObject* self, QeteshDataDataNode* value);
 QeteshQWebNodeManifestObjectManifestMethod* qetesh_qweb_node_manifest_object_manifest_method_new (const gchar* name, const gchar* path, const gchar* mType, const gchar* rType);
 QeteshQWebNodeManifestObjectManifestMethod* qetesh_qweb_node_manifest_object_manifest_method_construct (GType object_type, const gchar* name, const gchar* path, const gchar* mType, const gchar* rType);
-QeteshDataDataObjectDataNode* qetesh_qweb_node_manifest_object_manifest_method_GetDescriptor (QeteshQWebNodeManifestObjectManifestMethod* self);
+QeteshDataDataNode* qetesh_qweb_node_manifest_object_manifest_method_GetDescriptor (QeteshQWebNodeManifestObjectManifestMethod* self);
 void qetesh_qweb_node_manifest_object_manifest_method_GET (QeteshQWebNodeManifestObjectManifestMethod* self);
 void qetesh_qweb_node_manifest_object_manifest_method_POST (QeteshQWebNodeManifestObjectManifestMethod* self);
 void qetesh_qweb_node_manifest_object_manifest_method_PUT (QeteshQWebNodeManifestObjectManifestMethod* self);
@@ -1474,9 +1511,9 @@ QeteshAppModule* qetesh_web_app_context_get_Mod (QeteshWebAppContext* self);
 void qetesh_web_app_context_set_Mod (QeteshWebAppContext* self, QeteshAppModule* value);
 QeteshWebServerContext* qetesh_web_app_context_get_Server (QeteshWebAppContext* self);
 void qetesh_web_app_context_set_Server (QeteshWebAppContext* self, QeteshWebServerContext* value);
-void qetesh_request_data_parser_Parse (QeteshRequestDataParser* self, const gchar* inData);
-QeteshDataDataObjectDataNode* qetesh_request_data_parser_get_DataTree (QeteshRequestDataParser* self);
-void qetesh_request_data_parser_set_DataTree (QeteshRequestDataParser* self, QeteshDataDataObjectDataNode* value);
+void qetesh_request_data_parser_Parse (QeteshRequestDataParser* self, const gchar* inData, GError** error);
+QeteshDataDataNode* qetesh_request_data_parser_get_DataTree (QeteshRequestDataParser* self);
+void qetesh_request_data_parser_set_DataTree (QeteshRequestDataParser* self, QeteshDataDataNode* value);
 GType qetesh_json_reqest_data_parser_get_type (void) G_GNUC_CONST;
 QeteshJSONReqestDataParser* qetesh_json_reqest_data_parser_new (void);
 QeteshJSONReqestDataParser* qetesh_json_reqest_data_parser_construct (GType object_type);
@@ -1490,9 +1527,10 @@ gboolean qetesh_error_manager_get_ErrToConsole (QeteshErrorManager* self);
 void qetesh_error_manager_set_ErrToConsole (QeteshErrorManager* self, gboolean value);
 #define QETESH_CONFIG_FILE_DCONFIG_FILE "/usr/local/etc/qetesh.conf"
 #define QETESH_CONFIG_FILE_DCONFIG_DIR "/usr/local/etc/qetesh.conf.d"
-QeteshConfigFile* qetesh_config_file_new (QeteshWebServerContext* sc);
-QeteshConfigFile* qetesh_config_file_construct (GType object_type, QeteshWebServerContext* sc);
-void qetesh_config_file_ReParse (QeteshConfigFile* self);
+GQuark qetesh_qfile_error_quark (void);
+QeteshConfigFile* qetesh_config_file_new (QeteshWebServerContext* sc, GError** error);
+QeteshConfigFile* qetesh_config_file_construct (GType object_type, QeteshWebServerContext* sc, GError** error);
+void qetesh_config_file_ReParse (QeteshConfigFile* self, GError** error);
 guint16 qetesh_config_file_get_ListenPort (QeteshConfigFile* self);
 void qetesh_config_file_set_ListenPort (QeteshConfigFile* self, guint16 value);
 gint qetesh_config_file_get_MaxThreads (QeteshConfigFile* self);
@@ -1522,10 +1560,11 @@ QeteshConfigFileParser* qetesh_config_file_parser_construct (GType object_type, 
 void qetesh_config_file_parser_ReadInto (QeteshConfigFileParser* self, QeteshConfigFile* cfg);
 GType qetesh_file_parser_get_type (void) G_GNUC_CONST;
 void qetesh_file_parser_ReadInto (QeteshFileParser* self, gconstpointer obj);
-GQuark qetesh_errors_parser_error_quark (void);
-GQuark qetesh_errors_qerror_quark (void);
-GQuark qetesh_errors_qfile_error_quark (void);
-GQuark qetesh_errors_qsanity_error_quark (void);
+GQuark qetesh_critical_server_error_quark (void);
+GQuark qetesh_qerror_quark (void);
+GQuark qetesh_qsanity_error_quark (void);
+GQuark qetesh_qrouter_error_quark (void);
+GQuark qetesh_qresponse_error_quark (void);
 
 
 G_END_DECLS

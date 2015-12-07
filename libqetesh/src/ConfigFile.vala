@@ -145,7 +145,7 @@ namespace Qetesh {
 		 * 
 		 * @param path Full file path to config file
 		**/ 
-		public ConfigFile(WebServerContext sc) {
+		public ConfigFile(WebServerContext sc) throws QFileError {
 			
 			context = sc;
 			
@@ -169,7 +169,7 @@ namespace Qetesh {
 		 * Parse the current config file again to check for changes
 		 * TODO: implement reload function for server
 		**/
-		public void ReParse() {
+		public void ReParse() throws QFileError {
 			
 			// Main config
 			try {
@@ -198,7 +198,8 @@ namespace Qetesh {
 				
 			}
 			catch (Error e) {
-				context.Err.WriteMessage("Unable to open config.d file: %s".printf(filePath), ErrorManager.QErrorClass.QETESH_WARNING);
+				
+				throw new QFileError.ACCESS("Unable to read config.d file: %s (%s)".printf(filePath, e.message));
 			}
 		}
 	}

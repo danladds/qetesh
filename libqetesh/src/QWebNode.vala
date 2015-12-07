@@ -108,7 +108,7 @@ namespace Qetesh {
 			else return Path;
 		}
 		
-		protected void ExposeProperties(string typeName, Type typ) {
+		protected void ExposeProperties (string typeName, Type typ) throws ManifestError {
 			
 			var proto = (DataObject) Object.new(typ);
 			proto.__init();
@@ -116,19 +116,50 @@ namespace Qetesh {
 			
 			var defaults = proto.ToNode((n) => { });
 			
+			try {
+				Manifest.ValidatorNode = proto.GetValidatorNode();
+			}
+			catch(ValidationError e) {
+				
+				throw new ManifestError.COMPOSE("Unable to generate manifest:\n %s", e.message);
+			}
+			
 			foreach(var node in defaults.Children) {
 				
-				if(node.Name == "Validators") {
-					
-					Manifest.ValidatorNode = node;
-				}
-				else {
-					Manifest.Prop(node.Name, node.Val);
-				}
+				Manifest.Prop(node.Name, node.Val);
 			}
 		}
 		
-		protected LazyExposer ExposeCrud (string typeName, Type typ, string dbName) {
+		public static DataNode GetValidationResults(DataObject proto, string message = "") {
+			
+			var errNode = new DataNode();
+					
+			errNode.Children.add(new DataNode("Message", message));
+					
+			foreach(var pName in proto.Validators.keys) {
+				
+				var fldNode = new DataNode(pName);
+				fldNode.IsArray = true;
+				
+				var validator = proto.Validators[pName];
+				
+				foreach(var t in validator.Tests) {
+					
+					var testNode = new DataNode("Test");
+					testNode.Children.add(new DataNode("TestName", t.TestName));
+					testNode.Children.add(new DataNode("Passed", t.Passed.to_string()));
+					testNode.Children.add(new DataNode("Comparator", t.Comparator));
+					
+					fldNode.Children.add(testNode);
+				}
+				
+				errNode.Children.add(fldNode);
+			}
+			
+			return errNode;
+		}
+		
+		protected LazyExposer ExposeCrud (string typeName, Type typ, string dbName) throws ManifestError {
 			
 			
 			var proto = (DataObject) Object.new(typ);
@@ -142,17 +173,28 @@ namespace Qetesh {
 				
 				req.ServerContext.Err.WriteMessage("GET (READ) method called", ErrorManager.QErrorClass.MODULE_DEBUG);
 				
-				var obj = (DataObject) Object.new(typ);
-				obj._init(req.Data.GetConnection(dbName));
-				var list = obj.LoadAll();
-				
-				foreach (var item in list) {
+				try {
 					
-					req.HResponse.DataTree.Children.add(
-						item.ToNode((n) => { })
-					);
-				}
-						
+					var obj = (DataObject) Object.new(typ);
+					obj._init(req.Data.GetConnection(dbName));
+					var list = obj.LoadAll();
+					
+					foreach (var item in list) {
+					
+						req.HResponse.DataTree.Children.add(
+							item.ToNode((n) => { })
+						);
+					}
+					
+				} catch (ValidationError e) {
+					
+					 req.HResponse.DataTree.Children.add(GetValidationResults(proto, e.message));
+				} catch (QDBError e) {
+					
+					req.ServerContext.Err.WriteMessage("Error getting DataObject for LOAD: \n%s".printf(e.message), ErrorManager.QErrorClass.MODULE_ERROR);
+					
+					return;
+				}	
 			});
 			
 			Manifest.Method("LoadAll", typeName + "[]", this).GET();
@@ -161,11 +203,19 @@ namespace Qetesh {
 			POST.connect((req) => {
 				
 				var obj = (DataObject) Object.new(typ);
-				obj._init(req.Data.GetConnection(dbName));
+				
+				try {
+					proto._init(req.Data.GetConnection(dbName));
+				} catch (QDBError e) {
+					
+					req.ServerContext.Err.WriteMessage("Error getting DataObject for LOADALL: \n%s".printf(e.message), ErrorManager.QErrorClass.MODULE_ERROR);
+					
+					return;
+				}
 				
 				req.ServerContext.Err.WriteMessage("POST (CREATE) method called", ErrorManager.QErrorClass.MODULE_DEBUG);
 				
-				var ret = new DataObject.DataNode();
+				var ret = new DataNode();
 				
 				try {
 					
@@ -178,19 +228,18 @@ namespace Qetesh {
 					req.ServerContext.Err.WriteMessage("Create() done", ErrorManager.QErrorClass.MODULE_DEBUG);
 
 					
-					ret.Children.add(new DataObject.DataNode ("Success") { Val = "Y" });
+					ret.Children.add(new DataNode ("Success") { Val = "Y" });
 					
-					ret.Children.add(new DataObject.DataNode (obj.PKeyName) { Val = obj.getPKeyStr() });
-					
-					req.HResponse.DataTree.Children.add(ret);
-				}
-				catch(Error e) {
-
-					ret.Children.add(new DataObject.DataNode ("Success") { Val = "N" });
+					ret.Children.add(new DataNode (obj.PKeyName) { Val = obj.getPKeyStr() });
 					
 					req.HResponse.DataTree.Children.add(ret);
 					
-					throw e;
+				} catch (ValidationError e) {
+					
+					req.HResponse.DataTree.Children.add(GetValidationResults(proto, e.message));
+				} catch (QDBError e) {
+						
+					req.ServerContext.Err.WriteMessage("Query error during CREATE: %s :\n ".printf(e.message), ErrorManager.QErrorClass.MODULE_ERROR);
 				}
 			});
 			
@@ -200,13 +249,30 @@ namespace Qetesh {
 			this["$n"].GET.connect((req) => { 
 				
 				var obj = (DataObject) Object.new(typ);
-				obj._init(req.Data.GetConnection(dbName));
+				
+				try {
+					proto._init(req.Data.GetConnection(dbName));
+				} catch (QDBError e) {
+					
+					req.ServerContext.Err.WriteMessage("Error getting DataObject for READ: \n%s".printf(e.message), ErrorManager.QErrorClass.MODULE_ERROR);
+					
+					return;
+				}
 				
 				obj.setPKeyStr(req.PathArgs[0]);
 				
-				obj.Load();
+				try {
+					obj.Load();
 				
-				req.HResponse.DataTree.Children.add(obj.ToNode((n) => { }));
+					req.HResponse.DataTree.Children.add(obj.ToNode((n) => { }));
+				} catch (ValidationError e) {
+					
+					req.HResponse.DataTree.Children.add(GetValidationResults(proto, e.message));
+				}
+				 catch (QDBError e) {
+						
+					req.ServerContext.Err.WriteMessage("Query error during READ: %s :\n ".printf(e.message), ErrorManager.QErrorClass.MODULE_ERROR);
+				}
 			});
 			
 			Manifest.Method("Load", "this", this["$n"]).GET();
@@ -215,11 +281,28 @@ namespace Qetesh {
 			this["$n"].DELETE.connect((req) => { 
 				
 				var obj = (DataObject) Object.new(typ);
-				obj._init(req.Data.GetConnection(dbName));
 				
-				obj.setPKeyStr(req.PathArgs[0]);
+				try {
+					proto._init(req.Data.GetConnection(dbName));
+				} catch (QDBError e) {
+					
+					req.ServerContext.Err.WriteMessage("Error getting DataObject for DELETE: \n%s".printf(e.message), ErrorManager.QErrorClass.MODULE_ERROR);
+					
+					return;
+				}
 				
-				obj.Delete();
+				try {
+					obj.setPKeyStr(req.PathArgs[0]);
+				
+					obj.Delete();
+					
+				} catch (ValidationError e) {
+					
+					req.HResponse.DataTree.Children.add(GetValidationResults(proto, e.message));
+				} catch (QDBError e) {
+						
+					req.ServerContext.Err.WriteMessage("Query error during DELETE: %s :\n ".printf(e.message), ErrorManager.QErrorClass.MODULE_ERROR);
+				}
 			});
 			
 			Manifest.Method("Delete", "implode", this["$n"]).DELETE();
@@ -228,7 +311,15 @@ namespace Qetesh {
 			this["$n"].PUT.connect((req) => {
 				
 				var obj = (DataObject) Object.new(typ);
-				obj._init(req.Data.GetConnection(dbName));
+				
+				try {
+					proto._init(req.Data.GetConnection(dbName));
+				} catch (QDBError e) {
+					
+					req.ServerContext.Err.WriteMessage("Error getting DataObject for UPDATE: \n%s".printf(e.message), ErrorManager.QErrorClass.MODULE_ERROR);
+					
+					return;
+				}
 				
 				req.ServerContext.Err.WriteMessage("PUT (UPDATE) method called", ErrorManager.QErrorClass.MODULE_DEBUG);
 				
@@ -243,18 +334,19 @@ namespace Qetesh {
 					req.ServerContext.Err.WriteMessage("Update() done", ErrorManager.QErrorClass.MODULE_DEBUG);
 					
 					req.HResponse.DataTree.Children.add(
-						new DataObject.DataNode(obj.PKeyName) { 
+						new DataNode(obj.PKeyName) { 
 							Val = obj.getPropStr(obj.PKeyName)
 						}	
 					);
 				
-					req.HResponse.DataTree.Children.add(new DataObject.DataNode ("Update") { Val = "OK" });
-				}
-				catch(Error e) {
+					req.HResponse.DataTree.Children.add(new DataNode ("Update") { Val = "OK" });
+
+				} catch (ValidationError e) {
 					
-					req.HResponse.DataTree.Children.add(new DataObject.DataNode ("Update") { Val = "FAIL" });
-					
-					throw e;
+					req.HResponse.DataTree.Children.add(GetValidationResults(proto, e.message));
+				} catch (QDBError e) {
+						
+					req.ServerContext.Err.WriteMessage("Query error during UPDATE: %s :\n ".printf(e.message), ErrorManager.QErrorClass.MODULE_ERROR);
 				}
 				
 			});
@@ -282,23 +374,42 @@ namespace Qetesh {
 				node = contextNode;
 			}
 			
-			public LazyExposer Lazy (string propertyName, Type fType, string returnType) {
+			public LazyExposer Lazy (string propertyName, Type fType, string returnType) throws ManifestError {
 				
 				var path = propertyName.down();
 					
 				node[path].GET.connect((req) => {
 						
 					var proto = (DataObject) Object.new(localType);
-					proto._init(req.Data.GetConnection(dbNick));
+					
+					try {
+						proto._init(req.Data.GetConnection(dbNick));
+					} catch (QDBError e) {
+						
+						req.ServerContext.Err.WriteMessage("Error getting DataObject for lazy load of %s :\n %s".printf(propertyName, e.message), ErrorManager.QErrorClass.MODULE_ERROR);
+						
+						return;
+					}
+					
 					proto.setPKeyStr(req.PathArgs[0]);
 					
-					var list = proto._lazyLoadList(propertyName, fType);
-					
-					foreach (var item in list) {
+					try {
 						
-						req.HResponse.DataTree.Children.add(
-							item.ToNode((n) => { })
-						);
+						var list = proto._lazyLoadList(propertyName, fType);
+						
+						foreach (var item in list) {
+							
+							req.HResponse.DataTree.Children.add(
+								item.ToNode((n) => { })
+							);
+						}
+						
+					} catch (ValidationError e) {
+					
+						req.HResponse.DataTree.Children.add(GetValidationResults(proto, e.message));
+					} catch (QDBError e) {
+						
+						req.ServerContext.Err.WriteMessage("Query error during lazyload: %s :\n ".printf(e.message), ErrorManager.QErrorClass.MODULE_ERROR);
 					}
 				});
 					
@@ -334,7 +445,7 @@ namespace Qetesh {
 				foreach(var prop in Manifest.Props.keys) {
 					
 					objBase.Children.add(
-						new DataObject.DataNode (prop) { Val = Manifest.Props[prop] }
+						new DataNode (prop) { Val = Manifest.Props[prop] }
 					);
 				}
 			}
@@ -344,20 +455,20 @@ namespace Qetesh {
 		
 		public class ManifestWalker {
 			
-			private DataObject.DataNode rootNode;
+			private DataNode rootNode;
 			
-			public ManifestWalker(DataObject.DataNode rNode) {
+			public ManifestWalker(DataNode rNode) {
 				
 				rootNode = rNode;
 			}
 			
-			public DataObject.DataNode AddObject(string tName, string pKey) {
+			public DataNode AddObject(string tName, string pKey) {
 				
-				var newNode = new DataObject.DataNode(tName);
+				var newNode = new DataNode(tName);
 				rootNode.Children.add(newNode);
 					
 				newNode.Children.add(
-					new DataObject.DataNode ("PKeyName") { Val = pKey }
+					new DataNode ("PKeyName") { Val = pKey }
 				);
 				
 				return newNode;
@@ -372,7 +483,7 @@ namespace Qetesh {
 			public Gee.LinkedList<ManifestMethod> Methods { get; private set; }
 			public Gee.HashMap<string, string> Props { get; private set; }
 			
-			public DataObject.DataNode ValidatorNode { get; set; }
+			public DataNode ValidatorNode { get; set; }
 			
 			public ManifestObject(string typeName, string pKey) {
 				
@@ -420,24 +531,24 @@ namespace Qetesh {
 					ReturnType = rType;
 				}
 				
-				public DataObject.DataNode GetDescriptor() {
+				public DataNode GetDescriptor() {
 					
-					var desc = new DataObject.DataNode(Name);
+					var desc = new DataNode(Name);
 					
 					desc.Children.add(
-						new DataObject.DataNode ("NodePath") { Val = NodePath }
+						new DataNode ("NodePath") { Val = NodePath }
 					);
 					
 					desc.Children.add(
-						new DataObject.DataNode ("HttpMethod") { Val = HttpMethod }
+						new DataNode ("HttpMethod") { Val = HttpMethod }
 					);
 					
 					desc.Children.add(
-						new DataObject.DataNode ("MethodType") { Val = MethodType }
+						new DataNode ("MethodType") { Val = MethodType }
 					);
 					
 					desc.Children.add(
-						new DataObject.DataNode ("ReturnType") { Val = ReturnType }
+						new DataNode ("ReturnType") { Val = ReturnType }
 					);
 
 					return desc;

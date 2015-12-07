@@ -17,14 +17,15 @@ namespace Qetesh {
 			public Qetesh.Data.QDatabaseConn GetConnection (string dbNick) throws Qetesh.Data.QDBError;
 		}
 		[CCode (cheader_filename = "libqetesh.h")]
+		public class DataNode {
+			public DataNode (string name = "Data", string? val = null);
+			public Gee.LinkedList<Qetesh.Data.DataNode> Children { get; private set; }
+			public bool IsArray { get; set; }
+			public string Name { get; set; }
+			public string Val { get; set; }
+		}
+		[CCode (cheader_filename = "libqetesh.h")]
 		public abstract class DataObject<TImp> : GLib.Object {
-			public class DataNode {
-				public DataNode (string name = "Data", string? val = null);
-				public Gee.LinkedList<Qetesh.Data.DataObject.DataNode> Children { get; private set; }
-				public bool IsArray { get; set; }
-				public string Name { get; set; }
-				public string Val { get; set; }
-			}
 			public class InheritInfo {
 				public enum LinkJoinType {
 					LEFT,
@@ -41,23 +42,24 @@ namespace Qetesh {
 			public class LazyNode : Qetesh.QWebNode {
 				public LazyNode ();
 			}
-			public delegate void DataNodeTransform (Qetesh.Data.DataObject.DataNode n);
-			protected Gee.HashMap<string,Qetesh.Data.Validator> Validators;
+			public delegate void DataNodeTransform (Qetesh.Data.DataNode n);
+			public Gee.HashMap<string,Qetesh.Data.Validator> Validators;
 			public DataObject (Qetesh.Data.QDatabaseConn dbh);
-			public void Create () throws Qetesh.Data.ValidationError;
+			public void Create () throws Qetesh.Data.ValidationError, Qetesh.Data.QDBError;
 			public Qetesh.Data.DataObject CreateObject (Gee.TreeMap<string?,string?> datum);
-			public void Delete ();
-			public void FromNode (Qetesh.Data.DataObject.DataNode data) throws Qetesh.Data.ValidationError;
-			public void FromRequest (Qetesh.HTTPRequest req);
+			public void Delete () throws Qetesh.Data.QDBError, Qetesh.Data.ValidationError;
+			public void FromNode (Qetesh.Data.DataNode data) throws Qetesh.Data.ValidationError;
+			public void FromRequest (Qetesh.HTTPRequest req) throws Qetesh.Data.ValidationError;
+			public Qetesh.Data.DataNode GetValidatorNode () throws Qetesh.Data.ValidationError;
 			public abstract void Init ();
-			protected Gee.LinkedList<Qetesh.Data.DataObject> LazyLoadList (string propertyName, GLib.Type fType) throws Qetesh.Data.ValidationError;
-			public void Load ();
+			protected Gee.LinkedList<Qetesh.Data.DataObject> LazyLoadList (string propertyName, GLib.Type fType) throws Qetesh.Data.ValidationError, Qetesh.Data.QDBError;
+			public void Load () throws Qetesh.Data.QDBError;
 			public Gee.LinkedList<Qetesh.Data.DataObject> LoadAll () throws Qetesh.Data.QDBError;
 			public void MapObject (Gee.TreeMap<string?,string?> datum);
 			public Gee.LinkedList<Qetesh.Data.DataObject> MapObjectList (Gee.LinkedList<Gee.TreeMap<string?,string?>> rows);
 			protected virtual string NameTransform (string fieldName);
-			public Qetesh.Data.DataObject.DataNode ToNode (Qetesh.Data.DataObject.DataNodeTransform transform);
-			public void Update () throws Qetesh.Data.ValidationError;
+			public Qetesh.Data.DataNode ToNode (Qetesh.Data.DataObject.DataNodeTransform transform);
+			public void Update () throws Qetesh.Data.ValidationError, Qetesh.Data.QDBError;
 			public void ValidateAll () throws Qetesh.Data.ValidationError;
 			public string PKeyName { get; protected set; }
 			protected string TableName { get; set; }
@@ -96,9 +98,9 @@ namespace Qetesh {
 			public abstract Qetesh.Data.QDataQuery Create ();
 			public abstract Qetesh.Data.QDataQuery DataSet (string setName);
 			public abstract Qetesh.Data.QDataQuery Delete ();
-			public abstract Qetesh.Data.QDataQuery.QueryResult Do ();
-			public abstract int DoInt ();
-			protected abstract Gee.LinkedList<Gee.TreeMap<string,string>> Fetch ();
+			public abstract Qetesh.Data.QDataQuery.QueryResult Do () throws Qetesh.Data.QDBError;
+			public abstract int DoInt () throws Qetesh.Data.QDBError;
+			protected abstract Gee.LinkedList<Gee.TreeMap<string,string>> Fetch () throws Qetesh.Data.QDBError;
 			public abstract Qetesh.Data.QDataQuery Read ();
 			public abstract Qetesh.Data.QDataQuery.QueryParam Set (string fieldName);
 			public abstract Qetesh.Data.QDataQuery Update ();
@@ -156,9 +158,9 @@ namespace Qetesh {
 			public override Qetesh.Data.QDataQuery Create ();
 			public override Qetesh.Data.QDataQuery DataSet (string setName);
 			public override Qetesh.Data.QDataQuery Delete ();
-			public override Qetesh.Data.QDataQuery.QueryResult Do ();
-			public override int DoInt ();
-			protected override Gee.LinkedList<Gee.TreeMap<string,string>> Fetch ();
+			public override Qetesh.Data.QDataQuery.QueryResult Do () throws Qetesh.Data.QDBError;
+			public override int DoInt () throws Qetesh.Data.QDBError;
+			protected override Gee.LinkedList<Gee.TreeMap<string,string>> Fetch () throws Qetesh.Data.QDBError;
 			public override Qetesh.Data.QDataQuery Read ();
 			public override Qetesh.Data.QDataQuery.QueryParam Set (string fieldName);
 			public override Qetesh.Data.QDataQuery Update ();
@@ -189,6 +191,7 @@ namespace Qetesh {
 			public Gee.LinkedList<Qetesh.Data.ValidationTest> Tests;
 			public Validator ();
 			public abstract void Convert ();
+			public string DumpResult ();
 			public bool Validate ();
 			public string InValue { get; set; }
 			public bool Mandatory { get; set; }
@@ -208,35 +211,6 @@ namespace Qetesh {
 			UNVALIDATED_FIELD
 		}
 	}
-	namespace Errors {
-		[CCode (cheader_filename = "libqetesh.h")]
-		public errordomain ParserError {
-			INVALID_CHAR,
-			INVALID_NAME,
-			INVALID_VALUE
-		}
-		[CCode (cheader_filename = "libqetesh.h")]
-		public errordomain QError {
-			UNSPECIFIED
-		}
-		[CCode (cheader_filename = "libqetesh.h")]
-		public errordomain QFileError {
-			ACCESS,
-			READ,
-			WRITE,
-			FORMAT
-		}
-		[CCode (cheader_filename = "libqetesh.h")]
-		public errordomain QModuleError {
-			LOAD,
-			CONFIG,
-			STRUCTURE
-		}
-		[CCode (cheader_filename = "libqetesh.h")]
-		public errordomain QSanityError {
-			UNSPECIFIED
-		}
-	}
 	namespace Webserver {
 		[CCode (cheader_filename = "libqetesh.h")]
 		public class libqetesh {
@@ -245,10 +219,10 @@ namespace Qetesh {
 	}
 	[CCode (cheader_filename = "libqetesh.h")]
 	public class AppModule : GLib.Object {
-		public AppModule (string modPath, string nick, string loader, Qetesh.WebServerContext sc, int execUser, int execGroup) throws Qetesh.Errors.QModuleError;
+		public AppModule (string modPath, string nick, string loader, Qetesh.WebServerContext sc, int execUser, int execGroup) throws Qetesh.QModuleError;
 		public void ExposeData (Gee.List<Qetesh.Data.DataObject> data);
-		public Qetesh.QWebApp GetApp () throws Qetesh.Errors.QModuleError;
-		public void Handle (Qetesh.HTTPRequest req);
+		public Qetesh.QWebApp GetApp () throws Qetesh.QModuleError;
+		public void Handle (Qetesh.HTTPRequest req) throws Qetesh.QModuleError;
 		public Qetesh.WebAppContext Context { get; private set; }
 		public int ExecGroup { get; private set; }
 		public int ExecUser { get; private set; }
@@ -281,8 +255,8 @@ namespace Qetesh {
 		public string dirPath;
 		public const string DCONFIG_DIR;
 		public const string DCONFIG_FILE;
-		public ConfigFile (Qetesh.WebServerContext sc);
-		public void ReParse ();
+		public ConfigFile (Qetesh.WebServerContext sc) throws Qetesh.QFileError;
+		public void ReParse () throws Qetesh.QFileError;
 		public Gee.LinkedList<Qetesh.ConfigFile.DBConfig?> Databases { get; private set; }
 		public string ListenAddr { get; set; }
 		public uint16 ListenPort { get; set; }
@@ -326,8 +300,8 @@ namespace Qetesh {
 			DELETE,
 			INVALID
 		}
-		public HTTPRequest (GLib.SocketConnection c, Qetesh.WebServerContext sc);
-		public void Handle ();
+		public HTTPRequest (GLib.SocketConnection c, Qetesh.WebServerContext sc) throws Qetesh.QRequestError;
+		public void Handle () throws Qetesh.QRequestError;
 		public void Respond ();
 		public void Route (Qetesh.WebAppContext cxt, Qetesh.HTTPResponse resp);
 		public Qetesh.WebAppContext AppContext { get; private set; }
@@ -336,6 +310,10 @@ namespace Qetesh {
 		public Qetesh.HTTPResponse HResponse { get; private set; }
 		public Gee.Map<string,string> Headers { get; private set; }
 		public string Host { get; private set; }
+		public int MaxContentLength { get; private set; }
+		public int MaxHeaderLines { get; private set; }
+		public int MaxRequestTime { get; private set; }
+		public int MaxResponseTime { get; private set; }
 		public Qetesh.HTTPRequest.RequestMethod Method { get; private set; }
 		public string Path { get; private set; }
 		public Gee.LinkedList<string> PathArgs { get; private set; }
@@ -356,7 +334,7 @@ namespace Qetesh {
 		public virtual void Respond (GLib.DataOutputStream httpOut);
 		public string ContentType { get; set; }
 		protected Qetesh.WebAppContext Context { get; private set; }
-		public Qetesh.Data.DataObject.DataNode DataTree { get; private set; }
+		public Qetesh.Data.DataNode DataTree { get; private set; }
 		public Gee.LinkedList<string> Messages { get; private set; }
 		public int ResponseCode { get; set; }
 		public string ResponseMessage { get; set; }
@@ -368,7 +346,7 @@ namespace Qetesh {
 	[CCode (cheader_filename = "libqetesh.h")]
 	public class JSONResponse : Qetesh.HTTPResponse {
 		public JSONResponse (Qetesh.WebAppContext ctx);
-		public void AddJson (Qetesh.Data.DataObject.DataNode node, bool parentIsArray = false);
+		public void AddJson (Qetesh.Data.DataNode node, bool parentIsArray = false);
 		public override void ComposeContent ();
 		public void Tab ();
 	}
@@ -376,12 +354,12 @@ namespace Qetesh {
 	public class ModuleManager : GLib.Object {
 		public ModuleManager (Qetesh.WebServerContext c);
 		public Qetesh.AppModule? GetHostModule (string host);
-		public void LoadModules ();
+		public void LoadModules () throws Qetesh.QModuleError;
 	}
 	[CCode (cheader_filename = "libqetesh.h")]
 	public class QDateTime : GLib.Object {
 		public QDateTime ();
-		public void fromString (string inVal);
+		public void fromString (string? inVal) throws Qetesh.Data.ValidationError;
 		public string toString ();
 	}
 	[CCode (cheader_filename = "libqetesh.h")]
@@ -399,14 +377,14 @@ namespace Qetesh {
 	[CCode (cheader_filename = "libqetesh.h")]
 	public class QWebNode : GLib.Object {
 		public class LazyExposer {
-			public Qetesh.QWebNode.LazyExposer Lazy (string propertyName, GLib.Type fType, string returnType);
+			public Qetesh.QWebNode.LazyExposer Lazy (string propertyName, GLib.Type fType, string returnType) throws Qetesh.ManifestError;
 		}
 		public class ManifestObject {
 			public class ManifestMethod {
 				public ManifestMethod (string name, string path, string mType, string rType);
 				public void DELETE ();
 				public void GET ();
-				public Qetesh.Data.DataObject.DataNode GetDescriptor ();
+				public Qetesh.Data.DataNode GetDescriptor ();
 				public void POST ();
 				public void PUT ();
 				public string HttpMethod { get; private set; }
@@ -423,19 +401,20 @@ namespace Qetesh {
 			public string PKeyName { get; private set; }
 			public Gee.HashMap<string,string> Props { get; private set; }
 			public string TypeName { get; private set; }
-			public Qetesh.Data.DataObject.DataNode ValidatorNode { get; set; }
+			public Qetesh.Data.DataNode ValidatorNode { get; set; }
 		}
 		public class ManifestWalker {
-			public ManifestWalker (Qetesh.Data.DataObject.DataNode rNode);
-			public Qetesh.Data.DataObject.DataNode AddObject (string tName, string pKey);
+			public ManifestWalker (Qetesh.Data.DataNode rNode);
+			public Qetesh.Data.DataNode AddObject (string tName, string pKey);
 		}
 		public Gee.Map<string,Qetesh.QWebNode> Children;
 		public Qetesh.QWebNode.ManifestObject Manifest;
 		public Qetesh.QWebNode? Parent;
 		protected QWebNode (string path = "");
-		protected Qetesh.QWebNode.LazyExposer ExposeCrud (string typeName, GLib.Type typ, string dbName);
-		protected void ExposeProperties (string typeName, GLib.Type typ);
+		protected Qetesh.QWebNode.LazyExposer ExposeCrud (string typeName, GLib.Type typ, string dbName) throws Qetesh.ManifestError;
+		protected void ExposeProperties (string typeName, GLib.Type typ) throws Qetesh.ManifestError;
 		public string GetFullPath ();
+		public static Qetesh.Data.DataNode GetValidationResults (Qetesh.Data.DataObject proto, string message = "");
 		public virtual void OnBind ();
 		public void WalkManifests (Qetesh.QWebNode.ManifestWalker walker);
 		public new Qetesh.QWebNode? @get (string subpath);
@@ -471,7 +450,61 @@ namespace Qetesh {
 	}
 	[CCode (cheader_filename = "libqetesh.h")]
 	public interface RequestDataParser : GLib.Object {
-		public abstract void Parse (string inData);
-		public abstract Qetesh.Data.DataObject.DataNode DataTree { get; protected set; }
+		public abstract void Parse (string inData) throws Qetesh.ParserError;
+		public abstract Qetesh.Data.DataNode DataTree { get; protected set; }
+	}
+	[CCode (cheader_filename = "libqetesh.h")]
+	public errordomain CriticalServerError {
+		NOPE
+	}
+	[CCode (cheader_filename = "libqetesh.h")]
+	public errordomain ManifestError {
+		COMPOSE
+	}
+	[CCode (cheader_filename = "libqetesh.h")]
+	public errordomain ParserError {
+		INVALID_CHAR,
+		INVALID_NAME,
+		INVALID_VALUE
+	}
+	[CCode (cheader_filename = "libqetesh.h")]
+	public errordomain QError {
+		UNSPECIFIED
+	}
+	[CCode (cheader_filename = "libqetesh.h")]
+	public errordomain QFileError {
+		ACCESS,
+		READ,
+		WRITE,
+		FORMAT
+	}
+	[CCode (cheader_filename = "libqetesh.h")]
+	public errordomain QModuleError {
+		LOAD,
+		CONFIG,
+		STRUCTURE,
+		RUN,
+		CRITICAL
+	}
+	[CCode (cheader_filename = "libqetesh.h")]
+	public errordomain QRequestError {
+		CRITICAL,
+		HEADERS,
+		BODY,
+		PATH
+	}
+	[CCode (cheader_filename = "libqetesh.h")]
+	public errordomain QResponseError {
+		CRITICAL
+	}
+	[CCode (cheader_filename = "libqetesh.h")]
+	public errordomain QRouterError {
+		MODULE,
+		USER,
+		RESPONSE
+	}
+	[CCode (cheader_filename = "libqetesh.h")]
+	public errordomain QSanityError {
+		UNSPECIFIED
 	}
 }

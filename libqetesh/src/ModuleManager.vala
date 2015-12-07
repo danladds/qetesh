@@ -47,15 +47,25 @@ namespace Qetesh {
 		/**
 		* Load appropriate modules
 		**/
-		public void LoadModules () {
+		public void LoadModules () throws QModuleError {
 			
 			context.Err.WriteMessage("ModuleManager loading modules", ErrorManager.QErrorClass.QETESH_DEBUG);
+			
+			if(context.Configuration.Modules.size == 0) {
+				
+				throw new QModuleError.CONFIG("No modules configured");
+			}
 			
 			foreach(var mod in context.Configuration.Modules) {
 				
 				context.Err.WriteMessage("Loading module: %s %s %s".printf(mod.Nick, mod.LoaderName, mod.LibPath), ErrorManager.QErrorClass.QETESH_DEBUG);
 				
 				loadModule(mod);
+			}
+			
+			if(loadedModules.size == 0) {
+				
+				throw new QModuleError.LOAD("Unable to successfully load any modules");
 			}
 		}
 		
@@ -75,6 +85,7 @@ namespace Qetesh {
 					mod.LibPath, mod.Nick, mod.LoaderName, context,
 					mod.ExecUser, mod.ExecGroup
 				);
+				
 				loadedModules.add(loadedMod);
 				
 				context.Err.WriteMessage("Loaded module: %s".printf(mod.Nick), ErrorManager.QErrorClass.QETESH_DEBUG);
@@ -88,6 +99,10 @@ namespace Qetesh {
 						hostModules[host] = loadedMod;
 					}
 				}
+			}
+			catch (QModuleError e) {
+					
+				context.Err.WriteMessage("Unable to load module %s (%s)".printf(mod.Nick, e.message), ErrorManager.QErrorClass.QETESH_WARNING);
 			}
 			catch (Error e) {
 				context.Err.WriteMessage("Unable to load module %s (%s)".printf(mod.Nick, e.message), ErrorManager.QErrorClass.QETESH_WARNING);
