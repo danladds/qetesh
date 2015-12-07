@@ -7,17 +7,11 @@
 // within this callback
 $_qetesh.Ready(function(q) {
 	
-	// Just functions to parse dates and currencies
+	// Just functions to parse currencies / date
 	var printDate = function(val) {
 		
 		var dt = new Date(val);
 		return dt.toLocaleDateString();
-	};
-	
-	var parseDate = function(val) {
-				
-		var dt = new Date(val);
-		return dt.toISOString();
 	};
 	
 	var printCurrency = function(val) {
@@ -54,7 +48,6 @@ $_qetesh.Ready(function(q) {
 			// Set those date and currency transform funcs to operate on
 			// certain fields between UI and data
 			list.Transform("Issued", printDate);
-			list.Transform("Total", printCurrency);
 			
 			
 			// Set an onclick function. It's a repeater, so gets placed in context
@@ -96,7 +89,7 @@ $_qetesh.Ready(function(q) {
 		// Attach to forms in the same way as other elements
 		var invoiceForm = view.Element('#record').Bind(invoice);
 		
-		invoiceForm.Transform("Issued", printDate, parseDate);
+		invoiceForm.Transform("Issued", printDate);
 		invoiceForm.Transform("Total", printCurrency, parseCurrency);
 		
 		invoice.Items(function(items) {
@@ -168,6 +161,10 @@ $_qetesh.Ready(function(q) {
 					// If a new item has been created,
 					// add it to the list in the first view
 					list.Bind(invoice);
+					
+					// Get values that have defaulted
+					invoice.Reload();
+					invoiceForm.Reset();
 				});
 				
 				for(var i = 0; i < items.length; i++) {

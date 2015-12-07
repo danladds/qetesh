@@ -111,14 +111,14 @@ namespace Qetesh.Data {
 		
 		public IntValidator() {
 			
-			Name = "INT";
+			Name = "IntValidator";
 		}
 		
 		public IntValidator GreaterThan(int comp) {
 			
 			Tests.add(new ValidationTest<int?>() { 
 				
-				TestName = "GT",
+				TestName = "GreaterThan",
 				Comparator = comp.to_string(),
 				Func = () => {
 					
@@ -134,7 +134,7 @@ namespace Qetesh.Data {
 			
 			Tests.add(new ValidationTest<int?>() { 
 				
-				TestName = "LT",
+				TestName = "LessThan",
 				Comparator = comp.to_string(),
 				Func = () => {
 						
@@ -150,7 +150,7 @@ namespace Qetesh.Data {
 			
 			Tests.add(new ValidationTest<int?>() { 
 				
-				TestName = "EQUALS",
+				TestName = "Equals",
 				Comparator = comp.to_string(),
 				Func = () => {
 					
@@ -165,7 +165,7 @@ namespace Qetesh.Data {
 		public override void Convert() {
 			
 			var t = new ValidationTest<int?>();
-			t.TestName = "IS";
+			t.TestName = "Convert";
 			
 			if(InValue == "0") {
 				OutValue = 0;
@@ -191,14 +191,14 @@ namespace Qetesh.Data {
 		
 		public StringValidator() {
 			
-			Name = "STRING";
+			Name = "StringValidator";
 		}
 		
 		public StringValidator Contains(string comp) {
 			
 			Tests.add(new ValidationTest<string>() { 
 				
-				TestName = "CONTAINS",
+				TestName = "Contains",
 				Comparator = comp,
 				Func = () => {
 					
@@ -214,7 +214,7 @@ namespace Qetesh.Data {
 			
 			Tests.add(new ValidationTest<string>() { 
 				
-				TestName = "NOCONTAIN",
+				TestName = "DoesntContain",
 				Comparator = comp,
 				Func = () => {
 					
@@ -230,7 +230,7 @@ namespace Qetesh.Data {
 			
 			Tests.add(new ValidationTest<string>() { 
 				
-				TestName = "EQUALS",
+				TestName = "Equals",
 				Comparator = comp,
 				Func = () => {
 					
@@ -246,9 +246,15 @@ namespace Qetesh.Data {
 			
 			Tests.add(new ValidationTest<string>() { 
 				
-				TestName = "MATCHES",
+				TestName = "Matches",
 				Comparator = regex,
 				Func = () => {
+					
+					if(regex == null || regex == "" || this.OutValue == null) {
+						
+						this.Passed = false;
+						return false;
+					}
 					
 					this.Passed = Regex.match_simple(
 						regex, this.OutValue,
@@ -265,10 +271,15 @@ namespace Qetesh.Data {
 		public override void Convert() {
 			
 			var t = new ValidationTest<string>();
-			t.TestName = "IS";
-					
-			t.Passed = true;
-			OutValue = InValue;
+			t.TestName = "Convert";
+			
+			if(InValue != null) {
+				OutValue = InValue;
+				t.Passed = true;
+			} else {
+				OutValue = "";
+				t.Passed = true;
+			}
 			
 			Tests.add(t);
 		}
@@ -278,14 +289,14 @@ namespace Qetesh.Data {
 		
 		public DoubleValidator() {
 			
-			Name = "DOUBLE";
+			Name = "DoubleValidator";
 		}
 		
 		public DoubleValidator GreaterThan(double? comp) {
 			
 			Tests.add(new ValidationTest<double?>() { 
 				
-				TestName = "GT",
+				TestName = "GreaterThan",
 				Comparator = comp.to_string(),
 				Func = () => {
 					
@@ -301,7 +312,7 @@ namespace Qetesh.Data {
 			
 			Tests.add(new ValidationTest<double?>() { 
 				
-				TestName = "LT",
+				TestName = "LessThan",
 				Comparator = comp.to_string(),
 				Func = () => {
 					
@@ -317,7 +328,7 @@ namespace Qetesh.Data {
 			
 			Tests.add(new ValidationTest<double?>() { 
 				
-				TestName = "GT",
+				TestName = "Equals",
 				Comparator = comp.to_string(),
 				Func = () => {
 					
@@ -332,7 +343,7 @@ namespace Qetesh.Data {
 		public override void Convert() {
 			
 			var t = new ValidationTest<double?>();
-			t.TestName = "IS";
+			t.TestName = "Convert";
 			
 			double res;
 			
@@ -352,7 +363,7 @@ namespace Qetesh.Data {
 		
 		public BoolValidator() {
 			
-			Name = "BOOL";
+			Name = "BoolValidator";
 		}
 		
 		public override void Convert() {
@@ -361,7 +372,7 @@ namespace Qetesh.Data {
 			val = val.down();
 			
 			var t = new ValidationTest<bool?>();
-			t.TestName = "IS";
+			t.TestName = "Convert";
 			
 			if(val == "true") {
 				
@@ -388,7 +399,7 @@ namespace Qetesh.Data {
 		
 		public QDateTimeValidator() {
 			
-			Name = "QDATETIME";
+			Name = "QDateTimeValidator";
 		}
 		
 		public override void Convert() {
@@ -396,7 +407,7 @@ namespace Qetesh.Data {
 			var val = InValue;
 			
 			var t = new ValidationTest<QDateTime>();
-			t.TestName = "IS";
+			t.TestName = "Convert";
 			
 			var dt = new QDateTime();
 			

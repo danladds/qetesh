@@ -42,7 +42,7 @@ namespace Qetesh.Data {
 		public abstract QueryParam Where(string fieldName);
 		public abstract QueryParam Set(string fieldName);
 		
-		protected abstract Gee.LinkedList<Gee.TreeMap<string, string>> Fetch() throws QDBError;
+		protected abstract Gee.LinkedList<Gee.TreeMap<string, string>>? Fetch() throws QDBError;
 		
 		public abstract class QueryParam {
 			

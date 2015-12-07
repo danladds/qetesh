@@ -101,7 +101,7 @@ namespace Qetesh {
 		
 		// Could make these next few configurable in future
 		/// Max header lines to process
-		public int MaxHeaderLines { get; private set; default = 20; }
+		public int MaxHeaderLines { get; private set; default = 40; }
 		
 		public int MaxContentLength { get; private set; default = 999999999; }
 		
@@ -227,8 +227,11 @@ namespace Qetesh {
 			
 			try {
 				
+				int c = 0;
+				
 				// Headers
-				while ((line = httpIn.read_line (null)) != null) {
+				while ((line = httpIn.read_line (null)) != null
+					&& c++ < MaxHeaderLines) {
 					
 					ServerContext.Err.WriteMessage("H: %s".printf(line), ErrorManager.QErrorClass.QETESH_DEBUG);
 					
@@ -259,22 +262,22 @@ namespace Qetesh {
 					requestData = (string) rd.get_data();
 					
 					ServerContext.Err.WriteMessage("B: %s".printf(requestData), ErrorManager.QErrorClass.QETESH_DEBUG);
+			
+			
+					ServerContext.Err.WriteMessage("Parsing request data structure...", ErrorManager.QErrorClass.QETESH_DEBUG);
+				
+					RequestData = new JSONReqestDataParser();
+
+					RequestData.Parse(requestData);
 				}
-				catch (Error e) {
+				catch (ParserError e) {
+					
+					throw new QRequestError.HEADERS("Error parsing request body:\n %s".printf(e.message));
+					
+				} catch (Error e) {
+					
 					throw new QRequestError.HEADERS("Error reading input body: \n%s");
 				}
-			}
-			
-			ServerContext.Err.WriteMessage("Parsing request data structure...", ErrorManager.QErrorClass.QETESH_DEBUG);
-			
-			RequestData = new JSONReqestDataParser();
-			
-			try {
-				RequestData.Parse(requestData);
-			}
-			catch (ParserError e) {
-				
-				throw new QRequestError.HEADERS("Error parsing request body:\n %s".printf(e.message));
 			}
 			
 			ServerContext.Err.WriteMessage("Done...", ErrorManager.QErrorClass.QETESH_DEBUG);

@@ -131,9 +131,10 @@ namespace Qetesh.Data {
 			
 			if(valid == false)
 				throw new ValidationError.INVALID_VALUE("Create() validation failed \n %s".printf(validationErrors.str));
+				
+			var pkStr = query.DoInt().to_string();
 			
-			
-			this.setPKeyStr(query.DoInt().to_string());
+			this.setPKeyStr(pkStr);
 		}
 		
 		public void Delete() throws QDBError, ValidationError {
@@ -564,8 +565,6 @@ namespace Qetesh.Data {
 			
 			var classObj = (ObjectClass) this.get_type().class_ref();
 			
-			var dn = new DataNode(this.get_type().name());
-			
 			var validatorList = new DataNode("Validators");
 			
 			foreach (var prop in classObj.list_properties()) {
@@ -633,9 +632,7 @@ namespace Qetesh.Data {
 				}
 			}
 			
-			dn.Children.add(validatorList);
-			
-			return dn;
+			return validatorList;
 		}
 		
 		public DataNode ToNode(DataNodeTransform transform) {

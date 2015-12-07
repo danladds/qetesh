@@ -556,7 +556,8 @@ struct _QeteshWebserverlibqeteshClass {
 typedef enum  {
 	QETESH_DATA_VALIDATION_ERROR_INVALID_VALUE,
 	QETESH_DATA_VALIDATION_ERROR_INVALID_DATETIME_STRING,
-	QETESH_DATA_VALIDATION_ERROR_UNVALIDATED_FIELD
+	QETESH_DATA_VALIDATION_ERROR_UNVALIDATED_FIELD,
+	QETESH_DATA_VALIDATION_ERROR_INVALID_PATTERN
 } QeteshDataValidationError;
 #define QETESH_DATA_VALIDATION_ERROR qetesh_data_validation_error_quark ()
 struct _QeteshQDateTime {
@@ -655,6 +656,10 @@ typedef enum  {
 } QeteshDataQDBError;
 #define QETESH_DATA_QDB_ERROR qetesh_data_qdb_error_quark ()
 typedef void (*QeteshDataDataObjectDataNodeTransform) (QeteshDataDataNode* n, void* user_data);
+typedef enum  {
+	QETESH_APP_ERROR_ABORT
+} QeteshAppError;
+#define QETESH_APP_ERROR qetesh_app_error_quark ()
 struct _QeteshQWebNode {
 	GObject parent_instance;
 	QeteshQWebNodePrivate * priv;
@@ -665,7 +670,7 @@ struct _QeteshQWebNode {
 
 struct _QeteshQWebNodeClass {
 	GObjectClass parent_class;
-	void (*OnBind) (QeteshQWebNode* self);
+	void (*OnBind) (QeteshQWebNode* self, GError** error);
 };
 
 struct _QeteshDataDataObjectLazyNode {
@@ -723,7 +728,7 @@ struct _QeteshDataQDatabaseConn {
 struct _QeteshDataQDatabaseConnClass {
 	GTypeClass parent_class;
 	void (*finalize) (QeteshDataQDatabaseConn *self);
-	GeeLinkedList* (*DirectQuery) (QeteshDataQDatabaseConn* self, const gchar* qText, GError** error);
+	GeeLinkedList* (*DirectQuery) (QeteshDataQDatabaseConn* self, const gchar* qText, gboolean isInsert, GError** error);
 	void (*Connect) (QeteshDataQDatabaseConn* self, GError** error);
 	QeteshDataQDataQuery* (*NewQuery) (QeteshDataQDatabaseConn* self);
 };
@@ -731,6 +736,7 @@ struct _QeteshDataQDatabaseConnClass {
 struct _QeteshDataQMysqlConn {
 	QeteshDataQDatabaseConn parent_instance;
 	QeteshDataQMysqlConnPrivate * priv;
+	QeteshWebServerContext* context;
 	MYSQL* db;
 };
 
@@ -1246,6 +1252,7 @@ void qetesh_data_data_object_set_TableName (QeteshDataDataObject* self, const gc
 const gchar* qetesh_data_data_object_get_PKeyName (QeteshDataDataObject* self);
 void qetesh_data_data_object_set_PKeyName (QeteshDataDataObject* self, const gchar* value);
 GType qetesh_qweb_node_get_type (void) G_GNUC_CONST;
+GQuark qetesh_app_error_quark (void);
 gpointer qetesh_qweb_node_manifest_object_ref (gpointer instance);
 void qetesh_qweb_node_manifest_object_unref (gpointer instance);
 GParamSpec* qetesh_qweb_node_param_spec_manifest_object (const gchar* name, const gchar* nick, const gchar* blurb, GType object_type, GParamFlags flags);
@@ -1291,7 +1298,7 @@ GType qetesh_data_qmysql_db_get_type (void) G_GNUC_CONST;
 QeteshDataQMysqlDB* qetesh_data_qmysql_db_new (QeteshConfigFileDBConfig* config, QeteshWebServerContext* sc);
 QeteshDataQMysqlDB* qetesh_data_qmysql_db_construct (GType object_type, QeteshConfigFileDBConfig* config, QeteshWebServerContext* sc);
 GType qetesh_data_qdata_query_get_type (void) G_GNUC_CONST;
-GeeLinkedList* qetesh_data_qdatabase_conn_DirectQuery (QeteshDataQDatabaseConn* self, const gchar* qText, GError** error);
+GeeLinkedList* qetesh_data_qdatabase_conn_DirectQuery (QeteshDataQDatabaseConn* self, const gchar* qText, gboolean isInsert, GError** error);
 void qetesh_data_qdatabase_conn_Connect (QeteshDataQDatabaseConn* self, GError** error);
 QeteshDataQDataQuery* qetesh_data_qdatabase_conn_NewQuery (QeteshDataQDatabaseConn* self);
 QeteshDataQDatabaseConn* qetesh_data_qdatabase_conn_construct (GType object_type);
@@ -1345,6 +1352,7 @@ QeteshDataQMysqlQuery* qetesh_data_qmysql_query_construct (GType object_type, Qe
 QeteshDataQMysqlConn* qetesh_data_qmysql_query_get_db (QeteshDataQMysqlQuery* self);
 void qetesh_data_qmysql_query_set_db (QeteshDataQMysqlQuery* self, QeteshDataQMysqlConn* value);
 GType qetesh_data_qmysql_query_mysql_query_param_get_type (void) G_GNUC_CONST;
+gchar* qetesh_data_qmysql_query_mysql_query_param_EscapeString (const gchar* inVal);
 const gchar* qetesh_data_qmysql_query_mysql_query_param_get_FieldName (QeteshDataQMysqlQueryMysqlQueryParam* self);
 const gchar* qetesh_data_qmysql_query_mysql_query_param_get_FieldValue (QeteshDataQMysqlQueryMysqlQueryParam* self);
 const gchar* qetesh_data_qmysql_query_mysql_query_param_get_FieldComparator (QeteshDataQMysqlQueryMysqlQueryParam* self);
@@ -1434,7 +1442,7 @@ void qetesh_module_manager_LoadModules (QeteshModuleManager* self, GError** erro
 QeteshAppModule* qetesh_module_manager_GetHostModule (QeteshModuleManager* self, const gchar* host);
 QeteshQWebNode* qetesh_qweb_node_get (QeteshQWebNode* self, const gchar* subpath);
 void qetesh_qweb_node_set (QeteshQWebNode* self, const gchar* subpath, QeteshQWebNode* node);
-void qetesh_qweb_node_OnBind (QeteshQWebNode* self);
+void qetesh_qweb_node_OnBind (QeteshQWebNode* self, GError** error);
 QeteshQWebNode* qetesh_qweb_node_new (const gchar* path);
 QeteshQWebNode* qetesh_qweb_node_construct (GType object_type, const gchar* path);
 gchar* qetesh_qweb_node_GetFullPath (QeteshQWebNode* self);

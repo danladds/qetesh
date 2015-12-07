@@ -40,9 +40,10 @@ namespace Qetesh {
 				throw new ValidationError.INVALID_DATETIME_STRING("Null date");
 			
 			// Format: 2015-11-04 00:00:00
-			var mainParts = inVal.split(" ");
+			// or:     2011-10-05T14:48:00.000Z
+			var mainParts = inVal.split_set(" T.");
 			
-			if(mainParts.length < 1 || mainParts.length > 2)
+			if(mainParts.length < 1 || mainParts.length > 3)
 				throw new ValidationError.INVALID_DATETIME_STRING("Invalid format");
 				
 			int year = -1;
@@ -52,6 +53,12 @@ namespace Qetesh {
 			int hour = 0;
 			int minute = 0;
 			int second = 0;
+			string zone = "";
+			
+			if(mainParts.length == 3) {
+				
+				zone = mainParts[2];
+			}
 			
 			var dateParts = mainParts[0].split("-");
 			
@@ -94,7 +101,13 @@ namespace Qetesh {
 			}
 			
 			try {
-				dt = new DateTime(new TimeZone.local(), year, month, day, hour, minute, second);
+				
+				if(zone != "") {
+					dt = new DateTime(new TimeZone(zone), year, month, day, hour, minute, second);
+				}
+				else {
+					dt = new DateTime(new TimeZone.local(), year, month, day, hour, minute, second);
+				}
 			}
 			catch(Error e) {
 				

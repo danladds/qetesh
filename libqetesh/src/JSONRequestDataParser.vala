@@ -71,7 +71,7 @@ namespace Qetesh {
 			index = 0;
 			data = inData;
 
-			ParseArrayItem(DataTree);
+			ParseArrayItem(DataTree, true);
 		}
 		
 		private void ParseValue(DataNode node, string name) throws ParserError {
@@ -95,7 +95,7 @@ namespace Qetesh {
 				ParseNumber(node, name);
 			} 
 			else {
-				throw new ParserError.INVALID_CHAR("Unxpected char (%c); expected value".printf(data[index]));
+				throw new ParserError.INVALID_CHAR("Unxpected char (%c) at index %d; expected value".printf(data[index], index));
 			}
 			
 		}
@@ -151,11 +151,11 @@ namespace Qetesh {
 					ParseValue(node, name);
 				}
 				else {
-					throw new ParserError.INVALID_CHAR("Unxpected char (%c); expected :".printf(data[index]));
+					throw new ParserError.INVALID_CHAR("Unxpected char (%c) at index %d; expected :".printf(data[index], index));
 				}
 			}
 			else {
-				throw new ParserError.INVALID_CHAR("Unxpected char (%c); expected \"".printf(data[index]));
+				throw new ParserError.INVALID_CHAR("Unxpected char (%c) at index %d; expected \"".printf(data[index], index));
 			}
 			
 		}
@@ -170,7 +170,9 @@ namespace Qetesh {
 			ParseArrayItem(node);
 		}
 		
-		private void ParseArrayItem (DataNode node) throws ParserError {
+		private void ParseArrayItem (DataNode node, bool top = false) throws ParserError {
+			
+			if(index < 0) return;
 			
 			ParseValue(node, "(Array Item)");
 			
@@ -180,8 +182,14 @@ namespace Qetesh {
 				
 				index++;
 			}
+			else if(top) {
+				return;
+			}
+			else if(data[index] == '\0') {
+				throw new ParserError.INVALID_CHAR("Unxpected end of input at index %d; expected , or ]".printf(index));
+			}
 			else {
-				throw new ParserError.INVALID_CHAR("Unxpected char (%c); expected , or ]".printf(data[index]));
+				throw new ParserError.INVALID_CHAR("Unxpected char (%c) at index %d; expected , or ]".printf(data[index], index));
 			}
 		}
 		
@@ -198,6 +206,8 @@ namespace Qetesh {
 		
 		private void ParseObjectItem (DataNode node) throws ParserError {
 			
+			if(index < 0) return;
+			
 			ParseAttribute(node);
 			
 			if(data[index] == ',') {
@@ -209,7 +219,7 @@ namespace Qetesh {
 				index++;
 			}
 			else {
-				throw new ParserError.INVALID_CHAR("Unxpected char (%c); expected , or }".printf(data[index]));
+				throw new ParserError.INVALID_CHAR("Unxpected char (%c) at index %d; expected , or }".printf(data[index], index));
 			}
 		}
 	}

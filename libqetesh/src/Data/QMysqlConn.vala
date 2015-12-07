@@ -31,7 +31,7 @@ namespace Qetesh.Data {
 	public class QMysqlConn : QDatabaseConn {
 		
 		private ConfigFile.DBConfig conf;
-		private WebServerContext context;
+		internal WebServerContext context;
 		internal Mysql.Database db;
 		
 		public QMysqlConn (ConfigFile.DBConfig config, WebServerContext sc) {
@@ -62,7 +62,7 @@ namespace Qetesh.Data {
 			}
 		}
 		
-		public override Gee.LinkedList<Gee.TreeMap<string?, string?>>? DirectQuery(string qText) throws QDBError {
+		public override Gee.LinkedList<Gee.TreeMap<string?, string?>>? DirectQuery(string qText, bool isInsert) throws QDBError {
 			
 			context.Err.WriteMessage("MySQL Connector attempting query: %s".printf(qText), ErrorManager.QErrorClass.QETESH_DEBUG);
 			
@@ -72,6 +72,11 @@ namespace Qetesh.Data {
 			if (resultStatus != 0) {
 				
 				throw new QDBError.QUERY("MySQL error performing query: %s; %s".printf(qText, db.error()));
+			}
+			
+			if(isInsert) {
+				_lastInsertId = (int) db.insert_id();
+				return null;
 			}
 			
 			Result? res = db.use_result();
@@ -114,15 +119,6 @@ namespace Qetesh.Data {
 			return new QMysqlQuery(this);
 		}
 		
-		internal int _lastInsertId {
-			
-			get {
-			
-				return (int) db.insert_id();
-			}
-			private set {
-				
-			}
-		}
+		internal int _lastInsertId { get; set; default = 0; }
 	}
 }

@@ -100,7 +100,7 @@ namespace Qetesh {
 			public abstract Qetesh.Data.QDataQuery Delete ();
 			public abstract Qetesh.Data.QDataQuery.QueryResult Do () throws Qetesh.Data.QDBError;
 			public abstract int DoInt () throws Qetesh.Data.QDBError;
-			protected abstract Gee.LinkedList<Gee.TreeMap<string,string>> Fetch () throws Qetesh.Data.QDBError;
+			protected abstract Gee.LinkedList<Gee.TreeMap<string,string>>? Fetch () throws Qetesh.Data.QDBError;
 			public abstract Qetesh.Data.QDataQuery Read ();
 			public abstract Qetesh.Data.QDataQuery.QueryParam Set (string fieldName);
 			public abstract Qetesh.Data.QDataQuery Update ();
@@ -117,7 +117,7 @@ namespace Qetesh {
 		public abstract class QDatabaseConn {
 			public QDatabaseConn ();
 			public abstract void Connect () throws Qetesh.Data.QDBError;
-			public abstract Gee.LinkedList<Gee.TreeMap<string?,string?>>? DirectQuery (string qText) throws Qetesh.Data.QDBError;
+			public abstract Gee.LinkedList<Gee.TreeMap<string?,string?>>? DirectQuery (string qText, bool isInsert = false) throws Qetesh.Data.QDBError;
 			public abstract Qetesh.Data.QDataQuery NewQuery ();
 			public bool IsConnected { get; protected set; }
 		}
@@ -130,7 +130,7 @@ namespace Qetesh {
 		public class QMysqlConn : Qetesh.Data.QDatabaseConn {
 			public QMysqlConn (Qetesh.ConfigFile.DBConfig config, Qetesh.WebServerContext sc);
 			public override void Connect () throws Qetesh.Data.QDBError;
-			public override Gee.LinkedList<Gee.TreeMap<string?,string?>>? DirectQuery (string qText) throws Qetesh.Data.QDBError;
+			public override Gee.LinkedList<Gee.TreeMap<string?,string?>>? DirectQuery (string qText, bool isInsert) throws Qetesh.Data.QDBError;
 			public override Qetesh.Data.QDataQuery NewQuery ();
 		}
 		[CCode (cheader_filename = "libqetesh.h")]
@@ -142,6 +142,7 @@ namespace Qetesh {
 		public class QMysqlQuery : Qetesh.Data.QDataQuery {
 			public class MysqlQueryParam : Qetesh.Data.QDataQuery.QueryParam {
 				public override Qetesh.Data.QDataQuery.QueryParam Equal (string val);
+				public static string EscapeString (string inVal);
 				public override Qetesh.Data.QDataQuery.QueryParam GreaterThan (string val);
 				public override Qetesh.Data.QDataQuery.QueryParam LessThan (string val);
 				public override Qetesh.Data.QDataQuery.QueryParam Like (string val);
@@ -160,7 +161,7 @@ namespace Qetesh {
 			public override Qetesh.Data.QDataQuery Delete ();
 			public override Qetesh.Data.QDataQuery.QueryResult Do () throws Qetesh.Data.QDBError;
 			public override int DoInt () throws Qetesh.Data.QDBError;
-			protected override Gee.LinkedList<Gee.TreeMap<string,string>> Fetch () throws Qetesh.Data.QDBError;
+			protected override Gee.LinkedList<Gee.TreeMap<string,string>>? Fetch () throws Qetesh.Data.QDBError;
 			public override Qetesh.Data.QDataQuery Read ();
 			public override Qetesh.Data.QDataQuery.QueryParam Set (string fieldName);
 			public override Qetesh.Data.QDataQuery Update ();
@@ -208,7 +209,8 @@ namespace Qetesh {
 		public errordomain ValidationError {
 			INVALID_VALUE,
 			INVALID_DATETIME_STRING,
-			UNVALIDATED_FIELD
+			UNVALIDATED_FIELD,
+			INVALID_PATTERN
 		}
 	}
 	namespace Webserver {
@@ -415,7 +417,7 @@ namespace Qetesh {
 		protected void ExposeProperties (string typeName, GLib.Type typ) throws Qetesh.ManifestError;
 		public string GetFullPath ();
 		public static Qetesh.Data.DataNode GetValidationResults (Qetesh.Data.DataObject proto, string message = "");
-		public virtual void OnBind ();
+		public virtual void OnBind () throws Qetesh.AppError;
 		public void WalkManifests (Qetesh.QWebNode.ManifestWalker walker);
 		public new Qetesh.QWebNode? @get (string subpath);
 		public new void @set (string subpath, Qetesh.QWebNode node);
@@ -452,6 +454,10 @@ namespace Qetesh {
 	public interface RequestDataParser : GLib.Object {
 		public abstract void Parse (string inData) throws Qetesh.ParserError;
 		public abstract Qetesh.Data.DataNode DataTree { get; protected set; }
+	}
+	[CCode (cheader_filename = "libqetesh.h")]
+	public errordomain AppError {
+		ABORT
 	}
 	[CCode (cheader_filename = "libqetesh.h")]
 	public errordomain CriticalServerError {

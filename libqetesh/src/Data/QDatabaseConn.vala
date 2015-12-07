@@ -29,7 +29,7 @@ namespace Qetesh.Data {
 	
 	public abstract class QDatabaseConn {
 
-		public abstract Gee.LinkedList<Gee.TreeMap<string?, string?>>? DirectQuery(string qText) throws QDBError;
+		public abstract Gee.LinkedList<Gee.TreeMap<string?, string?>>? DirectQuery(string qText, bool isInsert = false) throws QDBError;
 		
 		public abstract void Connect () throws QDBError;
 

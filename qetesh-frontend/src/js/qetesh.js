@@ -143,6 +143,39 @@ var Qetesh = {
 				
 				var methodDef = manifest[methodName];
 				
+				// Validators
+				if(methodName == "Validators") {
+					
+					for(var fName in methodDef) {
+						
+						if(methodDef.hasOwnProperty(fName) ) {
+							
+							var vDef = methodDef[fName];
+							var vdr = Qetesh.Validators[vDef.ValidatorClass].Obj();
+							var tc = "";
+							
+							if(vDef.Tests != "") {
+							
+								// Validator tests
+								for(var testName in vDef.Tests) {
+									
+									if(vDef.Tests.hasOwnProperty(testName)) {
+										
+										tc = vDef.Tests[testName];
+										vdr[testName](tc);
+									}
+								}
+							
+							}
+							
+							proxy.Validators[fName] = vdr;
+						
+						}
+					}
+					
+					continue;
+				}
+				
 				// Static values
 				if(methodDef.HttpMethod == null) {
 					
@@ -205,12 +238,46 @@ var Qetesh = {
 										
 												_this.boundQElement.CopyDown(_this.PKeyName);
 											}
+											
+											_this.__tainted = [];
+									
+											if (callback != null) callback(this);
+										}
+										else if (inObj != null) {
+											
+											var errs = inObj.Errors;
+											
+											for(var fName in errs) {
+												
+												if(errs.hasOwnProperty(fName)) {
+													
+													var serverTests = errs[fName];
+													var sTestLen = serverTests.length;
+			////////////////////////////////////////
+			for(var _i = 0; _i < sTestLen; _i++) {
+				
+				var sTestDef = serverTests[_i];
+				
+				var clientTestLen = _this.Validators[fName].Tests.length;
+				
+				for(var _y = 0; _y < clientTestLen; _y++) {
+					
+					if(_this.Validators[fName].Tests[_y].TestName == sTestDef.TestName) {
+						
+						var clientTest = _this.Validators[fName].Tests[_y];
+				
+						clientTest.Passed = sTestDef.Passed;
+						clientTest.Comparator = sTestDef.Comparator;
+					}
+				}
+			}
+			/////////////////////////////////////////
+												}
+											}
+											
+											throw Qetesh.Errors.ValidationError.Obj("Validation failed");
 										}
 									}
-									
-									_this.__tainted = [];
-									
-									if (callback != null) callback(this);
 								}
 								// Implode returns
 								else if (rType == "implode") {
@@ -1187,6 +1254,7 @@ var Qetesh = {
 		__tainted : [],
 		__properties : [],
 		__deleteMe : false,
+		Validators : { },
 		
 		Obj : function() {
 		
@@ -1200,7 +1268,7 @@ var Qetesh = {
 			
 			this.__tainted = [];
 			this.__properties = [];
-			
+			this.Validators = { };
 		},
 		
 		SetTaint : function (fieldName) {
@@ -1277,12 +1345,13 @@ var Qetesh = {
 	
 	},
 	
-	Validator {
+	Validator : {
 		
-		Name : "",
+		Name : "UNNAMED VALIDATOR!",
 		Passed : false,
 		Mandatory : true,
 		Tests : [],
+		Value : "",
 		
 		Obj : function() {
 		
@@ -1294,24 +1363,33 @@ var Qetesh = {
 		
 		Init : function () {
 			
-			
+			this.Tests = [];
+			this.Passed = false;
 			
 		},
 		
 		Validate : function () {
 			
+		},
+		
+		Convert : function () {
+			
+			throw Qetesh.Errors.ValidationError.Obj("Convert function must be overridden by validators");
 		}
 	},
 	
 	ValidationTest : {
 		
+		TestName : "UNNAMED VALIDATION TEST!",
 		Passed : false,
-		Func : function() { return false },
+		Func : null,
 		Comparator : "",
+		InValue : "",
+		OutValue : "",
 		
 		Obj : function() {
 		
-			var obj = Object.create(this);
+			var obj = Object.create(Qetesh.ValidationTest);
 			obj.Init();
 				
 			return obj;
@@ -1319,89 +1397,419 @@ var Qetesh = {
 		
 		Init : function () {
 			
-			this.Messages = [];
-			this.pass = true;
+			
 		},
 		
 		Run : function() {
 			
+			if (Func != null) {
+				Passed = Func();
+				
+			}
+			else {
+				
+				Passed = true;
+			}
 			
+			return Passed;
 		}
 	},
 	
-	IntValidator = {
-		
-		Obj : function () {
+	Validators : {
+	
+		IntValidator : {
 			
-			var _this = Validator.Obj();
-			
-			_this.Validate = function(valie) {
+			Obj : function () {
 				
+				var _this = Qetesh.Validator.Obj();
+				
+				_this.GreaterThan = this.GreaterThan;
+				_this.LessThan = this.LessThan;
+				_this.Equals = this.Equals;
+				_this.Convert = this.Convert;
+				
+				_this.Name = "IntValidator";
+				
+				return _this;
+			},
+			
+			GreaterThan : function(comp) {
+				
+				var test = new Qetesh.ValidationTest.Obj();
+				
+				test.TestName = "GreaterThan";
+				test.Comparator = comp;
+				test.Func = function() {
+					
+					this.Passed = (this.OutValue > this.Comparator);
+					
+				}
+				
+				this.Tests.push(test);
+			},
+			
+			LessThan : function(comp) {
+				
+				var test = new Qetesh.ValidationTest.Obj();
+				
+				test.TestName = "LessThan";
+				test.Comparator = comp;
+				test.Func = function() {
+					
+					this.Passed = (this.OutValue < this.Comparator);
+					
+				}
+				
+				this.Tests.push(test);
+			},
+			
+			Equals : function(comp) {
+				
+				var test = new Qetesh.ValidationTest.Obj();
+				
+				test.TestName = "Equals";
+				test.Comparator = comp;
+				test.Func = function() {
+					
+					this.Passed = (this.OutValue == this.Comparator);
+					
+				}
+				
+				this.Tests.push(test);
+			},
+			
+			Convert : function() {
+				
+				var test = new Qetesh.ValidationTest.Obj();
+				
+				test.TestName = "Convert";
+				
+				var valRet = parseInt(this.InValue, 10);
+				
+				if(isNaN(valRet)) {
+					
+					test.Passed = false;
+				}
+				else {
+					test.Passed = true;
+					this.OutValue = valRet;
+				}
+			}
+		},
+	
+		StringValidator : {
+			
+			Obj : function () {
+				
+				var _this = Qetesh.Validator.Obj();
+				
+				_this.Contains = this.Contains;
+				_this.DoesntContain = this.DoesntContain;
+				_this.Matches = this.Matches;
+				_this.Equals = this.Equals;
+				_this.Convert = this.Convert;
+				
+				_this.Name = "StringValidator";
+				
+				return _this;
+			},
+			
+			Equals : function(comp) {
+				
+				var test = new Qetesh.ValidationTest.Obj();
+				
+				test.TestName = "Equals";
+				test.Comparator = comp;
+				test.Func = function() {
+					
+					this.Passed = (this.OutValue == this.Comparator);
+					
+				}
+				
+				this.Tests.push(test);
+			},
+			
+			Contains : function(comp) {
+				
+				var test = new Qetesh.ValidationTest.Obj();
+				
+				test.TestName = "Contains";
+				test.Comparator = comp;
+				test.Func = function() {
+					
+					this.Passed = (this.OutValue.indexOf(this.Comparator) != -1);
+					
+				}
+				
+				this.Tests.push(test);
+			},
+			
+			DoesntContain : function(comp) {
+				
+				var test = new Qetesh.ValidationTest.Obj();
+				
+				test.TestName = "DoesntContain";
+				test.Comparator = comp;
+				test.Func = function() {
+					
+					this.Passed = (this.OutValue.indexOf(this.Comparator) == -1);
+					
+				}
+				
+				this.Tests.push(test);
+			},
+			
+			Equals : function(comp) {
+				
+				var test = new Qetesh.ValidationTest.Obj();
+				
+				test.TestName = "Equals";
+				test.Comparator = comp;
+				test.Func = function() {
+					
+					this.Passed = (this.OutValue == this.Comparator);
+					
+				}
+				
+				this.Tests.push(test);
+			},
+			
+			Matches : function(comp) {
+				
+				var test = new Qetesh.ValidationTest.Obj();
+				
+				test.TestName = "Matches";
+				test.Comparator = comp;
+				test.Func = function() {
+					
+					var rx = new RegExp(this.Comparator);
+					
+					this.Passed = rx.test(this.OutValue);
+					
+				}
+				
+				this.Tests.push(test);
+			},
+			
+			Convert : function() {
+				
+				var test = new Qetesh.ValidationTest.Obj();
+				
+				test.TestName = "Convert";
+
+				test.Passed = true;
+				this.OutValue = this.InValue;
+			}
+		},
+		
+		DoubleValidator : {
+			
+			Obj : function () {
+				
+				var _this = Qetesh.Validator.Obj();
+				
+				_this.GreaterThan = this.GreaterThan;
+				_this.LessThan = this.LessThan;
+				_this.Equals = this.Equals;
+				_this.Convert = this.Convert;
+				
+				_this.Name = "DoubleValidator";
+				
+				return _this;
+			},
+			
+			GreaterThan : function(comp) {
+				
+				var test = new Qetesh.ValidationTest.Obj();
+				
+				test.TestName = "GreaterThan";
+				test.Comparator = comp;
+				test.Func = function() {
+					
+					this.Passed = (this.OutValue > this.Comparator);
+					
+				}
+				
+				this.Tests.push(test);
+			},
+			
+			LessThan : function(comp) {
+				
+				var test = new Qetesh.ValidationTest.Obj();
+				
+				test.TestName = "LessThan";
+				test.Comparator = comp;
+				test.Func = function() {
+					
+					this.Passed = (this.OutValue < this.Comparator);
+					
+				}
+				
+				this.Tests.push(test);
+			},
+			
+			Equals : function(comp) {
+				
+				var test = new Qetesh.ValidationTest.Obj();
+				
+				test.TestName = "Equals";
+				test.Comparator = comp;
+				test.Func = function() {
+					
+					this.Passed = (this.OutValue == this.Comparator);
+					
+				}
+				
+				this.Tests.push(test);
+			},
+			
+			Convert : function() {
+				
+				var test = new Qetesh.ValidationTest.Obj();
+				
+				test.TestName = "Convert";
+				
+				var valRet = parseFloat(this.InValue, 10);
+				
+				if(isFinite(valRet)) {
+					
+					test.Passed = false;
+				}
+				else {
+					test.Passed = true;
+					this.OutValue = valRet;
+				}
+			}
+		},
+		
+		BoolValidator : {
+			
+			Obj : function () {
+				
+				var _this = Qetesh.Validator.Obj();
+				_this.Convert = this.Convert;
+				
+				_this.Name = "BoolValidator";
+				
+				return _this;
+			},
+			
+			Convert : function() {
+				
+				var test = new Qetesh.ValidationTest.Obj();
+				
+				test.TestName = "Convert";
+				
+				if(this.InValue == "true") {
+					
+					test.Passed = true;
+					this.OutValue = truel
+				}
+				else if (this.InValue == "fa;se"){
+					
+					test.Passed = true;
+					this.OutValue = false;
+				}
+				else {
+					test.Passed = false;
+				}
+			}
+		},
+		
+		QDateTimeValidator : {
+			
+			Obj : function () {
+				
+				var _this = Qetesh.Validator.Obj();
+				_this.Convert = this.Convert;
+				
+				_this.Name = "QDateTimeValidator";
+				
+				return _this;
+			},
+			
+			Convert : function() {
+				
+				try {
+					var dt = new Date(InValue);
+				} catch (e) {
+					test.Passed = false;
+					return;
+				}
+				
+				if(dt == null) {
+					
+					test.Passed = false;
+					return;
+				}
+				
+				var test = new Qetesh.ValidationTest.Obj();
+				
+				test.TestName = "Convert";
+				
+				test.Passed = true;
+				this.OutValue = dt.toISOString();
 			}
 		}
 	},
 	
-	StringValidator {
+	Errors : {
 		
-		Obj : function () {
+		ValidationError : {
 			
-			var _this = Validator.Obj();
-			
-			_this.Validate = function(valie) {
+			Obj : function(message) {
+		
+				var obj = Object.create(this);
 				
-			}
-		}
-	},
-	
-	FloatValidator {
+				this.Message = message;
+					
+				return obj;
+			}, 
+			
+			Message : ""
+		},
 		
-		Obj : function () {
+		QRequestError : {
 			
-			var _this = Validator.Obj();
-			
-			_this.Validate = function(valie) {
+			Obj : function(message) {
+		
+				var obj = Object.create(this);
 				
-			}
-		}
-	},
-	
-	DateTimeValidator {
+				this.Message = message;
+					
+				return obj;
+			}, 
+			
+			Message : ""
+		},
 		
-		Obj : function () {
+		QResponseError : {
 			
-			var _this = Validator.Obj();
-			
-			_this.Validate = function(valie) {
+			Obj : function(message) {
+		
+				var obj = Object.create(this);
 				
-			}
-		}
-		
-	},
-	
-	DoubleValidator {
-		
-		Obj : function () {
+				this.Message = message;
+					
+				return obj;
+			}, 
 			
-			var _this = Validator.Obj();
+			Message : ""
+		},
+		
+		ManifestError : {
 			
-			_this.Validate = function(valie) {
+			Obj : function(message) {
+		
+				var obj = Object.create(this);
 				
-			}
-		}
-		
-	},
-	
-	BoolValidator {
-		
-		Obj : function () {
+				this.Message = message;
+					
+				return obj;
+			}, 
 			
-			var _this = Validator.Obj();
-			
-			_this.Validate = function(valie) {
-				
-			}
-		}
-		
+			Message : ""
+		},
 	}
 };
 

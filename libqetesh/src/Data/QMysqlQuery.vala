@@ -137,7 +137,9 @@ namespace Qetesh.Data {
 			return (QDataQuery.QueryParam) param;
 		}
 		
-		protected override Gee.LinkedList<Gee.TreeMap<string, string>> Fetch() throws QDBError {
+		protected override Gee.LinkedList<Gee.TreeMap<string, string>>? Fetch() throws QDBError {
+			
+			db.context.Err.WriteMessage("QMysqlQuery preparing query", ErrorManager.QErrorClass.QETESH_DEBUG);
 			
 			sql.append(baseQuery.printf(tableName));
 			
@@ -150,6 +152,8 @@ namespace Qetesh.Data {
 					throw new QDBError.QUERY("Cannot perform insert or update with no parameters");
 				}
 				
+				db.context.Err.WriteMessage("QMysqlQuery adding SET params", ErrorManager.QErrorClass.QETESH_DEBUG);
+				
 				foreach (var param in setParams) {
 					
 					sql.append("`%s`.%s".printf(tableName, param.getQueryText()));
@@ -161,14 +165,14 @@ namespace Qetesh.Data {
 				
 				if (whereParams.size > 0) {
 					sql.append(" WHERE ");
-				}
 				
-				var i = 0;
-				
-				foreach (var param in whereParams) {
+					var i = 0;
 					
-					sql.append(param.getQueryText());
-					if (++i != whereParams.size) sql.append(", AND ");
+					foreach (var param in whereParams) {
+						
+						sql.append(param.getQueryText());
+						if (++i != whereParams.size) sql.append(", AND ");
+					}
 				}
 			}
 			
@@ -177,7 +181,16 @@ namespace Qetesh.Data {
 				sql.append(" LIMIT 1");
 			}
 			
-			return db.DirectQuery(sql.str);
+			string queryString = sql.str;
+			
+			db.context.Err.WriteMessage("QMysqlQuery performing query: %s".printf(queryString), ErrorManager.QErrorClass.QETESH_DEBUG);
+			
+			if(queryType == QueryType.INSERT) {
+				return db.DirectQuery(queryString, true);
+			}
+			else {
+				return db.DirectQuery(queryString);
+			}
 		}
 		
 		public class MysqlQueryParam : QDataQuery.QueryParam {
@@ -224,11 +237,29 @@ namespace Qetesh.Data {
 			
 			internal string getQueryText() {
 				
-				string encVal = "";
+				db.context.Err.WriteMessage("QMysqlQuery escaping param %s".printf(FieldValue), ErrorManager.QErrorClass.QETESH_DEBUG);
 				
-				db.db.real_escape_string(encVal, FieldValue, FieldValue.length);
+				//db.db.real_escape_string(encVal, FieldValue.data, FieldValue.length);
+				
+				var encVal = EscapeString(FieldValue);
 				
 				return "`%s` %s \"%s\"".printf(FieldName, FieldComparator, encVal);
+			}
+			
+			public static string EscapeString(string inVal) {
+				
+				var outVal = new StringBuilder();
+				
+				for(var i = 0; i < inVal.length; ++i) {
+					
+					if(inVal[i] == '"') outVal.append("\\" + "\"");
+					else if(inVal[i] == '\\') outVal.append("\\" + "\\");
+					else outVal.append_c(inVal[i]);
+				}
+				
+				var returnString = outVal.str;
+				
+				return returnString;
 			}
 		}
 		

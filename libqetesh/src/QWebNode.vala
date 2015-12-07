@@ -89,7 +89,7 @@ namespace Qetesh {
 		/// Override for activation proceedure
 		/// Called when bound to a place in the tree
 		/// If you think it belongs in your constructor, it probably belongs here
-		public virtual void OnBind() {
+		public virtual void OnBind() throws AppError {
 			
 			//
 		}
@@ -132,9 +132,9 @@ namespace Qetesh {
 		
 		public static DataNode GetValidationResults(DataObject proto, string message = "") {
 			
-			var errNode = new DataNode();
+			var errNode = new DataNode("Errors");
 					
-			errNode.Children.add(new DataNode("Message", message));
+			//errNode.Children.add(new DataNode("Message", message));
 					
 			foreach(var pName in proto.Validators.keys) {
 				
@@ -205,7 +205,7 @@ namespace Qetesh {
 				var obj = (DataObject) Object.new(typ);
 				
 				try {
-					proto._init(req.Data.GetConnection(dbName));
+					obj._init(req.Data.GetConnection(dbName));
 				} catch (QDBError e) {
 					
 					req.ServerContext.Err.WriteMessage("Error getting DataObject for LOADALL: \n%s".printf(e.message), ErrorManager.QErrorClass.MODULE_ERROR);
@@ -236,7 +236,11 @@ namespace Qetesh {
 					
 				} catch (ValidationError e) {
 					
-					req.HResponse.DataTree.Children.add(GetValidationResults(proto, e.message));
+					ret.Children.add(new DataNode ("Success") { Val = "N" });
+					
+					ret.Children.add(GetValidationResults(proto, e.message));
+					
+					req.HResponse.DataTree.Children.add(ret);
 				} catch (QDBError e) {
 						
 					req.ServerContext.Err.WriteMessage("Query error during CREATE: %s :\n ".printf(e.message), ErrorManager.QErrorClass.MODULE_ERROR);
@@ -251,7 +255,7 @@ namespace Qetesh {
 				var obj = (DataObject) Object.new(typ);
 				
 				try {
-					proto._init(req.Data.GetConnection(dbName));
+					obj._init(req.Data.GetConnection(dbName));
 				} catch (QDBError e) {
 					
 					req.ServerContext.Err.WriteMessage("Error getting DataObject for READ: \n%s".printf(e.message), ErrorManager.QErrorClass.MODULE_ERROR);
@@ -283,7 +287,7 @@ namespace Qetesh {
 				var obj = (DataObject) Object.new(typ);
 				
 				try {
-					proto._init(req.Data.GetConnection(dbName));
+					obj._init(req.Data.GetConnection(dbName));
 				} catch (QDBError e) {
 					
 					req.ServerContext.Err.WriteMessage("Error getting DataObject for DELETE: \n%s".printf(e.message), ErrorManager.QErrorClass.MODULE_ERROR);
@@ -313,7 +317,7 @@ namespace Qetesh {
 				var obj = (DataObject) Object.new(typ);
 				
 				try {
-					proto._init(req.Data.GetConnection(dbName));
+					obj._init(req.Data.GetConnection(dbName));
 				} catch (QDBError e) {
 					
 					req.ServerContext.Err.WriteMessage("Error getting DataObject for UPDATE: \n%s".printf(e.message), ErrorManager.QErrorClass.MODULE_ERROR);

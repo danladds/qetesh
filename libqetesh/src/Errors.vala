@@ -23,6 +23,10 @@
 
 namespace Qetesh {
 	
+	public errordomain AppError {
+		ABORT
+	}
+	
 	public errordomain CriticalServerError {
 		NOPE
 	}

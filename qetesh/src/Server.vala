@@ -231,6 +231,7 @@ namespace Qetesh.WebServer {
 			context.Err.WriteMessage("\n\n\nServer Dispatching Request", ErrorManager.QErrorClass.QETESH_DEBUG);
 			
 			try {
+				
 				req = new HTTPRequest(c, context);
 				req.Handle();
 				
