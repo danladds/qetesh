@@ -16,19 +16,19 @@ Here is a very basic overview of how Qetesh works:
  
 - Application modules are built against the same shared library as the server, which provides the Qetesh programming framework. The application's core object registers data points, which act as controllers for a URL pathway. Data points can make use of the ORM layer to speed up database access development. Database connectors are pluggable: MySQL is currently provided; I hope to add PGSQL at the least; and application developers are free to add their own connectors.
 
- Immediate plans -> Pipe dreams:
--Finishing everything that's half-done!
--Documentation!
--Binaries & packaging
--A system for debugging
--An app packaging and deployments system - on top of automake
--A sandbox testbed /  dev environment
--IDE plugin - possibly for Geany, as it's very lightweight - integrating the former
+Immediate plans -> Pipe dreams:
+- Finishing everything that's half-done!
+- Documentation!
+- Binaries & packaging
+- A system for debugging
+- An app packaging and deployments system - on top of automake
+- A sandbox testbed /  dev environment
+- IDE plugin - possibly for Geany, as it's very lightweight - integrating the former
  
 Advantages of Qetesh:
 
 - Compatible with other technologies
-- Templates are designer-friendly and based on Angular.JS, meaning easy editing by designers and frontend developers not familiar with Vala
+- Templates are designer-friendly and use standard HTML constructs
 - Vala language easily learned by Java or .NET programmers
 - Concise, simple API enabling rapid development
 - Applications are easily ported, with either Vala itself or Qetesh providing abstraction
