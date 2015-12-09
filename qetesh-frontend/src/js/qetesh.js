@@ -449,6 +449,8 @@ var Qetesh = {
 							
 							// Don't bother if nothing to send
 							if (this.__tainted.length > 0) {
+								
+								var sendPassed = true;
 
 								// Always send primary key
 								this.SetTaint(this.PKeyName);
@@ -458,15 +460,31 @@ var Qetesh = {
 								
 								for(var u = 0; u < tLen; ++u) {
 									
-									if(this.__tainted[u] == "PKeyName") continue;
+									var vfName = this.__tainted[u];
+									var vtor = this.Validators[vfName];
 									
-									outObj[this.__tainted[u]] = this[this.__tainted[u]];
+									if(vfName == "PKeyName") continue;
+									
+									if(vtor.Validate()) {
+									
+										outObj[vfName] = this[vfName];
+									}
+									else {
+										sendPassed = false;
+									}
 								}
 								
-								var outData = JSON.stringify(outObj);
-								
-								xh.setRequestHeader("Content-Type", "text/json");
-								xh.send(outData);
+								if(sendPassed) {
+									
+									var outData = JSON.stringify(outObj);
+									
+									xh.setRequestHeader("Content-Type", "text/json");
+									xh.send(outData);
+								}
+								else {
+									
+									this.ShowValidationErrors();
+								}
 							}
 						}
 						else {
@@ -1248,6 +1266,8 @@ var Qetesh = {
 		
 		UpdateValidation : function() {
 			
+			this.Validator.Validate();
+			
 			if(this.Validator.Passed == true) {
 				this.Valid = true;
 				this.FieldElement.className = this.FieldElement.className.replace(/q-invalid/g, "");
@@ -1277,6 +1297,10 @@ var Qetesh = {
 				
 				this.QElem.__bindDataState[this.FieldName] = this.__inTransform(this.FieldElement.value);
 				this.UpdateTaint();
+				
+				this.Validator.InValue = this.QElem.__bindDataState[this.FieldName];
+				this.Validator.Convert();
+				this.UpdateValidation();
 			}
 			else {
 				
@@ -1287,8 +1311,11 @@ var Qetesh = {
 		Commit : function() {
 			
 			if(this.Taint == true) {
-			
-				this.QElem.__bindData[this.FieldName] = this.QElem.__bindDataState[this.FieldName];
+				
+				if(this.Validator.Passed) {
+					this.QElem.__bindData[this.FieldName] = this.Validator.OutValue;
+					this.Taint = false;
+				}
 			}
 			
 			this.UpdateTaint();
@@ -1502,11 +1529,13 @@ var Qetesh = {
 			
 			for(var i = 0; i < tLen; ++i) {
 				
-				if(this.Tests[i].Func() != true) {
+				if(this.Tests[i].Run() != true) {
 					
 					this.Passed = false;
 				}
 			}
+			
+			return this.Passed;
 		},
 		
 		Convert : function () {
@@ -1539,16 +1568,16 @@ var Qetesh = {
 		
 		Run : function() {
 			
-			if (Func != null) {
-				Passed = Func();
+			if (this.Func != null) {
+				this.Passed = this.Func();
 				
 			}
 			else {
 				
-				Passed = true;
+				this.Passed = true;
 			}
 			
-			return Passed;
+			return this.Passed;
 		}
 	},
 	
@@ -1573,13 +1602,14 @@ var Qetesh = {
 			GreaterThan : function(comp) {
 				
 				var test = new Qetesh.ValidationTest.Obj();
+				var _this = this;
 				
 				test.TestName = "GreaterThan";
 				test.Comparator = comp;
 				test.Func = function() {
 					
-					this.Passed = (this.OutValue > this.Comparator);
-					
+					this.Passed = (_this.OutValue > this.Comparator);
+					return this.Passed;
 				}
 				
 				this.Tests.push(test);
@@ -1588,13 +1618,14 @@ var Qetesh = {
 			LessThan : function(comp) {
 				
 				var test = new Qetesh.ValidationTest.Obj();
+				var _this = this;
 				
 				test.TestName = "LessThan";
 				test.Comparator = comp;
 				test.Func = function() {
 					
-					this.Passed = (this.OutValue < this.Comparator);
-					
+					this.Passed = (_this.OutValue < this.Comparator);
+					return this.Passed;
 				}
 				
 				this.Tests.push(test);
@@ -1603,13 +1634,14 @@ var Qetesh = {
 			Equals : function(comp) {
 				
 				var test = new Qetesh.ValidationTest.Obj();
+				var _this = this;
 				
 				test.TestName = "Equals";
 				test.Comparator = comp;
 				test.Func = function() {
 					
-					this.Passed = (this.OutValue == this.Comparator);
-					
+					this.Passed = (_this.OutValue == this.Comparator);
+					return this.Passed;
 				}
 				
 				this.Tests.push(test);
@@ -1654,13 +1686,14 @@ var Qetesh = {
 			Equals : function(comp) {
 				
 				var test = new Qetesh.ValidationTest.Obj();
+				var _this = this;
 				
 				test.TestName = "Equals";
 				test.Comparator = comp;
 				test.Func = function() {
 					
-					this.Passed = (this.OutValue == this.Comparator);
-					
+					this.Passed = (_this.OutValue == this.Comparator);
+					return this.Passed;
 				}
 				
 				this.Tests.push(test);
@@ -1669,13 +1702,14 @@ var Qetesh = {
 			Contains : function(comp) {
 				
 				var test = new Qetesh.ValidationTest.Obj();
+				var _this = this;
 				
 				test.TestName = "Contains";
 				test.Comparator = comp;
 				test.Func = function() {
 					
-					this.Passed = (this.OutValue.indexOf(this.Comparator) != -1);
-					
+					this.Passed = (_this.OutValue.indexOf(this.Comparator) != -1);
+					return this.Passed;
 				}
 				
 				this.Tests.push(test);
@@ -1684,13 +1718,14 @@ var Qetesh = {
 			DoesntContain : function(comp) {
 				
 				var test = new Qetesh.ValidationTest.Obj();
+				var _this = this;
 				
 				test.TestName = "DoesntContain";
 				test.Comparator = comp;
 				test.Func = function() {
 					
-					this.Passed = (this.OutValue.indexOf(this.Comparator) == -1);
-					
+					this.Passed = (_this.OutValue.indexOf(this.Comparator) == -1);
+					return this.Passed;
 				}
 				
 				this.Tests.push(test);
@@ -1699,13 +1734,14 @@ var Qetesh = {
 			Equals : function(comp) {
 				
 				var test = new Qetesh.ValidationTest.Obj();
+				var _this = this;
 				
 				test.TestName = "Equals";
 				test.Comparator = comp;
 				test.Func = function() {
 					
-					this.Passed = (this.OutValue == this.Comparator);
-					
+					test.Passed = (_this.OutValue == test.Comparator);
+					return this.Passed;
 				}
 				
 				this.Tests.push(test);
@@ -1714,15 +1750,16 @@ var Qetesh = {
 			Matches : function(comp) {
 				
 				var test = new Qetesh.ValidationTest.Obj();
+				var _this = this;
 				
 				test.TestName = "Matches";
 				test.Comparator = comp;
 				test.Func = function() {
 					
-					var rx = new RegExp(this.Comparator);
+					var rx = new RegExp(test.Comparator);
 					
-					this.Passed = rx.test(this.OutValue);
-					
+					test.Passed = rx.test(_this.OutValue);
+					return this.Passed;
 				}
 				
 				this.Tests.push(test);
@@ -1758,13 +1795,14 @@ var Qetesh = {
 			GreaterThan : function(comp) {
 				
 				var test = new Qetesh.ValidationTest.Obj();
+				var _this = this;
 				
 				test.TestName = "GreaterThan";
 				test.Comparator = comp;
 				test.Func = function() {
 					
-					this.Passed = (this.OutValue > this.Comparator);
-					
+					this.Passed = (_this.OutValue > this.Comparator);
+					return this.Passed;
 				}
 				
 				this.Tests.push(test);
@@ -1773,13 +1811,14 @@ var Qetesh = {
 			LessThan : function(comp) {
 				
 				var test = new Qetesh.ValidationTest.Obj();
+				var _this = this;
 				
 				test.TestName = "LessThan";
 				test.Comparator = comp;
 				test.Func = function() {
 					
-					this.Passed = (this.OutValue < this.Comparator);
-					
+					this.Passed = (_this.OutValue < this.Comparator);
+					return this.Passed;
 				}
 				
 				this.Tests.push(test);
@@ -1788,13 +1827,14 @@ var Qetesh = {
 			Equals : function(comp) {
 				
 				var test = new Qetesh.ValidationTest.Obj();
+				var _this = this;
 				
 				test.TestName = "Equals";
 				test.Comparator = comp;
 				test.Func = function() {
 					
-					this.Passed = (this.OutValue == this.Comparator);
-					
+					this.Passed = (_this.OutValue == this.Comparator);
+					return this.Passed;
 				}
 				
 				this.Tests.push(test);
