@@ -100,7 +100,6 @@ namespace Qetesh.Data {
 			else {
 				
 				// Pre-done tests like Convert()
-				Passed = true;
 			}
 			
 			return Passed;
@@ -116,48 +115,57 @@ namespace Qetesh.Data {
 		
 		public IntValidator GreaterThan(int comp) {
 			
-			Tests.add(new ValidationTest<int?>() { 
+			var test = new ValidationTest<int?>() { 
 				
 				TestName = "GreaterThan",
-				Comparator = comp.to_string(),
-				Func = () => {
+				Comparator = comp.to_string()
+			};
+			
+			test.Func = () => {
 					
-					this.Passed = (this.OutValue > comp);
-					return this.Passed;
-				}
-			});
+				test.Passed = (this.OutValue > comp);
+				return test.Passed;
+			};
+			
+			Tests.add(test);
 			
 			return this;
 		}
 		
 		public IntValidator LessThan (int comp) {
 			
-			Tests.add(new ValidationTest<int?>() { 
+			var test = new ValidationTest<int?>() { 
 				
 				TestName = "LessThan",
-				Comparator = comp.to_string(),
-				Func = () => {
+				Comparator = comp.to_string()
+			};
+			
+			test.Func = () => {
 						
-					this.Passed = (this.OutValue < comp);
-					return this.Passed;
-				}
-			});
+				test.Passed = (this.OutValue < comp);
+				return test.Passed;
+			};
+			
+			Tests.add(test);
 			
 			return this;
 		}
 		
 		public IntValidator Equals (int comp) {
 			
-			Tests.add(new ValidationTest<int?>() { 
+			var test = new ValidationTest<int?>() { 
 				
 				TestName = "Equals",
-				Comparator = comp.to_string(),
-				Func = () => {
-					
-					this.Passed = (this.OutValue == comp);
-					return this.Passed;
-				}
-			});
+				Comparator = comp.to_string()
+			};
+			
+			test.Func = () => {
+				
+				test.Passed = (this.OutValue == comp);
+				return test.Passed;
+			};
+			
+			Tests.add(test);
 			
 			return this;
 		}
@@ -196,74 +204,86 @@ namespace Qetesh.Data {
 		
 		public StringValidator Contains(string comp) {
 			
-			Tests.add(new ValidationTest<string>() { 
+			var test = new ValidationTest<string>() { 
 				
 				TestName = "Contains",
-				Comparator = comp,
-				Func = () => {
-					
-					this.Passed = (this.OutValue.contains(comp));
-					return this.Passed;
-				}
-			});
+				Comparator = comp
+			};
+			
+			test.Func = () => {
+				
+				test.Passed = (this.OutValue.contains(comp));
+				return test.Passed;
+			};
+			
+			Tests.add(test);
 			
 			return this;
 		}
 		
 		public StringValidator DoesntContain(string comp) {
 			
-			Tests.add(new ValidationTest<string>() { 
+			var test = new ValidationTest<string>() { 
 				
 				TestName = "DoesntContain",
-				Comparator = comp,
-				Func = () => {
-					
-					this.Passed = (!this.OutValue.contains(comp));
-					return this.Passed;
-				}
-			});
+				Comparator = comp
+			};
+			
+			test.Func = () => {
+				
+				test.Passed = (!this.OutValue.contains(comp));
+				return test.Passed;
+			};
+			
+			Tests.add(test);
 			
 			return this;
 		}
 		
 		public StringValidator Equals(string comp) {
 			
-			Tests.add(new ValidationTest<string>() { 
+			var test = new ValidationTest<string>() { 
 				
 				TestName = "Equals",
-				Comparator = comp,
-				Func = () => {
+				Comparator = comp
+			};
+			
+			test.Func = () => {
 					
-					this.Passed = (this.OutValue == comp);
-					return this.Passed;
-				}
-			});
+				test.Passed = (this.OutValue == comp);
+				return test.Passed;
+			};
+			
+			Tests.add(test);
 			
 			return this;
 		}
 		
 		public StringValidator Matches(string regex) {
 			
-			Tests.add(new ValidationTest<string>() { 
+			var test = new ValidationTest<string>() { 
 				
 				TestName = "Matches",
-				Comparator = regex,
-				Func = () => {
+				Comparator = regex
+			};
+			
+			test.Func = () => {
 					
-					if(regex == null || regex == "" || this.OutValue == null) {
-						
-						this.Passed = false;
-						return false;
-					}
+				if(regex == null || regex == "" || this.OutValue == null) {
 					
-					this.Passed = Regex.match_simple(
-						regex, this.OutValue,
-						RegexCompileFlags.JAVASCRIPT_COMPAT
-					);
-					
-					return this.Passed;
+					test.Passed = false;
+					return test.Passed;
 				}
-			});
+				
+				test.Passed = Regex.match_simple(
+					regex, this.OutValue,
+					RegexCompileFlags.JAVASCRIPT_COMPAT
+				);
+				
+				return test.Passed;
+			};
+			
+			Tests.add(test);
 			
 			return this;
 		}
@@ -294,48 +314,55 @@ namespace Qetesh.Data {
 		
 		public DoubleValidator GreaterThan(double? comp) {
 			
-			Tests.add(new ValidationTest<double?>() { 
+			var test = new ValidationTest<double?>() { 
 				
 				TestName = "GreaterThan",
-				Comparator = comp.to_string(),
-				Func = () => {
-					
-					this.Passed = (this.OutValue > comp);
-					return this.Passed;
-				}
-			});
+				Comparator = comp.to_string()
+			};
+			
+			test.Func = () => {
+				
+				test.Passed = (this.OutValue > comp);
+				return test.Passed;
+			};
+			
+			Tests.add(test);
 			
 			return this;
 		}
 		
 		public DoubleValidator LessThan (double? comp) {
 			
-			Tests.add(new ValidationTest<double?>() { 
+			var test = new ValidationTest<double?>() { 
 				
 				TestName = "LessThan",
-				Comparator = comp.to_string(),
-				Func = () => {
+				Comparator = comp.to_string()
+			};
+			
+			test.Func = () => {
 					
-					this.Passed = (this.OutValue < comp);
-					return this.Passed;
-				}
-			});
+				test.Passed = (this.OutValue < comp);
+				return test.Passed;
+			};
+			
+			Tests.add(test);
 			
 			return this;
 		}
 		
 		public DoubleValidator Equals (double? comp) {
 			
-			Tests.add(new ValidationTest<double?>() { 
+			var test = new ValidationTest<double?>() { 
 				
 				TestName = "Equals",
-				Comparator = comp.to_string(),
-				Func = () => {
+				Comparator = comp.to_string()
+			};
+			
+			test.Func = () => {
 					
-					this.Passed = (this.OutValue > comp);
-					return this.Passed;
-				}
-			});
+				test.Passed = (this.OutValue > comp);
+				return test.Passed;
+			};
 			
 			return this;
 		}

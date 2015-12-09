@@ -123,6 +123,7 @@ $_qetesh.Ready(function(q) {
 				
 				// Commit data to data layer and then either create or update
 				invoiceItem.Commit();
+
 				invoiceItem.Save(function(invoiceItem) {  
 					
 					// Add a new one as the "add" row, now that this row is 

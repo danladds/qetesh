@@ -99,7 +99,7 @@ namespace Qetesh.Data {
 		}
 		
 		public override QDataQuery.QueryResult Do() throws QDBError {
-
+			
 			return (QDataQuery.QueryResult) new MysqlQueryResult (Fetch());
 		}
 		
@@ -265,9 +265,12 @@ namespace Qetesh.Data {
 		
 		public class MysqlQueryResult : QDataQuery.QueryResult {
 			
-			internal MysqlQueryResult (Gee.LinkedList<Gee.TreeMap<string, string>> items) {
+			internal MysqlQueryResult (Gee.LinkedList<Gee.TreeMap<string, string>>? items) {
 				
-				Items = items;
+				if(items != null)
+					Items = items;
+				else
+					Items = new Gee.LinkedList<Gee.TreeMap<string, string>>();
 			}
 			
 			public override Gee.LinkedList<Gee.TreeMap<string, string>> Items { get; protected set; }

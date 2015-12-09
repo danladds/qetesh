@@ -217,7 +217,9 @@ var Qetesh = {
 						var _this = this;
 							
 						xh.onreadystatechange = function () {
-								
+							
+							
+							// Successful requests	
 							if (xh.readyState == 4 && xh.status == 200) {
 								
 								var realType;
@@ -240,42 +242,9 @@ var Qetesh = {
 											}
 											
 											_this.__tainted = [];
+											_this.ServerValidationSuccess();
 									
 											if (callback != null) callback(this);
-										}
-										else if (inObj != null) {
-											
-											var errs = inObj.Errors;
-											
-											for(var fName in errs) {
-												
-												if(errs.hasOwnProperty(fName)) {
-													
-													var serverTests = errs[fName];
-													var sTestLen = serverTests.length;
-			////////////////////////////////////////
-			for(var _i = 0; _i < sTestLen; _i++) {
-				
-				var sTestDef = serverTests[_i];
-				
-				var clientTestLen = _this.Validators[fName].Tests.length;
-				
-				for(var _y = 0; _y < clientTestLen; _y++) {
-					
-					if(_this.Validators[fName].Tests[_y].TestName == sTestDef.TestName) {
-						
-						var clientTest = _this.Validators[fName].Tests[_y];
-				
-						clientTest.Passed = sTestDef.Passed;
-						clientTest.Comparator = sTestDef.Comparator;
-					}
-				}
-			}
-			/////////////////////////////////////////
-												}
-											}
-											
-											throw Qetesh.Errors.ValidationError.Obj("Validation failed");
 										}
 									}
 								}
@@ -411,6 +380,59 @@ var Qetesh = {
 								}
 								
 							}
+							
+							else if (xh.readyState == 4 && xh.status == 400) {
+								
+								var inData = JSON.parse(xh.responseText);
+								
+								inObj = null;
+								
+								if (inData instanceof Array) inObj = inData[0];
+								else inObj = inData;
+								
+								if(inObj == null || inObj.Errors == null) {
+									
+									return;
+								}
+								
+								var errs = inObj.Errors;
+								
+								for(var fName in errs) {
+									
+									if(errs.hasOwnProperty(fName)) {
+										
+										var serverTests = errs[fName];
+										var sTestLen = serverTests.length;
+
+										for(var _i = 0; _i < sTestLen; _i++) {
+											
+											var sTestDef = serverTests[_i];
+											
+											var clientTestLen = _this.Validators[fName].Tests.length;
+											
+											for(var _y = 0; _y < clientTestLen; _y++) {
+												
+												if(_this.Validators[fName].Tests[_y].TestName == sTestDef.TestName) {
+													
+													var clientTest = _this.Validators[fName].Tests[_y];
+											
+													clientTest.Passed = (sTestDef.Passed == "true" ? true : false);
+													clientTest.Comparator = sTestDef.Comparator;
+												}
+											}
+										}
+
+									}
+								}
+								
+								_this.ShowValidationErrors();
+								
+							}
+							
+							else if (xh.readyState == 4 && xh.status == 500) {
+								
+								// Crap
+							}
 						};
 						
 						var actualPath = "";
@@ -446,8 +468,6 @@ var Qetesh = {
 								xh.setRequestHeader("Content-Type", "text/json");
 								xh.send(outData);
 							}
-							
-							if (callback != null) callback(this)
 						}
 						else {
 						
@@ -697,6 +717,30 @@ var Qetesh = {
 			}
 		},
 		
+		HandleValidationError(callback) {
+			
+		},
+		
+		UpdateValidation (deep = false) {
+			
+			var fieldCount = this.__fields.length;
+			
+			for(var m = 0; m < fieldCount; ++m) {
+				
+				this.__fields[m].UpdateValidation();
+			}
+			
+			if (deep) {
+				
+				var childLen = this.__children.length;
+				
+				for(var i = 0; i < childLen; ++i) {
+					
+					this.__children[i].UpdateValidation(true);
+				}
+			}
+		},
+		
 		_getQDataState : function() {
 			
 			if (this.__dataBound) {
@@ -828,6 +872,7 @@ var Qetesh = {
 					fld.QElem = this;
 					fld.ObjElem = elem;
 					fld.Type = "input";
+					fld.Validator = data.Validators[propName];
 					
 					tag.__qBindField = fld;
 					
@@ -1149,6 +1194,7 @@ var Qetesh = {
 		Tainted : false,
 		__outTransform : function (propertyValue) { return propertyValue; },
 		__inTransform : function (propertyValue) { return propertyValue; },
+		Validator : null,
 		
 		Obj : function() {
 		
@@ -1198,6 +1244,19 @@ var Qetesh = {
 			}
 			
 			this.UpdateTaint();
+		},
+		
+		UpdateValidation : function() {
+			
+			if(this.Validator.Passed == true) {
+				this.Valid = true;
+				this.FieldElement.className = this.FieldElement.className.replace(/q-invalid/g, "");
+			}
+			else {
+				this.Valid = false;
+				this.FieldElement.className += " q-invalid";
+				
+			}
 		},
 		
 		UpdateTaint : function() {
@@ -1269,6 +1328,46 @@ var Qetesh = {
 			this.__tainted = [];
 			this.__properties = [];
 			this.Validators = { };
+		},
+		
+		ShowValidationErrors() {
+			
+			if(this.boundQElement == null) return;
+			
+			this.UpdateValidators();
+			this.boundQElement.UpdateValidation();
+			
+		},
+		
+		ServerValidationSuccess() {
+			
+			if(this.boundQElement == null) return;
+			
+			this.PushValidatorSuccess();
+			this.boundQElement.UpdateValidation();
+			
+		},
+		
+		UpdateValidators : function () {
+			
+			for(var fName in this.Validators) {
+				
+				if(this.Validators.hasOwnProperty(fName)) {
+					
+					this.Validators[fName].Update();
+				}
+			}
+		},
+		
+		PushValidatorSuccess : function () {
+			
+			for(var fName in this.Validators) {
+				
+				if(this.Validators.hasOwnProperty(fName)) {
+					
+					this.Validators[fName].SetSuccess();
+				}
+			}
 		},
 		
 		SetTaint : function (fieldName) {
@@ -1368,8 +1467,46 @@ var Qetesh = {
 			
 		},
 		
+		Update : function () {
+			
+			this.Passed = true;
+			
+			var tLen = this.Tests.length;
+			
+			for(var i = 0; i < tLen; i++) {
+				
+				if(this.Tests[i].Passed != true) {
+					
+					this.Passed = false;
+				}
+			}
+		},
+		
+		SetSuccess : function () {
+			
+			this.Passed = true;
+			
+			var tLen = this.Tests.length;
+			
+			for(var i = 0; i < tLen; i++) {
+				
+				this.Tests[i].Passed == true;
+			}
+		},
+		
 		Validate : function () {
 			
+			this.Passed = true;
+			
+			var tLen = this.Tests.length;
+			
+			for(var i = 0; i < tLen; ++i) {
+				
+				if(this.Tests[i].Func() != true) {
+					
+					this.Passed = false;
+				}
+			}
 		},
 		
 		Convert : function () {

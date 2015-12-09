@@ -107,7 +107,8 @@ namespace Qetesh.Data {
 			}
 			else {
 				
-				throw new QDBError.QUERY("Query allegedly executed, but for some reason, we didn't get anything back. This shouldn't happen.");
+				// Normal for DELETE
+				return null;
 			}
 			
 			return result;

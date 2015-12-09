@@ -147,7 +147,7 @@ namespace Qetesh {
 					
 					var testNode = new DataNode("Test");
 					testNode.Children.add(new DataNode("TestName", t.TestName));
-					testNode.Children.add(new DataNode("Passed", t.Passed.to_string()));
+					testNode.Children.add(new DataNode("Passed", (t.Passed ? "true" : "false")));
 					testNode.Children.add(new DataNode("Comparator", t.Comparator));
 					
 					fldNode.Children.add(testNode);
@@ -189,11 +189,13 @@ namespace Qetesh {
 				} catch (ValidationError e) {
 					
 					 req.HResponse.DataTree.Children.add(GetValidationResults(proto, e.message));
+					 
+					 req.HResponse.ResponseCode = 400;
 				} catch (QDBError e) {
 					
 					req.ServerContext.Err.WriteMessage("Error getting DataObject for LOAD: \n%s".printf(e.message), ErrorManager.QErrorClass.MODULE_ERROR);
 					
-					return;
+					req.HResponse.ResponseCode = 500;
 				}	
 			});
 			
@@ -209,6 +211,8 @@ namespace Qetesh {
 				} catch (QDBError e) {
 					
 					req.ServerContext.Err.WriteMessage("Error getting DataObject for LOADALL: \n%s".printf(e.message), ErrorManager.QErrorClass.MODULE_ERROR);
+					
+					req.HResponse.ResponseCode = 500;
 					
 					return;
 				}
@@ -238,12 +242,18 @@ namespace Qetesh {
 					
 					ret.Children.add(new DataNode ("Success") { Val = "N" });
 					
-					ret.Children.add(GetValidationResults(proto, e.message));
+					ret.Children.add(GetValidationResults(obj, e.message));
 					
-					req.HResponse.DataTree.Children.add(ret);
+					req.HResponse.ResponseCode = 400;
 				} catch (QDBError e) {
 						
 					req.ServerContext.Err.WriteMessage("Query error during CREATE: %s :\n ".printf(e.message), ErrorManager.QErrorClass.MODULE_ERROR);
+					
+					req.HResponse.ResponseCode = 500;
+				}
+				finally {
+					
+					req.HResponse.DataTree.Children.add(ret);
 				}
 			});
 			
@@ -260,6 +270,8 @@ namespace Qetesh {
 					
 					req.ServerContext.Err.WriteMessage("Error getting DataObject for READ: \n%s".printf(e.message), ErrorManager.QErrorClass.MODULE_ERROR);
 					
+					req.HResponse.ResponseCode = 500;
+					
 					return;
 				}
 				
@@ -272,10 +284,14 @@ namespace Qetesh {
 				} catch (ValidationError e) {
 					
 					req.HResponse.DataTree.Children.add(GetValidationResults(proto, e.message));
+					
+					req.HResponse.ResponseCode = 400;
 				}
 				 catch (QDBError e) {
 						
 					req.ServerContext.Err.WriteMessage("Query error during READ: %s :\n ".printf(e.message), ErrorManager.QErrorClass.MODULE_ERROR);
+					
+					req.HResponse.ResponseCode = 500;
 				}
 			});
 			
@@ -292,20 +308,39 @@ namespace Qetesh {
 					
 					req.ServerContext.Err.WriteMessage("Error getting DataObject for DELETE: \n%s".printf(e.message), ErrorManager.QErrorClass.MODULE_ERROR);
 					
+					req.HResponse.ResponseCode = 500;
+					
 					return;
 				}
+				
+				var ret = new DataNode();
 				
 				try {
 					obj.setPKeyStr(req.PathArgs[0]);
 				
 					obj.Delete();
 					
+					ret.Children.add(new DataNode ("Success") { Val = "Y" });
+					
+					ret.Children.add(new DataNode (obj.PKeyName) { Val = obj.getPKeyStr() });
+					
 				} catch (ValidationError e) {
 					
-					req.HResponse.DataTree.Children.add(GetValidationResults(proto, e.message));
+					ret.Children.add(new DataNode ("Success") { Val = "N" });
+					
+					ret.Children.add(GetValidationResults(obj, e.message));
+					
+					req.HResponse.ResponseCode = 400;
+					
 				} catch (QDBError e) {
 						
 					req.ServerContext.Err.WriteMessage("Query error during DELETE: %s :\n ".printf(e.message), ErrorManager.QErrorClass.MODULE_ERROR);
+					
+					req.HResponse.ResponseCode = 500;
+				}
+				finally {
+					
+					req.HResponse.DataTree.Children.add(ret);
 				}
 			});
 			
@@ -322,10 +357,14 @@ namespace Qetesh {
 					
 					req.ServerContext.Err.WriteMessage("Error getting DataObject for UPDATE: \n%s".printf(e.message), ErrorManager.QErrorClass.MODULE_ERROR);
 					
+					req.HResponse.ResponseCode = 500;
+					
 					return;
 				}
 				
 				req.ServerContext.Err.WriteMessage("PUT (UPDATE) method called", ErrorManager.QErrorClass.MODULE_DEBUG);
+				
+				var ret = new DataNode();
 				
 				try {
 					
@@ -343,14 +382,27 @@ namespace Qetesh {
 						}	
 					);
 				
-					req.HResponse.DataTree.Children.add(new DataNode ("Update") { Val = "OK" });
+					ret.Children.add(new DataNode ("Success") { Val = "Y" });
+					
+					ret.Children.add(new DataNode (obj.PKeyName) { Val = obj.getPKeyStr() });
 
 				} catch (ValidationError e) {
 					
-					req.HResponse.DataTree.Children.add(GetValidationResults(proto, e.message));
+					ret.Children.add(new DataNode ("Success") { Val = "N" });
+					
+					ret.Children.add(GetValidationResults(obj, e.message));
+					
+					req.HResponse.ResponseCode = 400;
+					
 				} catch (QDBError e) {
 						
 					req.ServerContext.Err.WriteMessage("Query error during UPDATE: %s :\n ".printf(e.message), ErrorManager.QErrorClass.MODULE_ERROR);
+					
+					req.HResponse.ResponseCode = 500;
+				}
+				finally {
+					
+					req.HResponse.DataTree.Children.add(ret);
 				}
 				
 			});
@@ -392,6 +444,8 @@ namespace Qetesh {
 						
 						req.ServerContext.Err.WriteMessage("Error getting DataObject for lazy load of %s :\n %s".printf(propertyName, e.message), ErrorManager.QErrorClass.MODULE_ERROR);
 						
+						req.HResponse.ResponseCode = 500;
+						
 						return;
 					}
 					
@@ -411,9 +465,14 @@ namespace Qetesh {
 					} catch (ValidationError e) {
 					
 						req.HResponse.DataTree.Children.add(GetValidationResults(proto, e.message));
+						
+						req.HResponse.ResponseCode = 400;
+						
 					} catch (QDBError e) {
 						
 						req.ServerContext.Err.WriteMessage("Query error during lazyload: %s :\n ".printf(e.message), ErrorManager.QErrorClass.MODULE_ERROR);
+						
+						req.HResponse.ResponseCode = 500;
 					}
 				});
 					

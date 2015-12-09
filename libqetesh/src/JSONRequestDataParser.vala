@@ -33,7 +33,7 @@ namespace Qetesh {
 		private int index {
 			get {
 				
-				if (_index > data.length -1) {
+				if (_index > data.length -1 || data[_index] == '\0') {
 					
 					return -1;
 				}
@@ -44,7 +44,7 @@ namespace Qetesh {
 					data[_index] == '\r' ||
 					data[_index] == '\t'
 				){
-					index++;
+					_index++;
 					return index;
 				}
 				
@@ -95,7 +95,7 @@ namespace Qetesh {
 				ParseNumber(node, name);
 			} 
 			else {
-				throw new ParserError.INVALID_CHAR("Unxpected char (%c) at index %d; expected value".printf(data[index], index));
+				throw new ParserError.INVALID_CHAR("Unxpected char at index %d ; expected value (%c)".printf(_index, data[_index]));
 			}
 			
 		}
@@ -109,16 +109,12 @@ namespace Qetesh {
 			do {
 				++index;
 				
-			} while (data[index + 1].isdigit());
-			
-			index++;
+			} while (data[index].isdigit());
 			
 			var strNode = new DataNode(name);
 			
 			strNode.Val = data.slice(start, index);				
 			node.Children.add(strNode);
-			
-			index++;
 		}
 		
 		private void ParseString (DataNode node, string name) throws ParserError {
@@ -151,11 +147,11 @@ namespace Qetesh {
 					ParseValue(node, name);
 				}
 				else {
-					throw new ParserError.INVALID_CHAR("Unxpected char (%c) at index %d; expected :".printf(data[index], index));
+					throw new ParserError.INVALID_CHAR("Unxpected char at index %d ; expected : (%c)".printf(_index, data[_index]));
 				}
 			}
 			else {
-				throw new ParserError.INVALID_CHAR("Unxpected char (%c) at index %d; expected \"".printf(data[index], index));
+				throw new ParserError.INVALID_CHAR("Unxpected char at index %d ; expected \" (%c)".printf(_index, data[_index]));
 			}
 			
 		}
@@ -177,7 +173,7 @@ namespace Qetesh {
 			ParseValue(node, "(Array Item)");
 			
 			if(data[index] == ',')
-				ParseArrayItem(node);
+				ParseArrayItem(node, top);
 			else if(data[index] == ']') {
 				
 				index++;
@@ -186,10 +182,10 @@ namespace Qetesh {
 				return;
 			}
 			else if(data[index] == '\0') {
-				throw new ParserError.INVALID_CHAR("Unxpected end of input at index %d; expected , or ]".printf(index));
+				throw new ParserError.INVALID_CHAR("Unxpected end of input at index %d; expected , or ]".printf(_index));
 			}
 			else {
-				throw new ParserError.INVALID_CHAR("Unxpected char (%c) at index %d; expected , or ]".printf(data[index], index));
+				throw new ParserError.INVALID_CHAR("Unxpected char at index %d; expected , or ] (%c)".printf(_index, data[_index]));
 			}
 		}
 		
@@ -219,7 +215,7 @@ namespace Qetesh {
 				index++;
 			}
 			else {
-				throw new ParserError.INVALID_CHAR("Unxpected char (%c) at index %d; expected , or }".printf(data[index], index));
+				throw new ParserError.INVALID_CHAR("Unxpected char  at index %d; expected , or } (%c)".printf(_index, data[_index]));
 			}
 		}
 	}

@@ -103,7 +103,7 @@ namespace Qetesh {
 		/// Max header lines to process
 		public int MaxHeaderLines { get; private set; default = 40; }
 		
-		public int MaxContentLength { get; private set; default = 999999999; }
+		public int MaxContentLength { get; private set; default = 65000; }
 		
 		public int MaxRequestTime { get; private set; default = 60; }
 		
