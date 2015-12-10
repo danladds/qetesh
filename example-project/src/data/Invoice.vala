@@ -37,6 +37,14 @@ namespace QExample.Data {
 		public string Surname { get; set; }
 		public QDateTime Issued { get; set; }
 		public int Total { get; set; }
+		public string Comments { get; set; }
+		
+		public enum InvoiceType {
+			RECEIVABLE,
+			PAYABLE
+		}
+		
+		public InvoiceType IType { get; set; }
 		
 		// Lazy property with database lazy-load call
 		public Gee.LinkedList<InvoiceItem> Items { 

@@ -35,6 +35,7 @@ namespace QExample.Data {
 		public Invoice FromInvoice { get; set; }
 		public string Description { get; set; }
 		public int Price { get; set; }
+		public bool Tax { get; set; }
 		
 		public InvoiceItem(QDatabaseConn db) {
 			

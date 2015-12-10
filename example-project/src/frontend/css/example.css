@@ -121,22 +121,22 @@ table {
 html { width: 100%; height: 100%; font-family: 'Open Sans', sans-serif; }
 
 body {
-  width: 100%; height: 98%; padding-bottom: -1px;
+  width: 100%; height: 99%; padding-bottom: -1px;
   background-color: black;
 }
 
-div#superwrapper { width: 98%; height: 99%; margin-top: 1%; margin-left: 1%;
+div#superwrapper { width: 98%; height: 100%; margin-top: 0%; margin-left: 1%;
 }
 div#wrapper { width: 100%; height: 100%; background-color: white;
 	margin-top: 0px; margin-bottom: 0px; overflow-y: scroll; overflow-x: hide;
-	border: 3px black solid;
+	border: 3px black solid; max-width: 70em; margin-left: auto; margin-right: auto;
 }
 
 div#view-pane { margin: 2em; }
 
 /* --- Core Styles --- */
-h2 { font-size: 1.6em; margin-top: 0px; width: 99%; border-bottom: 0.2em solid #006130; padding-bottom: 0.2em; background-color: #A8F3A8; padding: 0.5em;
-background-image: repeating-linear-gradient(45deg, transparent, transparent 3px, rgba(255,255,255,.45) 6px, rgba(255,255,255,.15) 6px);
+h2 { font-size: 1em; margin-top: 0px;padding-bottom: 2px;
+margin-bottom: 0.1em; font-weight: bold;
 
 }
 
@@ -263,7 +263,8 @@ h1 {
 	width: 20em;
 }
 
-#record input[type=text] {
+#record input[type=text],
+#record textarea  {
 
 	display: block;
 	padding: 0.5em;
@@ -272,20 +273,27 @@ h1 {
 	margin-bottom: 1em;
 	cursor: pointer;
 	font-size: 1em;
+	
+}
+
+#record input[type=text] {
 	width: 20em;
 }
 
-#record input[type=text]:hover {
+#record input[type=text]:hover,
+#record textarea:hover {
 
 	background-color: #D2FEFD;
 }
 
-#record input[type=text]:focus {
+#record input[type=text]:focus,
+#record textarea:focus {
 
 	background-color: white;
 }
 
-#record input[type=text].taint {
+#record input[type=text].taint,
+#record textarea.taint {
 
 	background-color: white;
 }
@@ -354,6 +362,27 @@ input[type=text].q-taint {
 
 input[type=text].q-invalid {
 	background-color: #FF99A5 !important;
+}
+
+select {
+	background-color: white;
+	padding: 0.2em;
+	border: 1px solid black;
+	font-size: 1.1em;
+	margin: 0.5em 0px;
+}
+
+textarea {
+	width: 100%;
+	font-size: 1em;
+}
+
+input[type=checkbox] {
+	
+}
+
+input[type=checkbox]:checked {
+	
 }
 
 .notes {
