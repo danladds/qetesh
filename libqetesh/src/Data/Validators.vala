@@ -463,6 +463,16 @@ namespace Qetesh.Data {
 				OutValue = false;
 				t.Passed = true;
 			}
+			else if(val == "0") {
+				
+				OutValue = false;
+				t.Passed = true;
+			}
+			else if(val == "1") {
+				
+				OutValue = true;
+				t.Passed = true;
+			}
 			else {
 				
 				t.Passed = false;
