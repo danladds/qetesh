@@ -39,6 +39,8 @@ namespace Qetesh {
 			}
 		}
 		
+		protected WebAppContext appContext;
+		
 		public new QWebNode? get (string subpath) {
 			
 			if (Children.has_key(subpath)) {
@@ -49,6 +51,7 @@ namespace Qetesh {
 				QWebNode newNode = new QWebNode();
 				newNode.Path = subpath;
 				newNode.Parent = this;
+				newNode.appContext = this.appContext;
 				Children[subpath] = newNode;
 				
 				newNode.OnBind();
@@ -61,9 +64,15 @@ namespace Qetesh {
 			
 			node.Path = subpath;
 			node.Parent = this;
+			node.appContext = this.appContext;
 			Children[subpath] = node;
 			
 			node.OnBind();
+		}
+		
+		internal void SetContext(WebAppContext ctx) {
+		
+			appContext = ctx;
 		}
 		
 		public Map<string, QWebNode> Children;
@@ -99,6 +108,11 @@ namespace Qetesh {
 			Children = new HashMap<string, QWebNode>();
 			Parent = null;
 			Path = path;
+		}
+		
+		protected void WriteMessage(string message, ErrorManager.QErrorClass errorClass = ErrorManager.QErrorClass.MODULE_DEBUG, string? modName = null) {
+			
+			appContext.Server.Err.WriteMessage(message, errorClass, modName);
 		}
 		
 		
@@ -161,6 +175,8 @@ namespace Qetesh {
 		
 		protected LazyExposer ExposeCrud (string typeName, Type typ, string dbName) throws ManifestError {
 			
+			WriteMessage("ExposeCRUD called for " + typeName, ErrorManager.QErrorClass.MODULE_DEBUG, "QExample");
+			
 			
 			var proto = (DataObject) Object.new(typ);
 			proto.__init();
@@ -178,6 +194,8 @@ namespace Qetesh {
 					var obj = (DataObject) Object.new(typ);
 					obj._init(req.Data.GetConnection(dbName));
 					var list = obj.LoadAll();
+					
+					WriteMessage("Got result, processing to output...");
 					
 					foreach (var item in list) {
 					

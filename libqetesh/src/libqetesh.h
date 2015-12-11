@@ -72,6 +72,17 @@ typedef struct _QeteshDataIntValidator QeteshDataIntValidator;
 typedef struct _QeteshDataIntValidatorClass QeteshDataIntValidatorClass;
 typedef struct _QeteshDataIntValidatorPrivate QeteshDataIntValidatorPrivate;
 
+#define QETESH_DATA_TYPE_ENUM_VALIDATOR (qetesh_data_enum_validator_get_type ())
+#define QETESH_DATA_ENUM_VALIDATOR(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), QETESH_DATA_TYPE_ENUM_VALIDATOR, QeteshDataEnumValidator))
+#define QETESH_DATA_ENUM_VALIDATOR_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), QETESH_DATA_TYPE_ENUM_VALIDATOR, QeteshDataEnumValidatorClass))
+#define QETESH_DATA_IS_ENUM_VALIDATOR(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), QETESH_DATA_TYPE_ENUM_VALIDATOR))
+#define QETESH_DATA_IS_ENUM_VALIDATOR_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), QETESH_DATA_TYPE_ENUM_VALIDATOR))
+#define QETESH_DATA_ENUM_VALIDATOR_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), QETESH_DATA_TYPE_ENUM_VALIDATOR, QeteshDataEnumValidatorClass))
+
+typedef struct _QeteshDataEnumValidator QeteshDataEnumValidator;
+typedef struct _QeteshDataEnumValidatorClass QeteshDataEnumValidatorClass;
+typedef struct _QeteshDataEnumValidatorPrivate QeteshDataEnumValidatorPrivate;
+
 #define QETESH_DATA_TYPE_STRING_VALIDATOR (qetesh_data_string_validator_get_type ())
 #define QETESH_DATA_STRING_VALIDATOR(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), QETESH_DATA_TYPE_STRING_VALIDATOR, QeteshDataStringValidator))
 #define QETESH_DATA_STRING_VALIDATOR_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), QETESH_DATA_TYPE_STRING_VALIDATOR, QeteshDataStringValidatorClass))
@@ -167,6 +178,16 @@ typedef struct _QeteshHTTPRequestClass QeteshHTTPRequestClass;
 typedef struct _QeteshQWebNode QeteshQWebNode;
 typedef struct _QeteshQWebNodeClass QeteshQWebNodeClass;
 typedef struct _QeteshQWebNodePrivate QeteshQWebNodePrivate;
+
+#define QETESH_TYPE_WEB_APP_CONTEXT (qetesh_web_app_context_get_type ())
+#define QETESH_WEB_APP_CONTEXT(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), QETESH_TYPE_WEB_APP_CONTEXT, QeteshWebAppContext))
+#define QETESH_WEB_APP_CONTEXT_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), QETESH_TYPE_WEB_APP_CONTEXT, QeteshWebAppContextClass))
+#define QETESH_IS_WEB_APP_CONTEXT(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), QETESH_TYPE_WEB_APP_CONTEXT))
+#define QETESH_IS_WEB_APP_CONTEXT_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), QETESH_TYPE_WEB_APP_CONTEXT))
+#define QETESH_WEB_APP_CONTEXT_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), QETESH_TYPE_WEB_APP_CONTEXT, QeteshWebAppContextClass))
+
+typedef struct _QeteshWebAppContext QeteshWebAppContext;
+typedef struct _QeteshWebAppContextClass QeteshWebAppContextClass;
 
 #define QETESH_QWEB_NODE_TYPE_MANIFEST_OBJECT (qetesh_qweb_node_manifest_object_get_type ())
 #define QETESH_QWEB_NODE_MANIFEST_OBJECT(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), QETESH_QWEB_NODE_TYPE_MANIFEST_OBJECT, QeteshQWebNodeManifestObject))
@@ -354,16 +375,6 @@ typedef struct _QeteshDataDataNodePrivate QeteshDataDataNodePrivate;
 typedef struct _QeteshHTTPResponse QeteshHTTPResponse;
 typedef struct _QeteshHTTPResponseClass QeteshHTTPResponseClass;
 typedef struct _QeteshHTTPResponsePrivate QeteshHTTPResponsePrivate;
-
-#define QETESH_TYPE_WEB_APP_CONTEXT (qetesh_web_app_context_get_type ())
-#define QETESH_WEB_APP_CONTEXT(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), QETESH_TYPE_WEB_APP_CONTEXT, QeteshWebAppContext))
-#define QETESH_WEB_APP_CONTEXT_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), QETESH_TYPE_WEB_APP_CONTEXT, QeteshWebAppContextClass))
-#define QETESH_IS_WEB_APP_CONTEXT(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), QETESH_TYPE_WEB_APP_CONTEXT))
-#define QETESH_IS_WEB_APP_CONTEXT_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), QETESH_TYPE_WEB_APP_CONTEXT))
-#define QETESH_WEB_APP_CONTEXT_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), QETESH_TYPE_WEB_APP_CONTEXT, QeteshWebAppContextClass))
-
-typedef struct _QeteshWebAppContext QeteshWebAppContext;
-typedef struct _QeteshWebAppContextClass QeteshWebAppContextClass;
 
 #define QETESH_TYPE_JSON_RESPONSE (qetesh_json_response_get_type ())
 #define QETESH_JSON_RESPONSE(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), QETESH_TYPE_JSON_RESPONSE, QeteshJSONResponse))
@@ -602,6 +613,15 @@ struct _QeteshDataIntValidatorClass {
 	QeteshDataValidatorClass parent_class;
 };
 
+struct _QeteshDataEnumValidator {
+	QeteshDataIntValidator parent_instance;
+	QeteshDataEnumValidatorPrivate * priv;
+};
+
+struct _QeteshDataEnumValidatorClass {
+	QeteshDataIntValidatorClass parent_class;
+};
+
 struct _QeteshDataStringValidator {
 	QeteshDataValidator parent_instance;
 	QeteshDataStringValidatorPrivate * priv;
@@ -663,6 +683,7 @@ typedef enum  {
 struct _QeteshQWebNode {
 	GObject parent_instance;
 	QeteshQWebNodePrivate * priv;
+	QeteshWebAppContext* appContext;
 	GeeMap* Children;
 	QeteshQWebNode* Parent;
 	QeteshQWebNodeManifestObject* Manifest;
@@ -1179,7 +1200,7 @@ const gchar* qetesh_data_validator_get_InValue (QeteshDataValidator* self);
 void qetesh_data_validator_set_InValue (QeteshDataValidator* self, const gchar* value);
 gconstpointer qetesh_data_validator_get_OutValue (QeteshDataValidator* self);
 void qetesh_data_validator_set_OutValue (QeteshDataValidator* self, gconstpointer value);
-gboolean qetesh_data_validation_test_Run (QeteshDataValidationTest* self, gconstpointer val);
+gboolean qetesh_data_validation_test_Run (QeteshDataValidationTest* self);
 QeteshDataValidationTest* qetesh_data_validation_test_new (GType t_type, GBoxedCopyFunc t_dup_func, GDestroyNotify t_destroy_func);
 QeteshDataValidationTest* qetesh_data_validation_test_construct (GType object_type, GType t_type, GBoxedCopyFunc t_dup_func, GDestroyNotify t_destroy_func);
 const gchar* qetesh_data_validation_test_get_TestName (QeteshDataValidationTest* self);
@@ -1194,6 +1215,12 @@ QeteshDataIntValidator* qetesh_data_int_validator_construct (GType object_type);
 QeteshDataIntValidator* qetesh_data_int_validator_GreaterThan (QeteshDataIntValidator* self, gint comp);
 QeteshDataIntValidator* qetesh_data_int_validator_LessThan (QeteshDataIntValidator* self, gint comp);
 QeteshDataIntValidator* qetesh_data_int_validator_Equals (QeteshDataIntValidator* self, gint comp);
+gboolean qetesh_data_int_validator_get_ValidInt (QeteshDataIntValidator* self);
+GType qetesh_data_enum_validator_get_type (void) G_GNUC_CONST;
+QeteshDataEnumValidator* qetesh_data_enum_validator_new (GType enumType);
+QeteshDataEnumValidator* qetesh_data_enum_validator_construct (GType object_type, GType enumType);
+GeeHashMap* qetesh_data_enum_validator_get_AllowableValues (QeteshDataEnumValidator* self);
+gboolean qetesh_data_enum_validator_get_ValidEnum (QeteshDataEnumValidator* self);
 GType qetesh_data_string_validator_get_type (void) G_GNUC_CONST;
 QeteshDataStringValidator* qetesh_data_string_validator_new (void);
 QeteshDataStringValidator* qetesh_data_string_validator_construct (GType object_type);
@@ -1253,6 +1280,7 @@ const gchar* qetesh_data_data_object_get_PKeyName (QeteshDataDataObject* self);
 void qetesh_data_data_object_set_PKeyName (QeteshDataDataObject* self, const gchar* value);
 GType qetesh_qweb_node_get_type (void) G_GNUC_CONST;
 GQuark qetesh_app_error_quark (void);
+GType qetesh_web_app_context_get_type (void) G_GNUC_CONST;
 gpointer qetesh_qweb_node_manifest_object_ref (gpointer instance);
 void qetesh_qweb_node_manifest_object_unref (gpointer instance);
 GParamSpec* qetesh_qweb_node_param_spec_manifest_object (const gchar* name, const gchar* nick, const gchar* blurb, GType object_type, GParamFlags flags);
@@ -1370,7 +1398,6 @@ GType qetesh_http_response_get_type (void) G_GNUC_CONST;
 #define QETESH_HTTP_RESPONSE_DEFAULT_RM "OK"
 #define QETESH_HTTP_RESPONSE_DEFAULT_CODE 200
 #define QETESH_HTTP_RESPONSE_DEFAULT_CT "text/html"
-GType qetesh_web_app_context_get_type (void) G_GNUC_CONST;
 QeteshHTTPResponse* qetesh_http_response_construct (GType object_type, QeteshWebAppContext* ctx);
 void qetesh_http_response_Respond (QeteshHTTPResponse* self, GDataOutputStream* httpOut);
 void qetesh_http_response_ComposeContent (QeteshHTTPResponse* self);
@@ -1445,6 +1472,7 @@ void qetesh_qweb_node_set (QeteshQWebNode* self, const gchar* subpath, QeteshQWe
 void qetesh_qweb_node_OnBind (QeteshQWebNode* self, GError** error);
 QeteshQWebNode* qetesh_qweb_node_new (const gchar* path);
 QeteshQWebNode* qetesh_qweb_node_construct (GType object_type, const gchar* path);
+void qetesh_qweb_node_WriteMessage (QeteshQWebNode* self, const gchar* message, QeteshErrorManagerQErrorClass errorClass, const gchar* modName);
 gchar* qetesh_qweb_node_GetFullPath (QeteshQWebNode* self);
 GQuark qetesh_manifest_error_quark (void);
 void qetesh_qweb_node_ExposeProperties (QeteshQWebNode* self, const gchar* typeName, GType typ, GError** error);

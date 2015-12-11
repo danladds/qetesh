@@ -35,11 +35,18 @@ namespace QExample {
 		public override void OnBind() throws AppError {
 			
 			try {
+				
+				WriteMessage("Exposing Invoice class", ErrorManager.QErrorClass.MODULE_DEBUG, "QExample");
+				
 				// Expose CRUD (Create, Read, Update, Delete) functions of
 				// the Invoice type, defined in ../data/Invoice.vala
 				// Params: type name to use on client side (i.e. class name without
 				// namespace); class type; database nick as as set in .conf file
-				ExposeCrud("Invoice", typeof(Invoice), "example").Lazy(
+				var exposer = ExposeCrud("Invoice", typeof(Invoice), "example");
+				
+				WriteMessage("Exposing Invoice.Items", ErrorManager.QErrorClass.MODULE_DEBUG, "QExample");
+				
+				exposer.Lazy(
 				
 					// Lazy() exposes the "Items" property of Invoice,
 					// which is an array of InvoiceItem objects
@@ -54,6 +61,10 @@ namespace QExample {
 			} catch (ManifestError e) {
 				
 				throw new AppError.ABORT("Unable to expose objects: \n %s".printf(e.message));
+			}
+			finally {
+				
+				WriteMessage("InvoiceNode done its init", ErrorManager.QErrorClass.MODULE_DEBUG, "QExample");
 			}
 		}
 	} 

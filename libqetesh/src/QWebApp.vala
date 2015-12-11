@@ -39,6 +39,7 @@ namespace Qetesh {
 			
 			appContext = ctx;
 			RootNode = new QWebNode("");
+			RootNode.SetContext(appContext);
 		}
 		
 		/**

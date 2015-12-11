@@ -41,7 +41,7 @@ namespace QExample.Data {
 		
 		public enum InvoiceType {
 			RECEIVABLE,
-			PAYABLE
+			PAYABLE;
 		}
 		
 		public InvoiceType IType { get; set; }

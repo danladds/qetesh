@@ -4,10 +4,16 @@ namespace QExample {
 	namespace Data {
 		[CCode (cheader_filename = "QExample.h")]
 		public class Invoice : Qetesh.Data.DataObject<global::QExample.Data.Invoice> {
+			public enum InvoiceType {
+				RECEIVABLE,
+				PAYABLE
+			}
 			public Invoice (Qetesh.Data.QDatabaseConn db);
 			public override void Init ();
 			public override string NameTransform (string fieldName);
+			public string Comments { get; set; }
 			public string Forename { get; set; }
+			public global::QExample.Data.Invoice.InvoiceType IType { get; set; }
 			public int Id { get; set; }
 			public Qetesh.QDateTime Issued { get; set; }
 			public Gee.LinkedList<global::QExample.Data.InvoiceItem> Items { get; private set; }
@@ -23,6 +29,7 @@ namespace QExample {
 			public global::QExample.Data.Invoice FromInvoice { get; set; }
 			public int Id { get; set; }
 			public int Price { get; set; }
+			public bool Tax { get; set; }
 		}
 	}
 	[CCode (cheader_filename = "QExample.h")]

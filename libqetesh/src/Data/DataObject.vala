@@ -326,6 +326,16 @@ namespace Qetesh.Data {
 				strVal = val.get_int().to_string();
 			}
 			
+			else if(propertyType.is_a(GLib.Type.ENUM)) {
+				
+				var val = Value(propertyType);
+				this.get_property(pName, ref val);
+				
+				var intVal = (int) val.get_enum();
+				
+				strVal = intVal.to_string();
+			}
+			
 			else if (propertyType == typeof(bool)) {
 				var val = Value(typeof(bool));
 				this.get_property(pName, ref val);
@@ -416,12 +426,36 @@ namespace Qetesh.Data {
 				
 			}
 			
+			else if(propertyType.is_a(GLib.Type.ENUM)) {
+				
+				if(Validators[pName] == null) {
+					
+					Validators[pName] = new EnumValidator(propertyType);
+				}
+				
+				if(mock) return;
+				
+				var vdr = (EnumValidator) Validators[pName];
+				
+				vdr.InValue = inVal;
+				vdr.Convert();
+				
+				if(vdr.ValidEnum) {
+					
+					var val = Value(propertyType);
+					val.set_enum(vdr.OutValue);
+					this.set_property(pName, val);
+				}
+			}
+			
 			else if (propertyType == typeof(bool)) {
 				
 				if(Validators[pName] == null) {
 					
 					Validators[pName] = new BoolValidator();
 				}
+				
+				if(mock) return;
 				
 				var vdr = (BoolValidator) Validators[pName];
 				
@@ -617,6 +651,20 @@ namespace Qetesh.Data {
 					
 					vdNode.Children.add(testNode);
 					
+					if(validator.get_type().is_a(typeof(EnumValidator))) {
+						
+						var ev = (EnumValidator) validator;
+						
+						var avNode = new DataNode("AllowableValues");
+						
+						foreach(int iv in ev.AllowableValues.keys) {
+							
+							avNode.Children.add(new DataNode(iv.to_string(), ev.AllowableValues[iv]));
+						}
+						
+						vdNode.Children.add(avNode);
+					}
+					
 					validatorList.Children.add(vdNode);
 				}
 				else if(
@@ -635,7 +683,7 @@ namespace Qetesh.Data {
 			return validatorList;
 		}
 		
-		public DataNode ToNode(DataNodeTransform transform) {
+		public DataNode ToNode(DataNodeTransform? transform) {
 			
 			var classObj = (ObjectClass) this.get_type().class_ref();
 			
@@ -674,7 +722,7 @@ namespace Qetesh.Data {
 				dn.Children.add(childNode);
 			}
 			
-			transform(dn);
+			if (transform != null) transform(dn);
 			
 			return dn;
 		}

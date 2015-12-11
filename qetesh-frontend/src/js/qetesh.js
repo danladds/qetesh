@@ -165,7 +165,12 @@ var Qetesh = {
 										vdr[testName](tc);
 									}
 								}
-							
+							}
+								
+							// Enum allowable values
+							if(vdr.Name == "EnumValidator") {
+								
+								vdr.AllowableValues = vDef.AllowableValues;
 							}
 							
 							proxy.Validators[fName] = vdr;
@@ -679,6 +684,7 @@ var Qetesh = {
 		__children : [],
 		__fields : [],
 		__clickCallback : null,
+		__displayType : null,
 		
 		addElement : function(elem) {
 			
@@ -735,11 +741,7 @@ var Qetesh = {
 			}
 		},
 		
-		HandleValidationError(callback) {
-			
-		},
-		
-		UpdateValidation (deep = false) {
+		UpdateValidation : function (deep = false) {
 			
 			var fieldCount = this.__fields.length;
 			
@@ -756,6 +758,42 @@ var Qetesh = {
 					
 					this.__children[i].UpdateValidation(true);
 				}
+			}
+		},
+		
+		Filter : function (objFilter) {
+			
+			// Repeater - just send to children
+			if(this.__repeaterTemplate != null || this.__elements.length == 0) {
+				
+				var childCount = this.__children.length;
+			
+				for (var w = 0; w < childCount; ++w) {
+					
+					this.__children[w].Filter(objFilter);
+				}
+				
+				return;
+			}
+			else {
+				
+				var match = true;
+				
+				var fieldCount = this.__fields.length;
+				
+				for(var fName in objFilter) {
+					
+					if(objFilter.hasOwnProperty(fName)) {
+						
+						if(this.__bindData[fName] != objFilter[fName]) {
+							
+							match = false;
+						}
+					}
+				}
+				
+				if(!match) this.Disappear();
+				else this.Appear();
 			}
 		},
 		
@@ -848,6 +886,27 @@ var Qetesh = {
 			}
 		},
 		
+		Disappear : function() {
+			
+			var len = this.__elements.length;
+			
+			for(var x = 0; x < len; ++x) {
+				
+				this.displayType = this.__elements[x].style.display;
+				this.__elements[x].style.display = "none";
+			}
+		},
+		
+		Appear : function() {
+			
+			var len = this.__elements.length;
+			
+			for(var x = 0; x < len; ++x) {
+				
+				this.__elements[x].style.display = this.displayType;
+			}
+		},
+		
 		Hide : function() {
 			
 			var len = this.__elements.length;
@@ -881,6 +940,9 @@ var Qetesh = {
 				var attr = "value=\"{" + propName + "}\"";
 				tag = elem.querySelector("input[" + attr + "]");
 				
+				
+				/// TODO: Make TextField a separate class
+				
 				if(tag != null) {
 					
 					var fld = Qetesh.BindField.Obj();
@@ -909,7 +971,31 @@ var Qetesh = {
 					
 					tag = this._findTag("{" + propName + "}", elem);
 					
-					if(tag != null) {
+					// Select fields
+					if(tag != null && tag.tagName.toLowerCase() == "select") {
+						
+						var fld = Qetesh.SelectField.Obj();
+						
+						fld.FieldElement = tag;
+						fld.FieldName = propName;
+						fld.QElem = this;
+						fld.ObjElem = elem;
+						fld.Type = "select";
+						fld.Validator = data.Validators[propName];
+						
+						fld.InitOptions();
+						
+						tag.onchange = (function (f, t) {
+							
+							return function(ev) {
+								
+								f.UpdateState();
+							};
+						})(fld, tag);
+						
+						this.__fields.push(fld);
+					}
+					else if(tag != null) {
 					
 						var fld = Qetesh.BindField.Obj();
 						
@@ -954,7 +1040,7 @@ var Qetesh = {
 			return null;
 		},
 		
-		Transform : function(propName, inTransform, outTransform, deep = true) {
+		Transform : function(propName, outTransform, inTransform, deep = true) {
 			
 			var fieldCount = this.__fields.length;
 			
@@ -962,7 +1048,7 @@ var Qetesh = {
 				
 				if(this.__fields[m].FieldName == propName) {
 					
-					this.__fields[m].Transform(inTransform, outTransform);
+					this.__fields[m].Transform(outTransform, inTransform);
 					this.Reset(false);
 				}
 			}
@@ -973,9 +1059,28 @@ var Qetesh = {
 				
 				for(var i = 0; i < childLen; ++i) {
 					
-					this.__children[i].Transform(propName, inTransform, outTransform);
+					this.__children[i].Transform(propName, outTransform, inTransform, true);
 				}
 			}
+		},
+		
+		PrettyNames : function(propName, valueNames, deep = true) {
+			
+			var inFunc = function(val) {
+				
+				// Don't need to do anything, as form inputs
+				// that use enums (e.g. dropdown lists) have their
+				// value set to the int value
+				return val;
+			};
+			
+			var outFunc = function(val) {
+				
+				return valueNames[val];
+			}
+			
+			
+			this.Transform(propName, outFunc, inFunc, deep);
 		},
 		
 		CopyDown : function(fieldname) {
@@ -1199,6 +1304,17 @@ var Qetesh = {
 			this.__children.push(subobj);
 			
 			return subobj;
+		},
+		
+		Field : function(name) {
+			
+			var fieldCount = this.__fields.length;
+			
+			for(var m = 0; m < fieldCount; ++m) {
+				
+				if (this.__fields[m].FieldName == name)
+					return this.__fields[m];
+			}
 		}
 	},
 	
@@ -1213,6 +1329,7 @@ var Qetesh = {
 		__outTransform : function (propertyValue) { return propertyValue; },
 		__inTransform : function (propertyValue) { return propertyValue; },
 		Validator : null,
+		__updateFunc : null,
 		
 		Obj : function() {
 		
@@ -1230,6 +1347,11 @@ var Qetesh = {
 			
 			if (outTransform != null) this.__outTransform = outTransform;
 			if (inTransform != null) this.__inTransform = inTransform;
+		},
+		
+		WhenUpdated : function(callback) {
+			
+			this.__updateFunc = callback;
 		},
 		
 		Show : function() {
@@ -1301,6 +1423,11 @@ var Qetesh = {
 				this.Validator.InValue = this.QElem.__bindDataState[this.FieldName];
 				this.Validator.Convert();
 				this.UpdateValidation();
+				
+				var rObj = { };
+				rObj[this.FieldName] = this.Validator.OutValue;
+				
+				this.__updateFunc(rObj);
 			}
 			else {
 				
@@ -1329,6 +1456,78 @@ var Qetesh = {
 		Revert : function() {
 			
 			this.FieldName.nodeValue = this.Template;
+		}
+	},
+	
+	SelectField : {
+		
+		Obj : function () {
+				
+			var _this = Qetesh.BindField.Obj();
+			
+			_this.Update = this.Update;
+			_this.UpdateState = this.UpdateState;
+			_this.InitOptions = this.InitOptions;
+			_this.AddUnfilter = this.AddUnfilter;
+			
+			return _this;
+		},
+		
+		Update : function() {
+			
+			var val = this.QElem.__bindDataState[this.FieldName];
+
+			this.FieldElement.value = val;
+
+			this.UpdateTaint();
+		},
+		
+		UpdateState : function() {
+			
+			if(this.FieldElement.value != "__ALL__") {
+				
+				this.QElem.__bindDataState[this.FieldName] = this.FieldElement.value;
+				this.UpdateTaint();
+				
+				this.Validator.InValue = this.QElem.__bindDataState[this.FieldName];
+				this.Validator.Convert();
+				this.UpdateValidation();
+				
+				var rObj = { };
+				rObj[this.FieldName] = this.Validator.OutValue;
+				
+				this.__updateFunc(rObj);
+			}
+			else {
+				this.__updateFunc( { } );
+			}
+		},
+		
+		AddUnfilter : function(name) {
+			
+			var opt = document.createElement("option");
+			opt.text = name;
+			opt.value = "__ALL__";
+			
+			this.FieldElement.add(opt, 0);
+			this.FieldElement.selectedIndex = 0;
+		},
+		
+		InitOptions : function() {
+			
+			for(var intVal in this.Validator.AllowableValues) {
+				
+				if(this.Validator.AllowableValues.hasOwnProperty(intVal)) {
+					
+					var strVal = this.Validator.AllowableValues[intVal];
+					
+					var opt = document.createElement("option");
+					opt.text = strVal;
+					opt.value = intVal;
+					
+					this.FieldElement.add(opt);
+				}
+			}
 		}
 	},
 	
@@ -1662,6 +1861,51 @@ var Qetesh = {
 				else {
 					test.Passed = true;
 					this.OutValue = valRet;
+				}
+			}
+		},
+		
+		EnumValidator : {
+			
+			AllowableValues : {},
+			ValidEnum : false,
+			
+			Obj : function () {
+				
+				var _this = Qetesh.Validators.IntValidator.Obj();
+				
+				_this._Convert = _this.Convert;
+				_this.Convert = this.Convert;
+				_this.AllowableValues = { };
+				
+				_this.Name = "EnumValidator";
+				
+				return _this;
+			},
+			
+			Convert : function() {
+				
+				this._Convert();
+				
+				// Int in
+				if(this.AllowableValues[this.OutValue] != null) {
+					
+					this.ValidEnum = true;
+				}
+				
+				else {
+					
+					for(var intVal in this.AllowableValues) {
+						
+						if(this.AllowableValues.hasOwnProperty(intVal)) {
+							
+							if (this.AllowableValues[intVal] == this.InValue) {
+								
+								this.OutValue = intVal;
+								this.ValidEnum = true;
+							}
+						}
+					}
 				}
 			}
 		},

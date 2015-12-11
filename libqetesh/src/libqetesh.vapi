@@ -58,7 +58,7 @@ namespace Qetesh {
 			public void MapObject (Gee.TreeMap<string?,string?> datum);
 			public Gee.LinkedList<Qetesh.Data.DataObject> MapObjectList (Gee.LinkedList<Gee.TreeMap<string?,string?>> rows);
 			protected virtual string NameTransform (string fieldName);
-			public Qetesh.Data.DataNode ToNode (Qetesh.Data.DataObject.DataNodeTransform transform);
+			public Qetesh.Data.DataNode ToNode (Qetesh.Data.DataObject.DataNodeTransform? transform);
 			public void Update () throws Qetesh.Data.ValidationError, Qetesh.Data.QDBError;
 			public void ValidateAll () throws Qetesh.Data.ValidationError;
 			public string PKeyName { get; protected set; }
@@ -73,12 +73,20 @@ namespace Qetesh {
 			public Qetesh.Data.DoubleValidator LessThan (double? comp);
 		}
 		[CCode (cheader_filename = "libqetesh.h")]
+		public class EnumValidator : Qetesh.Data.IntValidator {
+			public EnumValidator (GLib.Type enumType);
+			public override void Convert ();
+			public Gee.HashMap<int,string> AllowableValues { get; private set; }
+			public bool ValidEnum { get; private set; }
+		}
+		[CCode (cheader_filename = "libqetesh.h")]
 		public class IntValidator : Qetesh.Data.Validator<int?> {
 			public IntValidator ();
 			public override void Convert ();
 			public Qetesh.Data.IntValidator Equals (int comp);
 			public Qetesh.Data.IntValidator GreaterThan (int comp);
 			public Qetesh.Data.IntValidator LessThan (int comp);
+			protected bool ValidInt { get; private set; }
 		}
 		[CCode (cheader_filename = "libqetesh.h")]
 		public abstract class QDataQuery : GLib.Object {
@@ -182,7 +190,7 @@ namespace Qetesh {
 			public delegate bool TestFunc ();
 			public Qetesh.Data.ValidationTest.TestFunc Func;
 			public ValidationTest ();
-			public bool Run (T val);
+			public bool Run ();
 			public string Comparator { get; set; }
 			public bool Passed { get; set; }
 			public string TestName { get; set; }
@@ -412,6 +420,7 @@ namespace Qetesh {
 		public Gee.Map<string,Qetesh.QWebNode> Children;
 		public Qetesh.QWebNode.ManifestObject Manifest;
 		public Qetesh.QWebNode? Parent;
+		protected Qetesh.WebAppContext appContext;
 		protected QWebNode (string path = "");
 		protected Qetesh.QWebNode.LazyExposer ExposeCrud (string typeName, GLib.Type typ, string dbName) throws Qetesh.ManifestError;
 		protected void ExposeProperties (string typeName, GLib.Type typ) throws Qetesh.ManifestError;
@@ -419,6 +428,7 @@ namespace Qetesh {
 		public static Qetesh.Data.DataNode GetValidationResults (Qetesh.Data.DataObject proto, string message = "");
 		public virtual void OnBind () throws Qetesh.AppError;
 		public void WalkManifests (Qetesh.QWebNode.ManifestWalker walker);
+		protected void WriteMessage (string message, Qetesh.ErrorManager.QErrorClass errorClass = ErrorManager.QErrorClass.MODULE_DEBUG, string? modName = null);
 		public new Qetesh.QWebNode? @get (string subpath);
 		public new void @set (string subpath, Qetesh.QWebNode node);
 		public string Path { get; set; }

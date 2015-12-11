@@ -2,21 +2,22 @@
 	<h1>Invoices</h1>
 	
 	<h2>Filter</h2>
-	<select id="invoice-type-filter">
-		<option value="*">All</option>
-		<option value="0">Receivable</option>
-		<option valie="1">Payable</option>
-	</select>
+	<div id="invoice-proto">
+		<select class="{IType}">
+		</select>
+	</div>
 	
 	<table id="invoice-list">
 		<tr>
 			<th>#</th>
+			<th>Type</th>
 			<th>Date</th>
 			<th>Customer Name</th>
 			<th>Total</th>
 		</tr>
 		<tr class="invoice-list-item">
 			<td class="{Id}"></td>
+			<td class="{IType}"></td>
 			<td class="{Issued}"></td>
 			<td><span class="{Forename}"></span> <span class="{Surname}"></span></td>
 			<td class="{Total}"></td>

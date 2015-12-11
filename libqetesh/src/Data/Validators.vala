@@ -48,7 +48,7 @@ namespace Qetesh.Data {
 			
 			foreach(ValidationTest<TField> t in Tests) {
 				
-				if(!t.Run(InValue)) {
+				if(!t.Run()) {
 					
 					Passed = false;
 				}
@@ -91,7 +91,7 @@ namespace Qetesh.Data {
 		
 		public string Comparator { get; set; default=""; }
 		
-		public bool Run(T val) {
+		public bool Run() {
 			
 			if (Func != null) {
 				Passed = Func();
@@ -107,6 +107,8 @@ namespace Qetesh.Data {
 	}
 	
 	public class IntValidator : Validator<int?> {
+		
+		protected bool ValidInt { get; private set; default = false; }
 		
 		public IntValidator() {
 			
@@ -191,7 +193,56 @@ namespace Qetesh.Data {
 			}
 			
 			Tests.add(t);
+			ValidInt = t.Passed;
+		}
+	}
+	
+	public class EnumValidator : IntValidator {
+		
+		public Gee.HashMap<int, string> AllowableValues { get; private set; }
+		public bool ValidEnum { get; private set; default = false; }
+		
+		public EnumValidator(Type enumType) {
 			
+			base();
+			
+			Name = "EnumValidator";
+			
+			AllowableValues = new Gee.HashMap<int, string>();
+			
+			var enumProps = (EnumClass) enumType.class_ref();
+			
+			foreach(unowned EnumValue val in enumProps.values) {
+				
+				var intVal = val.value;
+				var strVal = val.value_nick;
+				
+				AllowableValues.set(intVal, strVal);
+			}
+		}
+		
+		public override void Convert() {
+			
+			base.Convert();
+			
+			// Int in
+			if(ValidInt && OutValue != null && OutValue > -1 &&  AllowableValues.has_key(OutValue)) {
+				
+				ValidEnum = true;
+			}
+			
+			// Name in
+			else {
+				
+				foreach(int intVal in AllowableValues.keys) {
+					
+					if(AllowableValues[intVal] == InValue) {
+						
+						OutValue = intVal;
+						ValidEnum = true;
+					}
+				}
+			}
 		}
 	}
 	

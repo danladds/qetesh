@@ -22,6 +22,9 @@ $_qetesh.Ready(function(q) {
 		return val * 100;
 	};
 	
+	// "Pretty" list of enum value names
+	var prettyTypes = { 0 : "Receivable", 1: "Payable" };
+	
 	// Create a new ViewManager. Only takes ID and needs a unique one.
 	// ViewManager controls changes of HTML templates within any given "pane",
 	// e.g. a div into which Views are loaded
@@ -34,6 +37,9 @@ $_qetesh.Ready(function(q) {
 		// Create an Invoice, which was created from the manifest provided
 		// by the server. Extends DataObject on the client-side, too.
 		var invoice = q.Data.Invoice.Obj();
+		
+		// Bind this prototype Invoice to the area containing filter controls, etc.
+		var filterArea = view.Element('#invoice-proto').Bind(invoice);
 		
 		// Use functions exposed from the server side. On the client side,
 		// they take callbacks which are called when the data request returns
@@ -49,6 +55,20 @@ $_qetesh.Ready(function(q) {
 			// certain fields between UI and data
 			list.Transform("Issued", printDate);
 			
+			// Register pretty names for the enum. If you don't do this,
+			// the enum will just behave like a range-restricted integer
+			// Why not from the server? 1) Difficult in Vala and
+			// 2) Display names quite often different
+			list.PrettyNames("IType", prettyTypes);
+			
+			var typeFilter = filterArea.Field("IType");
+			
+			typeFilter.AddUnfilter("All");
+			
+			typeFilter.WhenUpdated(function(invoiceFilter) {
+				
+				list.Filter(invoiceFilter);
+			});
 			
 			// Set an onclick function. It's a repeater, so gets placed in context
 			// on each table row and called with the relevant Invoice item that's
