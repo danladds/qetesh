@@ -41,13 +41,25 @@ Qetesh.BindField = {
 	Obj : function() {
 	
 		var obj = Object.create(this);
-		obj.Init();
 			
 		return obj;
 	}, 
 	
 	Init : function () {
 		
+		if(this.Type != "label") {
+		
+			this.FieldElement.onchange = (function (f) {
+							
+				return function(ev) {
+					
+					f.__onUpdate();
+				};
+				
+			})(this);
+		}
+		
+		this.InitOptions();
 	},
 	
 	Transform : function (outTransform, inTransform) {
@@ -80,15 +92,8 @@ Qetesh.BindField = {
 	Update : function() {
 		
 		var val = this.__outTransform(this.QElem.__bindDataState[this.FieldName]);
-		
-		if (this.Type == "input") {
-			this.FieldElement.value = val;
 			
-		}
-		else {
-			
-			this.FieldElement.textContent = val;
-		}
+		this.FieldElement.textContent = val;
 		
 		this.UpdateTaint();
 	},
@@ -120,27 +125,15 @@ Qetesh.BindField = {
 		}
 	},
 	
+	__onUpdate : function() {
+		
+		this.UpdateState();
+	},
+	
 	UpdateState : function() {
 		
-		if (this.Type == "input") {
-			
-			this.QElem.__bindDataState[this.FieldName] = this.__inTransform(this.FieldElement.value);
-			this.UpdateTaint();
-			
-			this.Validator.InValue = this.QElem.__bindDataState[this.FieldName];
-			this.Validator.Convert();
-			this.UpdateValidation();
-			
-			if(this.__updateFunc != null) {
-				var rObj = { };
-				rObj[this.FieldName] = this.Validator.OutValue;
-				this.__updateFunc(rObj);
-			}
-		}
-		else {
-			
-			// What? It's not a form field! Why are we here?
-		}
+		// Doesn't apply to output-only fields
+		// Override in input fields
 	},
 	
 	Commit : function() {
@@ -168,10 +161,15 @@ Qetesh.BindField = {
 	Revert : function() {
 		
 		this.FieldName.nodeValue = this.Template;
+	},
+	
+	InitOptions : function() {
+		
+		// Override for things like selects to initialise their options
 	}
 };
 
-Qetesh.Textfield = {
+Qetesh.TextField = {
 	
 	Obj : function () {
 			
@@ -185,12 +183,26 @@ Qetesh.Textfield = {
 	
 	Update : function() {
 		
+		var val = this.__outTransform(this.QElem.__bindDataState[this.FieldName]);
 		
+		this.FieldElement.value = val;		
+		this.UpdateTaint();
 	},
 	
 	UpdateState : function() {
 			
+		this.QElem.__bindDataState[this.FieldName] = this.__inTransform(this.FieldElement.value);
+		this.UpdateTaint();
 		
+		this.Validator.InValue = this.QElem.__bindDataState[this.FieldName];
+		this.Validator.Convert();
+		this.UpdateValidation();
+		
+		if(this.__updateFunc != null) {
+			var rObj = { };
+			rObj[this.FieldName] = this.Validator.OutValue;
+			this.__updateFunc(rObj);
+		}
 	},
 };
 	
@@ -234,6 +246,8 @@ Qetesh.CheckboxField = {
 	
 Qetesh.SelectField = {
 	
+	__resetsToAll : false,
+	
 	Obj : function () {
 			
 		var _this = Qetesh.BindField.Obj();
@@ -242,8 +256,24 @@ Qetesh.SelectField = {
 		_this.UpdateState = this.UpdateState;
 		_this.InitOptions = this.InitOptions;
 		_this.AddUnfilter = this.AddUnfilter;
+		_this.__resetsToAll = this.__resetsToAll;
+		_this.Reset = this.Reset;
 		
 		return _this;
+	},
+	
+	Reset : function() {
+		
+		if(this.__resetsToAll) {
+			
+			this.FieldElement.selectedIndex = 0;
+			this.UpdateTaint();
+		}
+		else {
+		
+			this.QElem.__bindDataState[this.FieldName] = this.QElem.__bindData[this.FieldName];
+			this.Update();
+		}
 	},
 	
 	Update : function() {
@@ -285,6 +315,7 @@ Qetesh.SelectField = {
 		
 		this.FieldElement.add(opt, 0);
 		this.FieldElement.selectedIndex = 0;
+		this.__resetsToAll = true;
 	},
 	
 	InitOptions : function() {

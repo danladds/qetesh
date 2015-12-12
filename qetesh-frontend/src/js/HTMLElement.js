@@ -291,112 +291,60 @@ Qetesh.HTMLElement = {
 			var tag;
 			var propVal = data[propName];
 			
-			// Is it a field value
-			var attr = "value=\"{" + propName + "}\"";
-			tag = elem.querySelector("input[" + attr + "]");
-			
-			
-			/// TODO: Make TextField a separate class
+			// Get any tag that has the {Tag} as its class
+			tag = this._findTag("{" + propName + "}", elem);
 			
 			if(tag != null) {
 				
 				var fld;
 				
-				if(tag.type == "checkbox") {
-					
-					fld = Qetesh.CheckboxField.Obj();
-					
-				} else {
+				var tName = tag.tagName.toLowerCase();
 				
+				if(tName == "input") {
+					
+					var tType = tag.type.toLowerCase();
+					
+					if(tType == "checkbox") {
+						
+						fld = Qetesh.CheckboxField.Obj();
+						fld.Type = "checkbox";
+					}
+					else if(tType == "text") {
+						
+						fld = Qetesh.TextField.Obj();
+						fld.Type = "text";
+					}
+					
+					fld.Validator = data.Validators[propName];
+				}
+				else if(tName == "select") {
+					
+					fld = Qetesh.SelectField.Obj();
+					fld.Type = "select";
+					fld.Validator = data.Validators[propName];
+				}
+				else if(tName == "textarea") {
+					
+					fld = Qetesh.TextField.Obj();
+					fld.Type = "textarea";
+					fld.Validator = data.Validators[propName]
+				}
+				else {
+					
+					// Static text replacements
 					fld = Qetesh.BindField.Obj();
+					fld.Type = "label";
 				}
 				
 				fld.FieldElement = tag;
 				fld.FieldName = propName;
 				fld.QElem = this;
 				fld.ObjElem = elem;
-				fld.Type = "input";
-				fld.Validator = data.Validators[propName];
-				
 				tag.__qBindField = fld;
 				
-				tag.onchange = (function (f, t) {
-						
-					return function(ev) {
-						
-						f.UpdateState();
-					};
-				})(fld, tag);
+				fld.Init();
 				
 				this.__fields.push(fld);
-			}
-			
-			else {
-				
-				tag = this._findTag("{" + propName + "}", elem);
-				
-				// Select fields
-				if(tag != null && tag.tagName.toLowerCase() == "select") {
-					
-					var fld = Qetesh.SelectField.Obj();
-					
-					fld.FieldElement = tag;
-					fld.FieldName = propName;
-					fld.QElem = this;
-					fld.ObjElem = elem;
-					fld.Type = "select";
-					fld.Validator = data.Validators[propName];
-					
-					fld.InitOptions();
-					
-					tag.onchange = (function (f, t) {
-						
-						return function(ev) {
-							
-							f.UpdateState();
-						};
-					})(fld, tag);
-					
-					this.__fields.push(fld);
-				}
-				else if(tag != null && tag.tagName.toLowerCase() == "textarea") {
-					
-					var fld;
-				
-					fld = Qetesh.BindField.Obj();
-					
-					fld.FieldElement = tag;
-					fld.FieldName = propName;
-					fld.QElem = this;
-					fld.ObjElem = elem;
-					fld.Type = "input";
-					fld.Validator = data.Validators[propName];
-					
-					tag.__qBindField = fld;
-					
-					tag.onchange = (function (f, t) {
-							
-						return function(ev) {
-							
-							f.UpdateState();
-						};
-					})(fld, tag);
-					
-					this.__fields.push(fld);
-				
-				}
-				else if(tag != null) {
-				
-					var fld = Qetesh.BindField.Obj();
-					
-					fld.FieldElement = tag;
-					fld.FieldName = propName;
-					fld.QElem = this;
-					fld.ObjElem = elem;
-					fld.Type = "text";
-					
-					this.__fields.push(fld);
-				}
 			}
 		}
 		
