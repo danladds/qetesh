@@ -1,0 +1,9 @@
+Does the filter work?
+Does reload work?
+Does reset work?
+
+Does creating a new invoice work?
+Do invoices display the correct sub-items?
+Can subitems be created, updated and deleted?
+
+Is the client sending only appropriately tainted fields?

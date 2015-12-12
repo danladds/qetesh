@@ -1,5 +1,8 @@
 "use strict";
 
+// Framework init
+var $_qetesh = Qetesh.Obj();
+
 // If you have your own class, attach its init here,
 // or whatever function signals to it that Qetesh is ready.
 // Otherwise, if it's a small project and you're just
