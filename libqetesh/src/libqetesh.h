@@ -803,10 +803,10 @@ struct _QeteshDataQDataQueryQueryParam {
 struct _QeteshDataQDataQueryQueryParamClass {
 	GTypeClass parent_class;
 	void (*finalize) (QeteshDataQDataQueryQueryParam *self);
-	QeteshDataQDataQueryQueryParam* (*Equal) (QeteshDataQDataQueryQueryParam* self, const gchar* val);
-	QeteshDataQDataQueryQueryParam* (*Like) (QeteshDataQDataQueryQueryParam* self, const gchar* val);
-	QeteshDataQDataQueryQueryParam* (*GreaterThan) (QeteshDataQDataQueryQueryParam* self, const gchar* val);
-	QeteshDataQDataQueryQueryParam* (*LessThan) (QeteshDataQDataQueryQueryParam* self, const gchar* val);
+	QeteshDataQDataQueryQueryParam* (*Equal) (QeteshDataQDataQueryQueryParam* self, QeteshDataDataNode* val);
+	QeteshDataQDataQueryQueryParam* (*Like) (QeteshDataQDataQueryQueryParam* self, QeteshDataDataNode* val);
+	QeteshDataQDataQueryQueryParam* (*GreaterThan) (QeteshDataQDataQueryQueryParam* self, QeteshDataDataNode* val);
+	QeteshDataQDataQueryQueryParam* (*LessThan) (QeteshDataQDataQueryQueryParam* self, QeteshDataDataNode* val);
 };
 
 struct _QeteshDataQDataQueryQueryResult {
@@ -1271,6 +1271,7 @@ gpointer qetesh_data_value_get_data_node (const GValue* value);
 GType qetesh_data_data_node_get_type (void) G_GNUC_CONST;
 QeteshDataDataNode* qetesh_data_data_object_GetValidatorNode (QeteshDataDataObject* self, GError** error);
 QeteshDataDataNode* qetesh_data_data_object_ToNode (QeteshDataDataObject* self, QeteshDataDataObjectDataNodeTransform transform, void* transform_target);
+QeteshDataDataNode* qetesh_data_data_object_GetPropertyNode (QeteshDataDataObject* self, const gchar* pName, GType* propertyType);
 GType qetesh_http_request_get_type (void) G_GNUC_CONST;
 void qetesh_data_data_object_FromRequest (QeteshDataDataObject* self, QeteshHTTPRequest* req, GError** error);
 void qetesh_data_data_object_FromNode (QeteshDataDataObject* self, QeteshDataDataNode* data, GError** error);
@@ -1366,10 +1367,10 @@ QeteshDataQDataQueryQueryParam* qetesh_data_qdata_query_Where (QeteshDataQDataQu
 QeteshDataQDataQueryQueryParam* qetesh_data_qdata_query_Set (QeteshDataQDataQuery* self, const gchar* fieldName);
 GeeLinkedList* qetesh_data_qdata_query_Fetch (QeteshDataQDataQuery* self, GError** error);
 QeteshDataQDataQuery* qetesh_data_qdata_query_construct (GType object_type);
-QeteshDataQDataQueryQueryParam* qetesh_data_qdata_query_query_param_Equal (QeteshDataQDataQueryQueryParam* self, const gchar* val);
-QeteshDataQDataQueryQueryParam* qetesh_data_qdata_query_query_param_Like (QeteshDataQDataQueryQueryParam* self, const gchar* val);
-QeteshDataQDataQueryQueryParam* qetesh_data_qdata_query_query_param_GreaterThan (QeteshDataQDataQueryQueryParam* self, const gchar* val);
-QeteshDataQDataQueryQueryParam* qetesh_data_qdata_query_query_param_LessThan (QeteshDataQDataQueryQueryParam* self, const gchar* val);
+QeteshDataQDataQueryQueryParam* qetesh_data_qdata_query_query_param_Equal (QeteshDataQDataQueryQueryParam* self, QeteshDataDataNode* val);
+QeteshDataQDataQueryQueryParam* qetesh_data_qdata_query_query_param_Like (QeteshDataQDataQueryQueryParam* self, QeteshDataDataNode* val);
+QeteshDataQDataQueryQueryParam* qetesh_data_qdata_query_query_param_GreaterThan (QeteshDataQDataQueryQueryParam* self, QeteshDataDataNode* val);
+QeteshDataQDataQueryQueryParam* qetesh_data_qdata_query_query_param_LessThan (QeteshDataQDataQueryQueryParam* self, QeteshDataDataNode* val);
 QeteshDataQDataQueryQueryParam* qetesh_data_qdata_query_query_param_construct (GType object_type);
 QeteshDataQDataQueryQueryResult* qetesh_data_qdata_query_query_result_construct (GType object_type);
 GeeLinkedList* qetesh_data_qdata_query_query_result_get_Items (QeteshDataQDataQueryQueryResult* self);
@@ -1380,6 +1381,7 @@ QeteshDataQMysqlQuery* qetesh_data_qmysql_query_construct (GType object_type, Qe
 QeteshDataQMysqlConn* qetesh_data_qmysql_query_get_db (QeteshDataQMysqlQuery* self);
 void qetesh_data_qmysql_query_set_db (QeteshDataQMysqlQuery* self, QeteshDataQMysqlConn* value);
 GType qetesh_data_qmysql_query_mysql_query_param_get_type (void) G_GNUC_CONST;
+void qetesh_data_qmysql_query_mysql_query_param_GetValue (QeteshDataQMysqlQueryMysqlQueryParam* self, QeteshDataDataNode* node);
 gchar* qetesh_data_qmysql_query_mysql_query_param_EscapeString (const gchar* inVal);
 const gchar* qetesh_data_qmysql_query_mysql_query_param_get_FieldName (QeteshDataQMysqlQueryMysqlQueryParam* self);
 const gchar* qetesh_data_qmysql_query_mysql_query_param_get_FieldValue (QeteshDataQMysqlQueryMysqlQueryParam* self);
@@ -1397,6 +1399,8 @@ gdouble* qetesh_data_data_node_get_DoubleVal (QeteshDataDataNode* self);
 void qetesh_data_data_node_set_DoubleVal (QeteshDataDataNode* self, gdouble* value);
 gboolean* qetesh_data_data_node_get_BoolVal (QeteshDataDataNode* self);
 void qetesh_data_data_node_set_BoolVal (QeteshDataDataNode* self, gboolean* value);
+gboolean qetesh_data_data_node_get_IsEnum (QeteshDataDataNode* self);
+void qetesh_data_data_node_set_IsEnum (QeteshDataDataNode* self, gboolean value);
 GeeLinkedList* qetesh_data_data_node_get_Children (QeteshDataDataNode* self);
 gboolean qetesh_data_data_node_get_IsArray (QeteshDataDataNode* self);
 void qetesh_data_data_node_set_IsArray (QeteshDataDataNode* self, gboolean value);

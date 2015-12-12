@@ -233,7 +233,7 @@ $_qetesh.Ready(function(q) {
 		invoiceForm.Element('#invoice-commit').Click(function(invoice) {
 			
 			// Commit current view data to data layer
-			invoiceForm.Commit();
+			invoiceForm.Commit(false);
 		});
 		
 	});

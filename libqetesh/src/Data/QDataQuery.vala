@@ -46,10 +46,10 @@ namespace Qetesh.Data {
 		
 		public abstract class QueryParam {
 			
-			public abstract QueryParam Equal(string val);
-			public abstract QueryParam Like(string val);
-			public abstract QueryParam GreaterThan(string val);
-			public abstract QueryParam LessThan(string val);
+			public abstract QueryParam Equal(DataNode val);
+			public abstract QueryParam Like(DataNode val);
+			public abstract QueryParam GreaterThan(DataNode val);
+			public abstract QueryParam LessThan(DataNode val);
 		}
 		
 		public abstract class QueryResult {

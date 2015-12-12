@@ -126,13 +126,8 @@ namespace Qetesh.Data {
 					validationErrors.append(Validators[prop].DumpResult());
 				}
 				
-				if(Validators[prop].Name == "BoolValidator") {
+				query.Set(prop).Equal(GetPropertyNode(prop));
 				
-					query.Set(prop).Equal(getPropStr(prop) == "true" ? "1" : "0");
-				}
-				else {
-					query.Set(prop).Equal(getPropStr(prop));
-				}
 			}
 			
 			if(valid == false)
@@ -150,7 +145,7 @@ namespace Qetesh.Data {
 			
 			var query = db.NewQuery().DataSet(TableName).Delete();
 			
-			query.Where(PKeyName).Equal(getPKeyStr());
+			query.Where(PKeyName).Equal(GetPropertyNode(PKeyName));
 			query.Do();
 		}
 		
@@ -203,7 +198,7 @@ namespace Qetesh.Data {
 			
 			var query = db.NewQuery().DataSet(proto.TableName).Read();
 			
-			query.Where(colName).Equal(getPKeyStr());
+			query.Where(colName).Equal(GetPropertyNode(PKeyName));
 			
 			var res = query.Do();
 			
@@ -230,7 +225,7 @@ namespace Qetesh.Data {
 			
 			var query = db.NewQuery().DataSet(TableName).Read();
 			
-			query.Where(PKeyName).Equal(getPKeyStr());
+			query.Where(PKeyName).Equal(GetPropertyNode(PKeyName));
 			
 			var res = query.Do();
 			
@@ -252,7 +247,7 @@ namespace Qetesh.Data {
 			if (!Validators[PKeyName].Validate())
 				throw new ValidationError.INVALID_VALUE("Update(): Primary key not set");
 			
-			query.Where(PKeyName).Equal(getPKeyStr());
+			query.Where(PKeyName).Equal(GetPropertyNode(PKeyName));
 			
 			if(TaintedProperties.size == 0) {
 				
@@ -275,14 +270,8 @@ namespace Qetesh.Data {
 				if(prop == PKeyName) continue;
 				if(prop == "PKeyName") continue;
 				
-				if(Validators[prop].Name == "BoolValidator") {
 				
-					query.Set(prop).Equal(getPropStr(prop) == "true" ? "1" : "0");
-				}
-				else {
-					query.Set(prop).Equal(getPropStr(prop));
-				}
-				
+				query.Set(prop).Equal(GetPropertyNode(prop));
 			}
 			
 			if(valid == false)
@@ -742,59 +731,7 @@ namespace Qetesh.Data {
 					continue;
 				}
 				
-				var childNode = new DataNode(pName);
-				
-				if (propertyType == typeof(string)) {
-					var val = Value(typeof(string));
-					this.get_property(pName, ref val);
-					childNode.Val = val.get_string();
-				}
-				
-				else if (propertyType == typeof(int)) {
-					var val = Value(typeof(int));
-					this.get_property(pName, ref val);
-					childNode.IntVal = val.get_int();
-				}
-				
-				else if(propertyType.is_a(GLib.Type.ENUM)) {
-					
-					var val = Value(propertyType);
-					this.get_property(pName, ref val);
-					
-					var intVal = (int) val.get_enum();
-					
-					childNode.IntVal = intVal;
-				}
-				
-				else if (propertyType == typeof(bool)) {
-					var val = Value(typeof(bool));
-					this.get_property(pName, ref val);
-					childNode.BoolVal = val.get_boolean();
-				}
-				
-				else if (propertyType == typeof(float)) {
-					var val = Value(typeof(float));
-					this.get_property(pName, ref val);
-					childNode.DoubleVal = (double) val.get_float();
-				}
-				
-				else if (propertyType == typeof(double)) {
-					var val = Value(typeof(double));
-					this.get_property(pName, ref val);
-					childNode.DoubleVal = val.get_double();
-				}
-				
-				else if (propertyType.is_a(typeof(QDateTime))) {
-					childNode.Val = _getPropStr(pName, propertyType);
-				}
-				
-				else {
-					
-					// TODO: appropriate type. Just means that for now
-					// things like ints and bools will be output as strings
-					// in the JSON
-					childNode.Val = _getPropStr(pName, propertyType);
-				}
+				var childNode = GetPropertyNode(pName, propertyType);
 					
 				dn.Children.add(childNode);
 			}
@@ -802,6 +739,86 @@ namespace Qetesh.Data {
 			if (transform != null) transform(dn);
 			
 			return dn;
+		}
+		
+		public DataNode? GetPropertyNode(string pName, Type? propertyType = null) {
+			
+			if(propertyType == null) {
+				
+				var classObj = (ObjectClass) this.get_type().class_ref();
+			
+				var propSpec = classObj.find_property(pName);
+				
+				if (propSpec == null) return null;
+				
+				propertyType = propSpec.value_type;
+			}
+			
+			var childNode = new DataNode(pName);
+				
+			if (propertyType == typeof(string)) {
+				var val = Value(typeof(string));
+				this.get_property(pName, ref val);
+				childNode.Val = val.get_string();
+			}
+			
+			else if (propertyType == typeof(int)) {
+				var val = Value(typeof(int));
+				this.get_property(pName, ref val);
+				childNode.IntVal = val.get_int();
+			}
+			
+			else if(propertyType.is_a(GLib.Type.ENUM)) {
+				
+				_setPropStr(pName, "", propertyType, true);
+				
+				var validator = (EnumValidator) Validators[pName];
+				
+				var val = Value(propertyType);
+				this.get_property(pName, ref val);
+				
+				var intVal = (int) val.get_enum();
+				
+				childNode.IntVal = intVal;
+				childNode.Val = validator.AllowableValues[intVal];
+				childNode.IsEnum = true;
+			}
+			
+			else if (propertyType == typeof(bool)) {
+				var val = Value(typeof(bool));
+				this.get_property(pName, ref val);
+				childNode.BoolVal = val.get_boolean();
+			}
+			
+			else if (propertyType == typeof(float)) {
+				var val = Value(typeof(float));
+				this.get_property(pName, ref val);
+				childNode.DoubleVal = (double) val.get_float();
+			}
+			
+			else if (propertyType == typeof(double)) {
+				var val = Value(typeof(double));
+				this.get_property(pName, ref val);
+				childNode.DoubleVal = val.get_double();
+			}
+			
+			else if (propertyType.is_a(typeof(QDateTime))) {
+				childNode.Val = _getPropStr(pName, propertyType);
+			}
+			
+			else if (propertyType.is_a(typeof(DataObject))){
+				
+				var val = Value(typeof(DataObject));
+				this.get_property(pName, ref val);
+				var dObj = (DataObject) val.get_object();
+				
+				if(dObj != null) {
+					
+					return dObj.GetPropertyNode(dObj.PKeyName);
+				}
+			}
+			
+			return childNode;
 		}
 		
 		public void FromRequest(HTTPRequest req) throws ValidationError {

@@ -197,30 +197,55 @@ namespace Qetesh.Data {
 			
 			private QMysqlConn db;
 			
-			public override QDataQuery.QueryParam Equal(string val) {
+			protected void GetValue(DataNode node) {
 				
-				FieldValue = val;
+				if(node.IsEnum) {
+					
+					FieldValue = EscapeString(node.Val);
+				}
+				else if(node.BoolVal != null) {
+				
+					if(node.BoolVal) FieldValue = "0";
+					else FieldValue = "1";
+				}
+				else if(node.DoubleVal != null) {
+					
+					FieldValue = node.DoubleVal.to_string();
+				}
+				else if(node.IntVal != null) {
+					
+					FieldValue = node.IntVal.to_string();
+				}
+				else if (node.Val != null && node.Val != "") {
+					
+					FieldValue = EscapeString(node.Val);
+				}
+			}
+			
+			public override QDataQuery.QueryParam Equal(DataNode val) {
+				
+				GetValue(val);
 				FieldComparator = "=";
 				return this;
 			}
 			
-			public override QDataQuery.QueryParam Like(string val) {
+			public override QDataQuery.QueryParam Like(DataNode val) {
 				
-				FieldValue = val;
+				GetValue(val);
 				FieldComparator = "LIKE";
 				return this;
 			}
 			
-			public override QDataQuery.QueryParam GreaterThan(string val) {
+			public override QDataQuery.QueryParam GreaterThan(DataNode val) {
 				
-				FieldValue = val;
+				GetValue(val);
 				FieldComparator = ">";
 				return this;
 			}
 			
-			public override QDataQuery.QueryParam LessThan(string val) {
+			public override QDataQuery.QueryParam LessThan(DataNode val) {
 				
-				FieldValue = val;
+				GetValue(val);
 				FieldComparator = "<";
 				return this;
 			}
@@ -241,9 +266,7 @@ namespace Qetesh.Data {
 				
 				//db.db.real_escape_string(encVal, FieldValue.data, FieldValue.length);
 				
-				var encVal = EscapeString(FieldValue);
-				
-				return "`%s` %s \"%s\"".printf(FieldName, FieldComparator, encVal);
+				return "`%s` %s %s".printf(FieldName, FieldComparator, FieldValue);
 			}
 			
 			public static string EscapeString(string inVal) {
@@ -257,7 +280,7 @@ namespace Qetesh.Data {
 					else outVal.append_c(inVal[i]);
 				}
 				
-				var returnString = outVal.str;
+				var returnString = "\"" + outVal.str + "\"";
 				
 				return returnString;
 			}

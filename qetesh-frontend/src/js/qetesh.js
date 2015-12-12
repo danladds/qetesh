@@ -1694,6 +1694,7 @@ var Qetesh = {
 			if (this[this.PKeyName] == null || this[this.PKeyName] < 1) {
 				
 				// Twiddle thumbs
+				return
 			}
 			else {
 				
@@ -2179,7 +2180,7 @@ var Qetesh = {
 					test.Passed = true;
 					this.OutValue = true;
 				}
-				else if (this.InValue == "false" || this.Invalue === false){
+				else if (this.InValue == "false" || this.InValue === false){
 					
 					test.Passed = true;
 					this.OutValue = false;
@@ -2204,6 +2205,8 @@ var Qetesh = {
 			
 			Convert : function() {
 				
+				var test = new Qetesh.ValidationTest.Obj();
+				
 				try {
 					var dt = new Date(InValue);
 				} catch (e) {
@@ -2216,8 +2219,6 @@ var Qetesh = {
 					test.Passed = false;
 					return;
 				}
-				
-				var test = new Qetesh.ValidationTest.Obj();
 				
 				test.TestName = "Convert";
 				

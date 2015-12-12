@@ -34,6 +34,8 @@ namespace Qetesh.Data {
 		public double? DoubleVal { get; set; }
 		public bool? BoolVal { get; set; }
 		
+		public bool IsEnum { get; set; default = false; }
+		
 		public Gee.LinkedList<DataNode> Children { get; private set; }
 		public bool IsArray { get; set; }
 		

@@ -24,6 +24,7 @@ namespace Qetesh {
 			public double? DoubleVal { get; set; }
 			public int? IntVal { get; set; }
 			public bool IsArray { get; set; }
+			public bool IsEnum { get; set; }
 			public string Name { get; set; }
 			public string Val { get; set; }
 		}
@@ -53,6 +54,7 @@ namespace Qetesh {
 			public void Delete () throws Qetesh.Data.QDBError, Qetesh.Data.ValidationError;
 			public void FromNode (Qetesh.Data.DataNode data) throws Qetesh.Data.ValidationError;
 			public void FromRequest (Qetesh.HTTPRequest req) throws Qetesh.Data.ValidationError;
+			public Qetesh.Data.DataNode? GetPropertyNode (string pName, GLib.Type? propertyType = null);
 			public Qetesh.Data.DataNode GetValidatorNode () throws Qetesh.Data.ValidationError;
 			public abstract void Init ();
 			protected Gee.LinkedList<Qetesh.Data.DataObject> LazyLoadList (string propertyName, GLib.Type fType) throws Qetesh.Data.ValidationError, Qetesh.Data.QDBError;
@@ -95,10 +97,10 @@ namespace Qetesh {
 		public abstract class QDataQuery : GLib.Object {
 			public abstract class QueryParam {
 				public QueryParam ();
-				public abstract Qetesh.Data.QDataQuery.QueryParam Equal (string val);
-				public abstract Qetesh.Data.QDataQuery.QueryParam GreaterThan (string val);
-				public abstract Qetesh.Data.QDataQuery.QueryParam LessThan (string val);
-				public abstract Qetesh.Data.QDataQuery.QueryParam Like (string val);
+				public abstract Qetesh.Data.QDataQuery.QueryParam Equal (Qetesh.Data.DataNode val);
+				public abstract Qetesh.Data.QDataQuery.QueryParam GreaterThan (Qetesh.Data.DataNode val);
+				public abstract Qetesh.Data.QDataQuery.QueryParam LessThan (Qetesh.Data.DataNode val);
+				public abstract Qetesh.Data.QDataQuery.QueryParam Like (Qetesh.Data.DataNode val);
 			}
 			public abstract class QueryResult {
 				public QueryResult ();
@@ -152,11 +154,12 @@ namespace Qetesh {
 		[CCode (cheader_filename = "libqetesh.h")]
 		public class QMysqlQuery : Qetesh.Data.QDataQuery {
 			public class MysqlQueryParam : Qetesh.Data.QDataQuery.QueryParam {
-				public override Qetesh.Data.QDataQuery.QueryParam Equal (string val);
+				public override Qetesh.Data.QDataQuery.QueryParam Equal (Qetesh.Data.DataNode val);
 				public static string EscapeString (string inVal);
-				public override Qetesh.Data.QDataQuery.QueryParam GreaterThan (string val);
-				public override Qetesh.Data.QDataQuery.QueryParam LessThan (string val);
-				public override Qetesh.Data.QDataQuery.QueryParam Like (string val);
+				protected void GetValue (Qetesh.Data.DataNode node);
+				public override Qetesh.Data.QDataQuery.QueryParam GreaterThan (Qetesh.Data.DataNode val);
+				public override Qetesh.Data.QDataQuery.QueryParam LessThan (Qetesh.Data.DataNode val);
+				public override Qetesh.Data.QDataQuery.QueryParam Like (Qetesh.Data.DataNode val);
 				public string FieldComparator { get; private set; }
 				public string FieldName { get; private set; }
 				public string FieldValue { get; private set; }
