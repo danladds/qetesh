@@ -126,7 +126,13 @@ namespace Qetesh.Data {
 					validationErrors.append(Validators[prop].DumpResult());
 				}
 				
-				query.Set(prop).Equal(getPropStr(prop));
+				if(Validators[prop].Name == "BoolValidator") {
+				
+					query.Set(prop).Equal(getPropStr(prop) == "true" ? "1" : "0");
+				}
+				else {
+					query.Set(prop).Equal(getPropStr(prop));
+				}
 			}
 			
 			if(valid == false)
@@ -268,7 +274,15 @@ namespace Qetesh.Data {
 				
 				if(prop == PKeyName) continue;
 				if(prop == "PKeyName") continue;
-				query.Set(prop).Equal(getPropStr(prop));
+				
+				if(Validators[prop].Name == "BoolValidator") {
+				
+					query.Set(prop).Equal(getPropStr(prop) == "true" ? "1" : "0");
+				}
+				else {
+					query.Set(prop).Equal(getPropStr(prop));
+				}
+				
 			}
 			
 			if(valid == false)
@@ -299,7 +313,7 @@ namespace Qetesh.Data {
 			return _getPropStr(propName, propSpec.value_type);
 		}
 		
-		private void setPropStr(string propName, string val) {
+		private void setPropStr(string propName, string val, bool mock = false) {
 			
 			var classObj = (ObjectClass) this.get_type().class_ref();
 			
@@ -307,7 +321,7 @@ namespace Qetesh.Data {
 			
 			if (propSpec == null) return;
 			
-			_setPropStr(propName, val, propSpec.value_type);
+			_setPropStr(propName, val, propSpec.value_type, mock);
 		}
 		
 		private string _getPropStr(string pName, Type propertyType) {
@@ -524,20 +538,31 @@ namespace Qetesh.Data {
 				this.set_property(pName, val);
 			}
 			
-			else {
+			else if (propertyType.is_a(typeof(DataObject))) {
+				
+				var dObj = (DataObject) Object.new(propertyType);
+				dObj.__init();
+				
+				if(Validators[pName] == null) {
+					
+					// Establish validator
+					dObj.setPropStr(dObj.PKeyName, "", true);
+					
+					Validators[pName] = dObj.Validators[dObj.PKeyName];
+				}
 				
 				if(mock) return;
 				
-				if (propertyType.is_a(typeof(DataObject))) {
-					
-					var dObj = (DataObject) Object.new(propertyType);
-					dObj.__init();
-					dObj.setPropStr(dObj.PKeyName, inVal);
-					
-					var val = Value(typeof(DataObject));
-					val.set_object((Object) dObj);
-					this.set_property(pName, val);
-				}
+				var vdr = Validators[pName];
+			
+				vdr.InValue = inVal;
+				vdr.Convert();
+				
+				dObj.setPropStr(dObj.PKeyName, vdr.InValue);
+				
+				var val = Value(typeof(DataObject));
+				val.set_object((Object) dObj);
+				this.set_property(pName, val);
 			}
 		}
 		
@@ -673,7 +698,8 @@ namespace Qetesh.Data {
 					propertyType == typeof(bool) ||
 					propertyType == typeof(float) ||
 					propertyType == typeof(double) ||
-					propertyType == typeof(QDateTime)
+					propertyType == typeof(QDateTime) ||
+					propertyType.is_a(typeof(DataObject))
 				){
 					
 					throw new ValidationError.UNVALIDATED_FIELD("Unvalidated field" + pName);
@@ -683,7 +709,7 @@ namespace Qetesh.Data {
 			return validatorList;
 		}
 		
-		public DataNode ToNode(DataNodeTransform? transform) {
+		public DataNode ToNode(DataNodeTransform? transform = null) {
 			
 			var classObj = (ObjectClass) this.get_type().class_ref();
 			
@@ -717,7 +743,58 @@ namespace Qetesh.Data {
 				}
 				
 				var childNode = new DataNode(pName);
-				childNode.Val = _getPropStr(pName, propertyType);
+				
+				if (propertyType == typeof(string)) {
+					var val = Value(typeof(string));
+					this.get_property(pName, ref val);
+					childNode.Val = val.get_string();
+				}
+				
+				else if (propertyType == typeof(int)) {
+					var val = Value(typeof(int));
+					this.get_property(pName, ref val);
+					childNode.IntVal = val.get_int();
+				}
+				
+				else if(propertyType.is_a(GLib.Type.ENUM)) {
+					
+					var val = Value(propertyType);
+					this.get_property(pName, ref val);
+					
+					var intVal = (int) val.get_enum();
+					
+					childNode.IntVal = intVal;
+				}
+				
+				else if (propertyType == typeof(bool)) {
+					var val = Value(typeof(bool));
+					this.get_property(pName, ref val);
+					childNode.BoolVal = val.get_boolean();
+				}
+				
+				else if (propertyType == typeof(float)) {
+					var val = Value(typeof(float));
+					this.get_property(pName, ref val);
+					childNode.DoubleVal = (double) val.get_float();
+				}
+				
+				else if (propertyType == typeof(double)) {
+					var val = Value(typeof(double));
+					this.get_property(pName, ref val);
+					childNode.DoubleVal = val.get_double();
+				}
+				
+				else if (propertyType.is_a(typeof(QDateTime))) {
+					childNode.Val = _getPropStr(pName, propertyType);
+				}
+				
+				else {
+					
+					// TODO: appropriate type. Just means that for now
+					// things like ints and bools will be output as strings
+					// in the JSON
+					childNode.Val = _getPropStr(pName, propertyType);
+				}
 					
 				dn.Children.add(childNode);
 			}

@@ -128,7 +128,7 @@ namespace Qetesh {
 			proto.__init();
 			proto.Init();
 			
-			var defaults = proto.ToNode((n) => { });
+			var defaults = proto.ToNode();
 			
 			try {
 				Manifest.ValidatorNode = proto.GetValidatorNode();
@@ -140,7 +140,7 @@ namespace Qetesh {
 			
 			foreach(var node in defaults.Children) {
 				
-				Manifest.Prop(node.Name, node.Val);
+				Manifest.Prop(node);
 			}
 		}
 		
@@ -523,11 +523,9 @@ namespace Qetesh {
 				foreach(var mm in Manifest.Methods)
 					objBase.Children.add(mm.GetDescriptor());
 					
-				foreach(var prop in Manifest.Props.keys) {
+				foreach(DataNode prop in Manifest.Props) {
 					
-					objBase.Children.add(
-						new DataNode (prop) { Val = Manifest.Props[prop] }
-					);
+					objBase.Children.add(prop);
 				}
 			}
 			
@@ -562,7 +560,7 @@ namespace Qetesh {
 			public string PKeyName { get; private set; }
 			
 			public Gee.LinkedList<ManifestMethod> Methods { get; private set; }
-			public Gee.HashMap<string, string> Props { get; private set; }
+			public Gee.LinkedList<DataNode> Props { get; private set; }
 			
 			public DataNode ValidatorNode { get; set; }
 			
@@ -571,12 +569,12 @@ namespace Qetesh {
 				TypeName = typeName;
 				PKeyName = pKey;
 				Methods = new Gee.LinkedList<ManifestMethod>();
-				Props = new Gee.HashMap<string, string>();
+				Props = new Gee.LinkedList<DataNode>();
 			}
 			
-			public void Prop(string name, string def) {
+			public void Prop(DataNode node) {
 				
-				Props.set(name, def);
+				Props.add(node);
 			}
 			
 			public ManifestMethod Method(string mName, string mType, QWebNode node) {

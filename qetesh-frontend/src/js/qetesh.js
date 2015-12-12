@@ -945,7 +945,16 @@ var Qetesh = {
 				
 				if(tag != null) {
 					
-					var fld = Qetesh.BindField.Obj();
+					var fld;
+					
+					if(tag.type == "checkbox") {
+						
+						fld = Qetesh.CheckboxField.Obj();
+						
+					} else {
+					
+						fld = Qetesh.BindField.Obj();
+					}
 					
 					fld.FieldElement = tag;
 					fld.FieldName = propName;
@@ -1424,10 +1433,11 @@ var Qetesh = {
 				this.Validator.Convert();
 				this.UpdateValidation();
 				
-				var rObj = { };
-				rObj[this.FieldName] = this.Validator.OutValue;
-				
-				this.__updateFunc(rObj);
+				if(this.__updateFunc != null) {
+					var rObj = { };
+					rObj[this.FieldName] = this.Validator.OutValue;
+					this.__updateFunc(rObj);
+				}
 			}
 			else {
 				
@@ -1436,13 +1446,17 @@ var Qetesh = {
 		},
 		
 		Commit : function() {
-			
-			if(this.Taint == true) {
 				
-				if(this.Validator.Passed) {
-					this.QElem.__bindData[this.FieldName] = this.Validator.OutValue;
-					this.Taint = false;
-				}
+			if(this.Validator.OutValue == null) {
+				
+				this.Validator.InValue = this.QElem.__bindDataState[this.FieldName];
+				this.Validator.Convert();
+				this.UpdateValidation();
+			}
+			
+			if(this.Taint == true && this.Validator.Passed) {
+				this.QElem.__bindData[this.FieldName] = this.Validator.OutValue;
+				this.Taint = false;
 			}
 			
 			this.UpdateTaint();
@@ -1457,6 +1471,44 @@ var Qetesh = {
 			
 			this.FieldName.nodeValue = this.Template;
 		}
+	},
+	
+	CheckboxField : {
+		
+		Obj : function () {
+				
+			var _this = Qetesh.BindField.Obj();
+			
+			_this.Update = this.Update;
+			_this.UpdateState = this.UpdateState;
+			
+			return _this;
+		},
+		
+		Update : function() {
+			
+			var val = this.QElem.__bindDataState[this.FieldName];
+
+			this.FieldElement.checked = val;
+
+			this.UpdateTaint();
+		},
+		
+		UpdateState : function() {
+				
+			this.QElem.__bindDataState[this.FieldName] = this.FieldElement.checked;
+			this.UpdateTaint();
+			
+			this.Validator.InValue = this.QElem.__bindDataState[this.FieldName];
+			this.Validator.Convert();
+			this.UpdateValidation();
+			
+			if(this.__updateFunc != null) {
+				var rObj = { };
+				rObj[this.FieldName] = this.Validator.OutValue;
+				this.__updateFunc(rObj);
+			}
+		},
 	},
 	
 	SelectField : {
@@ -1493,13 +1545,14 @@ var Qetesh = {
 				this.Validator.Convert();
 				this.UpdateValidation();
 				
-				var rObj = { };
-				rObj[this.FieldName] = this.Validator.OutValue;
-				
-				this.__updateFunc(rObj);
+				if(this.__updateFunc != null) {
+					var rObj = { };
+					rObj[this.FieldName] = this.Validator.OutValue;
+					this.__updateFunc(rObj);
+				}
 			}
 			else {
-				this.__updateFunc( { } );
+				if(this.__updateFunc != null) this.__updateFunc( { } );
 			}
 		},
 		
@@ -2121,12 +2174,12 @@ var Qetesh = {
 				
 				test.TestName = "Convert";
 				
-				if(this.InValue == "true") {
+				if(this.InValue == "true" || this.InValue ===  true) {
 					
 					test.Passed = true;
-					this.OutValue = truel
+					this.OutValue = true;
 				}
-				else if (this.InValue == "fa;se"){
+				else if (this.InValue == "false" || this.Invalue === false){
 					
 					test.Passed = true;
 					this.OutValue = false;

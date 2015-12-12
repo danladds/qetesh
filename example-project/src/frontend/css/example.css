@@ -379,10 +379,17 @@ textarea {
 
 input[type=checkbox] {
 	
+	margin: 0.5em;
 }
 
-input[type=checkbox]:checked {
+input[type=checkbox] {
 	
+	margin: 0.5em;
+}
+
+input[type=checkbox].q-taint {
+	
+	background-color: #ddd;
 }
 
 .notes {

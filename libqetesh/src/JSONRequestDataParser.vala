@@ -93,7 +93,13 @@ namespace Qetesh {
 			}
 			else if (data[index].isdigit()) {
 				ParseNumber(node, name);
-			} 
+			}
+			else if (data[index] == 't' && data.index_of("true", index) == index) {
+				AddBool(node, name, true);
+			}
+			else if (data[index] == 'f' && data.index_of("false", index) == index) {
+				AddBool(node, name, false);
+			}
 			else {
 				throw new ParserError.INVALID_CHAR("Unxpected char at index %d ; expected value (%c)".printf(_index, data[_index]));
 			}
@@ -113,8 +119,24 @@ namespace Qetesh {
 			
 			var strNode = new DataNode(name);
 			
+			// We just set string values here because
+			// the validators on the DataObject deal with
+			// converting and checking values
+			
 			strNode.Val = data.slice(start, index);				
 			node.Children.add(strNode);
+		}
+		
+		private void AddBool (DataNode node, string name, bool val) throws ParserError {
+			
+			if(index < 0) return;
+			
+			var strNode = new DataNode(name);
+			
+			strNode.Val = val ? "true" : "false";				
+			node.Children.add(strNode);
+			
+			index = index + (val ? 4 : 5);
 		}
 		
 		private void ParseString (DataNode node, string name) throws ParserError {

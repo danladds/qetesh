@@ -28,7 +28,12 @@ namespace Qetesh.Data {
 	public class DataNode {
 				
 		public string Name { get; set; }
+		
 		public string Val { get; set; }
+		public int? IntVal { get; set; }
+		public double? DoubleVal { get; set; }
+		public bool? BoolVal { get; set; }
+		
 		public Gee.LinkedList<DataNode> Children { get; private set; }
 		public bool IsArray { get; set; }
 		

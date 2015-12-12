@@ -4,7 +4,7 @@
 	
 	<label for="invoice-type">Type</label>
 	
-	<select class="invoice-type">{IType}</select>
+	<select class="{IType}"></select>
 	
 	<label for="forename">Customer Forename</label>
 	<input type="text" id="forename" name="forename" value="{Forename}" />
@@ -28,7 +28,7 @@
 			<td><input type="text" class="invoiceitem-item" value="{Id}" disabled="disabled" /></td>
 			<td><input type="text" class="invoiceitem-name" value="{Description}" /></td>
 			<td><input type="text" class="invoiceitem-price" value="{Price}" /></td>
-			<td><input type="checkbox" id="invoiceitem-tex" value="{Tex}" /></td>
+			<td><input type="checkbox" id="invoiceitem-tax" value="{Tax}" /></td>
 			<td class="invoiceitem-save"></td>
 			<td class="invoiceitem-delete"></td>
 		</tr>

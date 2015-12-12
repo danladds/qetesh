@@ -19,7 +19,10 @@ namespace Qetesh {
 		[CCode (cheader_filename = "libqetesh.h")]
 		public class DataNode {
 			public DataNode (string name = "Data", string? val = null);
+			public bool? BoolVal { get; set; }
 			public Gee.LinkedList<Qetesh.Data.DataNode> Children { get; private set; }
+			public double? DoubleVal { get; set; }
+			public int? IntVal { get; set; }
 			public bool IsArray { get; set; }
 			public string Name { get; set; }
 			public string Val { get; set; }
@@ -58,7 +61,7 @@ namespace Qetesh {
 			public void MapObject (Gee.TreeMap<string?,string?> datum);
 			public Gee.LinkedList<Qetesh.Data.DataObject> MapObjectList (Gee.LinkedList<Gee.TreeMap<string?,string?>> rows);
 			protected virtual string NameTransform (string fieldName);
-			public Qetesh.Data.DataNode ToNode (Qetesh.Data.DataObject.DataNodeTransform? transform);
+			public Qetesh.Data.DataNode ToNode (Qetesh.Data.DataObject.DataNodeTransform? transform = null);
 			public void Update () throws Qetesh.Data.ValidationError, Qetesh.Data.QDBError;
 			public void ValidateAll () throws Qetesh.Data.ValidationError;
 			public string PKeyName { get; protected set; }
@@ -358,6 +361,7 @@ namespace Qetesh {
 		public JSONResponse (Qetesh.WebAppContext ctx);
 		public void AddJson (Qetesh.Data.DataNode node, bool parentIsArray = false);
 		public override void ComposeContent ();
+		public string EscapeString (string inStr);
 		public void Tab ();
 	}
 	[CCode (cheader_filename = "libqetesh.h")]
@@ -406,10 +410,10 @@ namespace Qetesh {
 			public ManifestObject (string typeName, string pKey);
 			public Qetesh.QWebNode.ManifestObject.ManifestMethod LazyLink (string mName, string mType, Qetesh.QWebNode node);
 			public Qetesh.QWebNode.ManifestObject.ManifestMethod Method (string mName, string mType, Qetesh.QWebNode node);
-			public void Prop (string name, string def);
+			public void Prop (Qetesh.Data.DataNode node);
 			public Gee.LinkedList<Qetesh.QWebNode.ManifestObject.ManifestMethod> Methods { get; private set; }
 			public string PKeyName { get; private set; }
-			public Gee.HashMap<string,string> Props { get; private set; }
+			public Gee.LinkedList<Qetesh.Data.DataNode> Props { get; private set; }
 			public string TypeName { get; private set; }
 			public Qetesh.Data.DataNode ValidatorNode { get; set; }
 		}

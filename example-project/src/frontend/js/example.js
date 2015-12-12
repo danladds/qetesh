@@ -139,7 +139,7 @@ $_qetesh.Ready(function(q) {
 				invoice.Items();
 			});
 			
-			itemList.Element(".invoiceitem-save").Click(function(invoiceItem) {
+			var itemSaveFunc = function(invoiceItem) {
 				
 				// Commit data to data layer and then either create or update
 				invoiceItem.Commit();
@@ -152,9 +152,12 @@ $_qetesh.Ready(function(q) {
 					var newItem = q.Data.InvoiceItem.Obj();
 					newItem.FromInvoice = invoice.Id;
 					itemList.Bind(newItem);
+					itemList.Element(".invoiceitem-save").Click(itemSaveFunc);
 				});
 				
-			});
+			};
+			
+			itemList.Element(".invoiceitem-save").Click(itemSaveFunc);
 			
 			itemList.Element(".invoiceitem-delete").Click(function(invoiceItem) {
 				

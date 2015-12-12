@@ -54,6 +54,15 @@ namespace Qetesh {
 			AddJson(this.DataTree, true);
 		}
 		
+		public string EscapeString(string inStr) {
+			
+			string returnString = inStr;
+			
+			returnString = returnString.replace("\"", "\\\"");
+			
+			return returnString;
+		}
+		
 		public void AddJson(Data.DataNode node, bool parentIsArray = false) {
 			/*
 			Context.Server.Err.WriteMessage(
@@ -69,10 +78,23 @@ namespace Qetesh {
 				Content.append(" : ");
 			}
 			
-			if (node.Val != null && node.Val != "") {
+			if(node.BoolVal != null) {
+				
+				if(node.BoolVal) Content.append("true");
+				else Content.append("false");
+			}
+			else if(node.DoubleVal != null) {
+				
+				Content.append(node.DoubleVal.to_string());
+			}
+			else if(node.IntVal != null) {
+				
+				Content.append(node.IntVal.to_string());
+			}
+			else if (node.Val != null && node.Val != "") {
 				
 				Content.append("\"");
-				Content.append(node.Val);
+				Content.append(EscapeString(node.Val));
 				Content.append("\"");
 			}
 			else if(node.Children.size > 0) {
