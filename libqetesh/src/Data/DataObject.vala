@@ -162,6 +162,7 @@ namespace Qetesh.Data {
 			return returnList;
 		}
 		
+		// Allows internal classes to bypass "protected" status (specifically QWebNode)
 		internal Gee.LinkedList<DataObject> _lazyLoadList(string propertyName, Type fType) throws QDBError, ValidationError {
 			return LazyLoadList(propertyName, fType);
 		}
@@ -814,7 +815,9 @@ namespace Qetesh.Data {
 				
 				if(dObj != null) {
 					
-					return dObj.GetPropertyNode(dObj.PKeyName);
+					var fpkNode = dObj.GetPropertyNode(dObj.PKeyName);
+					fpkNode.Name = pName;
+					return fpkNode;
 				}
 			}
 			

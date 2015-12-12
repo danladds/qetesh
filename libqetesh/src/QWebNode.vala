@@ -476,7 +476,7 @@ namespace Qetesh {
 						foreach (var item in list) {
 							
 							req.HResponse.DataTree.Children.add(
-								item.ToNode((n) => { })
+								item.ToNode()
 							);
 						}
 						
