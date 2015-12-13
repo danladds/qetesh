@@ -40,6 +40,7 @@ Qetesh.HTMLElement = {
 	__fields : [],
 	__clickCallback : null,
 	__displayType : null,
+	__populateValues : { },
 	
 	addElement : function(elem) {
 		
@@ -234,6 +235,8 @@ Qetesh.HTMLElement = {
 	
 	Populate : function(fieldName, labelName, values, deep = true) {
 		
+		this.__populateValues[fieldName] = values;
+		
 		var fieldCount = this.__fields.length;
 		
 		for(var m = 0; m < fieldCount; ++m) {
@@ -368,6 +371,11 @@ Qetesh.HTMLElement = {
 				fld.Init();
 				
 				this.__fields.push(fld);
+				
+				if(this.__populateValues[propName] != null) {
+					
+					fld.Populate(propName, this.__populateValues[propName]);
+				}
 			}
 		}
 		

@@ -25,6 +25,9 @@ $_qetesh.Ready(function(q) {
 		return val * 100;
 	};
 	
+	// Establish message area
+	//var messageBox = Qetesh.MessageBox.Obj("#messages");
+	
 	// "Pretty" list of enum value names
 	var prettyTypes = { 0 : "Receivable", 1: "Payable" };
 	
@@ -128,10 +131,13 @@ $_qetesh.Ready(function(q) {
 			newItem.FromInvoice = invoice.Id;
 			itemList.Bind(newItem);
 			
+			var codeOpts = [];
+			
 			// Load list of AccountingCode for drop down
 			Qetesh.Data.AccountingCode.LoadAll(function(codes) {
 				
 				itemList.Populate("Code", "Code", codes);
+				codeOpts = codes;
 			});
 			
 			
