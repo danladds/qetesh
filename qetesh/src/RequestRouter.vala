@@ -43,6 +43,8 @@ namespace Qetesh.WebServer {
 			// Get the appropriate module for the request
 			mod = context.Modules.GetHostModule(req.Host);
 			
+			if(mod == null) throw new QRouterError.MODULE("Module seek for host returned empty");
+			
 			// Drop privileges and taken on module user before dispatching
 			/// TODO: Obviously this breaks buildability on Windows
 			/// TODO: something about the module init stage
@@ -59,29 +61,29 @@ namespace Qetesh.WebServer {
 					
 					throw new QRouterError.USER("Unable to drop privilege");
 				}
+				else {
+					context.Err.WriteMessage("Not started as root. Can't switch user. Proceeding as existing user!", ErrorManager.QErrorClass.QETESH_WARNING);
+				}
 			}
 			
-			if (mod != null) {
 
-				context.Err.WriteMessage("Sending request to module for handling", ErrorManager.QErrorClass.QETESH_DEBUG);
-				
-				try {
-					mod.Handle(Req);
-				}
-				catch(QModuleError e) {
-					
-					throw new QRouterError.MODULE("Error during module handing:\n %s".printf(e.message));
-				}
-				
-				try {
-					Req.Respond();
-				}
-				catch(QResponseError e) {
-					
-					throw new QRouterError.RESPONSE("Error during response:\n %s".printf(e.message));
-				}
+			context.Err.WriteMessage("Sending request to module for handling", ErrorManager.QErrorClass.QETESH_DEBUG);
+			
+			try {
+				mod.Handle(Req);
 			}
-			else throw new QRouterError.MODULE("Module seek for host returned empty");
+			catch(QModuleError e) {
+				
+				throw new QRouterError.MODULE("Error during module handing:\n %s".printf(e.message));
+			}
+			
+			try {
+				Req.Respond();
+			}
+			catch(QResponseError e) {
+				
+				throw new QRouterError.RESPONSE("Error during response:\n %s".printf(e.message));
+			}
 			
 		}
 			
