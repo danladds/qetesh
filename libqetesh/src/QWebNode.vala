@@ -173,14 +173,14 @@ namespace Qetesh {
 			return errNode;
 		}
 		
-		protected LazyExposer ExposeCrud (string typeName, Type typ, string dbName) throws ManifestError {
-			
-			WriteMessage("ExposeCRUD called for " + typeName, ErrorManager.QErrorClass.MODULE_DEBUG, "QExample");
+		protected LazyExposer ExposeCrud (Type typ, string dbName) throws ManifestError {
 			
 			
 			var proto = (DataObject) Object.new(typ);
 			proto.__init();
 			proto.Init();
+			
+			var typeName = proto.ClientName;
 			
 			Manifest = new ManifestObject(typeName, proto.PKeyName);
 			
@@ -503,10 +503,6 @@ namespace Qetesh {
 					
 					rCoreType = returnType.replace("[]", "");
 				}
-				
-				
-				// Todo: integrate conditions into ExposeCrud
-				node["_" + path].ExposeCrud(rCoreType, fType, dbNick);
 					
 				return this;
 			}

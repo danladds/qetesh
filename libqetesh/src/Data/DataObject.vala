@@ -42,6 +42,8 @@ namespace Qetesh.Data {
 		/// Primary key name
 		public string PKeyName { get; protected set; default="Id"; }
 		
+		public string ClientName { get; set; }
+		
 		private Gee.LinkedList<string> TaintedProperties { get; set; }
 		
 		public DataObject (QDatabaseConn dbh) {
@@ -58,7 +60,6 @@ namespace Qetesh.Data {
 			lazyCache = new Gee.HashMap<string, Gee.LinkedList<DataObject>>();
 			
 			__init();
-			Init();
 		}
 		
 		internal void __init() {
@@ -69,6 +70,8 @@ namespace Qetesh.Data {
 			
 			TaintedProperties = new Gee.LinkedList<string>();
 			Validators = new Gee.HashMap<string, Validator>();
+			
+			Init();
 		}
 		
 		public void ValidateAll() throws ValidationError {
@@ -119,6 +122,7 @@ namespace Qetesh.Data {
 				
 				if(prop == PKeyName) continue;
 				if(prop == "PKeyName") continue;
+				if(prop == "ClientName") continue;
 				
 				if(!Validators[prop].Validate()) {
 					
@@ -126,7 +130,9 @@ namespace Qetesh.Data {
 					validationErrors.append(Validators[prop].DumpResult());
 				}
 				
-				query.Set(prop).Equal(GetPropertyNode(prop));
+				// true = shallow, get ID primative instead of object skeleton
+				// Null - don't have the type at hand to pass
+				query.Set(prop).Equal(GetPropertyNode(prop, null, true));
 				
 			}
 			
@@ -262,17 +268,19 @@ namespace Qetesh.Data {
 			
 			foreach(var prop in TaintedProperties) {
 				
+				if(prop == "ClientName") continue;
+				if(prop == PKeyName) continue;
+				if(prop == "PKeyName") continue;
+				
 				if(!Validators[prop].Validate()) {
 					
 					validationErrors.append(Validators[prop].DumpResult());
 					valid = false;
 				}
 				
-				if(prop == PKeyName) continue;
-				if(prop == "PKeyName") continue;
-				
-				
-				query.Set(prop).Equal(GetPropertyNode(prop));
+				// true = shallow, get ID primative instead of object skeleton
+				// Null - don't have the type at hand to pass
+				query.Set(prop).Equal(GetPropertyNode(prop, null, true));
 			}
 			
 			if(valid == false)
@@ -742,7 +750,7 @@ namespace Qetesh.Data {
 			return dn;
 		}
 		
-		public DataNode? GetPropertyNode(string pName, Type? propertyType = null) {
+		public DataNode? GetPropertyNode(string pName, Type? propertyType = null, bool shallow = false) {
 			
 			if(propertyType == null) {
 				
@@ -813,11 +821,23 @@ namespace Qetesh.Data {
 				this.get_property(pName, ref val);
 				var dObj = (DataObject) val.get_object();
 				
-				if(dObj != null) {
+				if(dObj == null) {
 					
-					var fpkNode = dObj.GetPropertyNode(dObj.PKeyName);
-					fpkNode.Name = pName;
-					return fpkNode;
+					dObj = (DataObject) Object.new(propertyType);
+					dObj.__init();
+				}
+				
+				var fpkNode = dObj.GetPropertyNode(dObj.PKeyName, null, shallow);
+				
+				if(shallow == false) {
+
+					childNode.Children.add(fpkNode);
+					childNode.Children.add(new DataNode("PKeyName", dObj.PKeyName));
+					childNode.Children.add(new DataNode("ClientName", dObj.ClientName));
+				}
+				else {
+					childNode = fpkNode;
+					childNode.Name = pName;
 				}
 			}
 			

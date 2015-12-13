@@ -128,6 +128,12 @@ $_qetesh.Ready(function(q) {
 			newItem.FromInvoice = invoice.Id;
 			itemList.Bind(newItem);
 			
+			// Load list of AccountingCode for drop down
+			Qetesh.Data.AccountingCode.LoadAll(function(codes) {
+				
+				itemList.Populate("Code", "Code", codes);
+			});
+			
 			
 			itemList.Transform("Price", printCurrency, parseCurrency);
 			

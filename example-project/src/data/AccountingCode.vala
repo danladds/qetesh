@@ -27,35 +27,29 @@ using Qetesh.Data;
 
 namespace QExample.Data {
 	
-	// Most things here are the same as Invoice.
-	// Just a simpler example
-	public class InvoiceItem : DataObject<Invoice> {
+	public class AccountingCode : DataObject<AccountingCode> {
 		
 		public int Id { get; set; }
-		public Invoice FromInvoice { get; set; }
-		public AccountingCode Code { get; set; }
-		public string Description { get; set; }
-		public int Price { get; set; }
-		public bool Tax { get; set; }
+		public string Name { get; set; }
+		public string Code { get; set; }
 		
-		public InvoiceItem(QDatabaseConn db) {
+		public AccountingCode(QDatabaseConn db) {
 			
 			base(db);
 		}
 		
 		public override void Init () {
 				
-				TableName = "invoiceitem";
-				ClientName = "InvoiceItem";
+				TableName = "accountingcode";
+				ClientName = "AccountingCode";
 				
-				Validators["Description"] = new StringValidator().Matches("^[A-Za-z0-9]+$");
+				Validators["Name"] = new StringValidator().Matches("^[A-Za-z0-9]+$");
+				Validators["Code"] = new StringValidator().Matches("^[A-Za-z0-9]{4}$");
 		}
 		
 		public override string NameTransform(string fieldName) {
 			
 			return fieldName.down();
 		}
-		
 	}
 }
-

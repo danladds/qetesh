@@ -247,6 +247,7 @@ Qetesh.CheckboxField = {
 Qetesh.SelectField = {
 	
 	__resetsToAll : false,
+	Items : { },
 	
 	Obj : function () {
 			
@@ -257,7 +258,10 @@ Qetesh.SelectField = {
 		_this.InitOptions = this.InitOptions;
 		_this.AddUnfilter = this.AddUnfilter;
 		_this.__resetsToAll = this.__resetsToAll;
+		_this.Populate = this.Populate;
+		_this.__addItem = this.__addItem;
 		_this.Reset = this.Reset;
+		_this.Items = [];
 		
 		return _this;
 	},
@@ -278,7 +282,7 @@ Qetesh.SelectField = {
 	
 	Update : function() {
 		
-		var val = this.QElem.__bindDataState[this.FieldName];
+		var val = this.QElem.__bindDataState.GetProp(this.FieldName);
 
 		this.FieldElement.value = val;
 
@@ -289,10 +293,17 @@ Qetesh.SelectField = {
 		
 		if(this.FieldElement.value != "__ALL__") {
 			
-			this.QElem.__bindDataState[this.FieldName] = this.FieldElement.value;
-			this.UpdateTaint();
+			if(this.Items[this.FieldElement.value] != null) {
+				
+				this.QElem.__bindDataState[this.FieldName] = this.Items[this.FieldElement.value];
+				this.Validator.InValue = this.QElem.__bindDataState[this.FieldName].GetPKeyVal();
+			}
+			else {
+				this.QElem.__bindDataState[this.FieldName] = this.FieldElement.value;
+				this.Validator.InValue = this.QElem.__bindDataState[this.FieldName];
+			}
 			
-			this.Validator.InValue = this.QElem.__bindDataState[this.FieldName];
+			this.UpdateTaint();
 			this.Validator.Convert();
 			this.UpdateValidation();
 			
@@ -320,18 +331,53 @@ Qetesh.SelectField = {
 	
 	InitOptions : function() {
 		
-		for(var intVal in this.Validator.AllowableValues) {
-			
-			if(this.Validator.AllowableValues.hasOwnProperty(intVal)) {
+		if(this.Validator.Name == "EnumValidator") {
+		
+			for(var intVal in this.Validator.AllowableValues) {
 				
-				var strVal = this.Validator.AllowableValues[intVal];
-				
-				var opt = document.createElement("option");
-				opt.text = strVal;
-				opt.value = intVal;
-				
-				this.FieldElement.add(opt);
+				if(this.Validator.AllowableValues.hasOwnProperty(intVal)) {
+					
+					var strVal = this.Validator.AllowableValues[intVal];
+					
+					var opt = document.createElement("option");
+					opt.text = strVal;
+					opt.value = intVal;
+					
+					this.FieldElement.add(opt);
+				}
 			}
 		}
+	},
+	
+	// Expects DataObject or DataObject[]
+	Populate : function(labelName, opts) {
+		
+		if(opts instanceof Array) {
+			
+			var len = opts.length;
+			
+			for(var x = 0; x < len; ++x) {
+				
+				this.__addItem(labelName, opts[x]);
+			}
+		}
+		
+		else {
+			this.__addItem(labelName, opts);
+		}
+		
+		this.Update();
+	},
+	
+	// Expects DataObject
+	__addItem : function(labelName, obj) {
+		
+		var opt = document.createElement("option");
+		opt.text = obj[labelName];
+		opt.value = obj[obj.PKeyName];
+		
+		this.Items[obj.PKeyName] = obj;
+		
+		this.FieldElement.add(opt);
 	}
 };

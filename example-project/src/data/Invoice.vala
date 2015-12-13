@@ -76,6 +76,7 @@ namespace QExample.Data {
 		public override void Init() {
 			
 			TableName = "invoice";
+			ClientName = "Invoice";
 			Issued = new QDateTime();
 			
 			Validators["Forename"] = new StringValidator().Matches("^[A-Za-z0-9 ]+$");

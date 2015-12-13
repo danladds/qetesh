@@ -3,6 +3,15 @@
 namespace QExample {
 	namespace Data {
 		[CCode (cheader_filename = "QExample.h")]
+		public class AccountingCode : Qetesh.Data.DataObject<global::QExample.Data.AccountingCode> {
+			public AccountingCode (Qetesh.Data.QDatabaseConn db);
+			public override void Init ();
+			public override string NameTransform (string fieldName);
+			public string Code { get; set; }
+			public int Id { get; set; }
+			public string Name { get; set; }
+		}
+		[CCode (cheader_filename = "QExample.h")]
 		public class Invoice : Qetesh.Data.DataObject<global::QExample.Data.Invoice> {
 			public enum InvoiceType {
 				RECEIVABLE,
@@ -25,6 +34,7 @@ namespace QExample {
 			public InvoiceItem (Qetesh.Data.QDatabaseConn db);
 			public override void Init ();
 			public override string NameTransform (string fieldName);
+			public global::QExample.Data.AccountingCode Code { get; set; }
 			public string Description { get; set; }
 			public global::QExample.Data.Invoice FromInvoice { get; set; }
 			public int Id { get; set; }

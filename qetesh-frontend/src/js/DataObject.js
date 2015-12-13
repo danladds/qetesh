@@ -50,6 +50,25 @@ Qetesh.DataObject = {
 		this.Validators = { };
 	},
 	
+	GetPKeyVal : function() {
+		
+		return this[this.PKeyName];
+	},
+	
+	GetProp : function(name) {
+		
+		if(this[name].ClientName != null) {
+			
+			// Done like this so it still works
+			// when the child item is a server stub
+			return this[name][this[name].PKeyName];
+		}
+		else {
+			
+			return this[name];
+		}
+	},
+	
 	ShowValidationErrors() {
 		
 		if(this.boundQElement == null) return;
@@ -160,6 +179,28 @@ Qetesh.DataObject = {
 		if (this.boundQElement != null) {
 			
 			this.boundQElement.Commit();
+		}
+	},
+	
+	FromNode : function(inObj) {
+		
+		for (var prop in inObj) {
+			  
+			if( inObj.hasOwnProperty(prop) ) {
+				
+				if(inObj[prop].ClientName != null) {
+					
+					var pObj = Qetesh.Data[inObj[prop].ClientName].Obj();
+					
+					pObj.FromNode(inObj[prop]);
+					
+					this[prop] = pObj;
+				}
+				else {
+					
+					this[prop] = inObj[prop];
+				}
+			} 
 		}
 	}
 

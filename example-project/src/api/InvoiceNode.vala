@@ -40,9 +40,13 @@ namespace QExample {
 				
 				// Expose CRUD (Create, Read, Update, Delete) functions of
 				// the Invoice type, defined in ../data/Invoice.vala
-				// Params: type name to use on client side (i.e. class name without
-				// namespace); class type; database nick as as set in .conf file
-				var exposer = ExposeCrud("Invoice", typeof(Invoice), "example");
+				// Params: class type; database nick as as set in .conf file
+				var exposer = ExposeCrud(typeof(Invoice), "example");
+				
+				WriteMessage("Exposing InvoiceItem", ErrorManager.QErrorClass.MODULE_DEBUG, "QExample");
+				
+				// InvoiceItem type (type of Invoice.Items) - expose on a subnode
+				this["InvoiceItem"].ExposeCrud(typeof(InvoiceItem), "example");
 				
 				WriteMessage("Exposing Invoice.Items", ErrorManager.QErrorClass.MODULE_DEBUG, "QExample");
 				
@@ -58,6 +62,14 @@ namespace QExample {
 				
 				// ExposeCrud and Lazy both return a LazyLinker object
 				// which can be chained with more Lazy() calls
+				
+				WriteMessage("Exposing AccountingType", ErrorManager.QErrorClass.MODULE_DEBUG, "QExample");
+				
+				// Expose AccountingCode type on a subnode
+				// Just calling ExposeCrud here will overwrite
+				// the existing Invoice exposure here
+				this["AccountingCode"].ExposeCrud(typeof(AccountingCode), "example");
+				
 			} catch (ManifestError e) {
 				
 				throw new AppError.ABORT("Unable to expose objects: \n %s".printf(e.message));

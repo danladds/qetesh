@@ -54,7 +54,7 @@ namespace Qetesh {
 			public void Delete () throws Qetesh.Data.QDBError, Qetesh.Data.ValidationError;
 			public void FromNode (Qetesh.Data.DataNode data) throws Qetesh.Data.ValidationError;
 			public void FromRequest (Qetesh.HTTPRequest req) throws Qetesh.Data.ValidationError;
-			public Qetesh.Data.DataNode? GetPropertyNode (string pName, GLib.Type? propertyType = null);
+			public Qetesh.Data.DataNode? GetPropertyNode (string pName, GLib.Type? propertyType = null, bool shallow = false);
 			public Qetesh.Data.DataNode GetValidatorNode () throws Qetesh.Data.ValidationError;
 			public abstract void Init ();
 			protected Gee.LinkedList<Qetesh.Data.DataObject> LazyLoadList (string propertyName, GLib.Type fType) throws Qetesh.Data.ValidationError, Qetesh.Data.QDBError;
@@ -66,6 +66,7 @@ namespace Qetesh {
 			public Qetesh.Data.DataNode ToNode (Qetesh.Data.DataObject.DataNodeTransform? transform = null);
 			public void Update () throws Qetesh.Data.ValidationError, Qetesh.Data.QDBError;
 			public void ValidateAll () throws Qetesh.Data.ValidationError;
+			public string ClientName { get; set; }
 			public string PKeyName { get; protected set; }
 			protected string TableName { get; set; }
 		}
@@ -429,7 +430,7 @@ namespace Qetesh {
 		public Qetesh.QWebNode? Parent;
 		protected Qetesh.WebAppContext appContext;
 		protected QWebNode (string path = "");
-		protected Qetesh.QWebNode.LazyExposer ExposeCrud (string typeName, GLib.Type typ, string dbName) throws Qetesh.ManifestError;
+		protected Qetesh.QWebNode.LazyExposer ExposeCrud (GLib.Type typ, string dbName) throws Qetesh.ManifestError;
 		protected void ExposeProperties (string typeName, GLib.Type typ) throws Qetesh.ManifestError;
 		public string GetFullPath ();
 		public static Qetesh.Data.DataNode GetValidationResults (Qetesh.Data.DataObject proto, string message = "");

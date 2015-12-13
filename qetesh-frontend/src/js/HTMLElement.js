@@ -232,6 +232,29 @@ Qetesh.HTMLElement = {
 		
 	},
 	
+	Populate : function(fieldName, labelName, values, deep = true) {
+		
+		var fieldCount = this.__fields.length;
+		
+		for(var m = 0; m < fieldCount; ++m) {
+			
+			if(this.__fields[m].FieldName == fieldName) {
+				
+				this.__fields[m].Populate(labelName, values);
+			}
+		}
+		
+		if (deep) {
+			
+			var childLen = this.__children.length;
+			
+			for(var i = 0; i < childLen; ++i) {
+				
+				this.__children[i].Populate(fieldName, labelName, values);
+			}
+		}
+	},
+	
 	Show : function() {
 		
 		var len = this.__elements.length;

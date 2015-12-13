@@ -195,13 +195,7 @@ Qetesh.ProxyFactory = {
 											proto = Qetesh.Data[realType].Obj();
 										}
 										
-										for (var prop in item) {
-			  
-											if( item.hasOwnProperty(prop) ) {
-											
-												proto[prop] = item[prop];
-											} 
-										}
+										proto.FromNode(item);
 										
 										returnList.push(proto);
 									}
@@ -227,18 +221,8 @@ Qetesh.ProxyFactory = {
 									if (inData instanceof Array) inObj = inData[0];
 									else inObj = inData;
 									
-										
-									for (var prop in inObj) {
-			  
-										if( inData[0].hasOwnProperty(prop) ) {
-										
-											_this[prop] = inData[0][prop];
-										} 
-									}
-									
+									_this.FromNode(inObj);
 									_this.__tainted = [];
-									
-									_this["__" + mName] = _this;
 									
 									if(_this.boundQElement != null) {
 										
@@ -266,13 +250,7 @@ Qetesh.ProxyFactory = {
 										proto = Qetesh.Data[realType].Obj();
 									}
 										
-									for (var prop in inObj) {
-			  
-										if( inData[0].hasOwnProperty(prop) ) {
-										
-											proto[prop] = inData[0][prop];
-										} 
-									}
+									proto.FromNode(inObj);
 									
 									proto.__tainted = [];
 									
@@ -369,10 +347,11 @@ Qetesh.ProxyFactory = {
 									var vtor = this.Validators[vfName];
 									
 									if(vfName == "PKeyName") continue;
+									if(vfName == "ClientName") continue;
 									
 									if(vtor.Validate()) {
-									
-										outObj[vfName] = this[vfName];
+										
+										outObj[vfName] = this.GetProp(vfName);
 									}
 									else {
 										sendPassed = false;
