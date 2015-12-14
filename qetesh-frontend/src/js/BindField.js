@@ -109,8 +109,9 @@ Qetesh.BindField = {
 		else {
 			this.Valid = false;
 			this.FieldElement.className += " q-invalid";
-			
 		}
+		
+		return;
 	},
 	
 	UpdateTaint : function() {
@@ -140,12 +141,13 @@ Qetesh.BindField = {
 			
 		if(this.Validator.OutValue == null) {
 			
-			this.Validator.InValue = this.QElem.__bindDataState[this.FieldName];
+			this.Validator.InValue = this.QElem.__bindDataState.GetProp(this.FieldName);
 			this.Validator.Convert();
 			this.UpdateValidation();
 		}
 		
-		if(this.Taint == true && this.Validator.Passed) {
+		if((this.Taint == true || this.QElem.__bindData.GetPKeyVal() == null) && this.Validator.Passed) {
+			
 			this.QElem.__bindData[this.FieldName] = this.Validator.OutValue;
 			this.Taint = false;
 		}
@@ -178,7 +180,7 @@ Qetesh.TextField = {
 		_this.Update = this.Update;
 		_this.UpdateState = this.UpdateState;
 		
-		return _this;
+		return Object.create(_this);
 	},
 	
 	Update : function() {
@@ -215,7 +217,7 @@ Qetesh.CheckboxField = {
 		_this.Update = this.Update;
 		_this.UpdateState = this.UpdateState;
 		
-		return _this;
+		return Object.create(_this);
 	},
 	
 	Update : function() {
@@ -261,9 +263,9 @@ Qetesh.SelectField = {
 		_this.Populate = this.Populate;
 		_this.__addItem = this.__addItem;
 		_this.Reset = this.Reset;
-		_this.Items = [];
+		_this.Items = {};
 		
-		return _this;
+		return Object.create(_this);
 	},
 	
 	Reset : function() {
@@ -284,7 +286,7 @@ Qetesh.SelectField = {
 		
 		var val = this.QElem.__bindDataState.GetProp(this.FieldName);
 
-		this.FieldElement.value = val;
+		this.FieldElement.value = (val == null ? "null" : val);
 
 		this.UpdateTaint();
 	},
@@ -314,6 +316,8 @@ Qetesh.SelectField = {
 			}
 		}
 		else {
+			
+			
 			if(this.__updateFunc != null) this.__updateFunc( { } );
 		}
 	},
@@ -367,7 +371,6 @@ Qetesh.SelectField = {
 		}
 		
 		this.Update();
-		this.UpdateState();
 	},
 	
 	// Expects DataObject
@@ -375,9 +378,9 @@ Qetesh.SelectField = {
 		
 		var opt = document.createElement("option");
 		opt.text = obj[labelName];
-		opt.value = obj[obj.PKeyName];
+		opt.value = (obj[obj.PKeyName] == null ? "null" : obj[obj.PKeyName]);
 		
-		this.Items[obj.PKeyName] = obj;
+		this.Items[opt.value] = obj;
 		
 		this.FieldElement.add(opt);
 	}

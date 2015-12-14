@@ -100,6 +100,9 @@ namespace Qetesh {
 			else if (data[index] == 'f' && data.index_of("false", index) == index) {
 				AddBool(node, name, false);
 			}
+			else if (data[index] == 'n' && data.index_of("null", index) == index) {
+				AddNull(node, name);
+			}
 			else {
 				throw new ParserError.INVALID_CHAR("Unxpected char at index %d ; expected value (%c)".printf(_index, data[_index]));
 			}
@@ -137,6 +140,18 @@ namespace Qetesh {
 			node.Children.add(strNode);
 			
 			index = index + (val ? 4 : 5);
+		}
+		
+		private void AddNull (DataNode node, string name) throws ParserError {
+			
+			if(index < 0) return;
+			
+			var nullNode = new DataNode(name);
+			nullNode.IsNull = true;
+							
+			node.Children.add(nullNode);
+			
+			index = index + 4;
 		}
 		
 		private void ParseString (DataNode node, string name) throws ParserError {

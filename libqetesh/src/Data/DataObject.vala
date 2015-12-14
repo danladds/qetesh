@@ -124,15 +124,22 @@ namespace Qetesh.Data {
 				if(prop == "PKeyName") continue;
 				if(prop == "ClientName") continue;
 				
-				if(!Validators[prop].Validate()) {
+				if(Validators[prop] == null) throw new ValidationError.INVALID_VALUE("Create() validation failed: no validator set for: %s".printf(prop));
+				
+				//bool validProp = Validators[prop].Validate();
+				bool validProp = true;
+				
+				if(!validProp) {
 					
 					valid = false;
 					validationErrors.append(Validators[prop].DumpResult());
 				}
-				
-				// true = shallow, get ID primative instead of object skeleton
-				// Null - don't have the type at hand to pass
-				query.Set(prop).Equal(GetPropertyNode(prop, null, true));
+				else {
+					
+					// true = shallow, get ID primative instead of object skeleton
+					// Null - don't have the type at hand to pass
+					query.Set(NameTransform(prop)).Equal(GetPropertyNode(prop, null, true));
+				}
 				
 			}
 			
@@ -151,7 +158,7 @@ namespace Qetesh.Data {
 			
 			var query = db.NewQuery().DataSet(TableName).Delete();
 			
-			query.Where(PKeyName).Equal(GetPropertyNode(PKeyName));
+			query.Where(NameTransform(PKeyName)).Equal(GetPropertyNode(PKeyName));
 			query.Do();
 		}
 		
@@ -254,7 +261,7 @@ namespace Qetesh.Data {
 			if (!Validators[PKeyName].Validate())
 				throw new ValidationError.INVALID_VALUE("Update(): Primary key not set");
 			
-			query.Where(PKeyName).Equal(GetPropertyNode(PKeyName));
+			query.Where(NameTransform(PKeyName)).Equal(GetPropertyNode(PKeyName));
 			
 			if(TaintedProperties.size == 0) {
 				
@@ -268,19 +275,19 @@ namespace Qetesh.Data {
 			
 			foreach(var prop in TaintedProperties) {
 				
-				if(prop == "ClientName") continue;
-				if(prop == PKeyName) continue;
-				if(prop == "PKeyName") continue;
+				bool validProp = Validators[prop].Validate();
 				
-				if(!Validators[prop].Validate()) {
+				if(!validProp) {
 					
-					validationErrors.append(Validators[prop].DumpResult());
 					valid = false;
+					validationErrors.append(Validators[prop].DumpResult());
 				}
-				
-				// true = shallow, get ID primative instead of object skeleton
-				// Null - don't have the type at hand to pass
-				query.Set(prop).Equal(GetPropertyNode(prop, null, true));
+				else {
+					
+					// true = shallow, get ID primative instead of object skeleton
+					// Null - don't have the type at hand to pass
+					query.Set(NameTransform(prop)).Equal(GetPropertyNode(prop, null, true));
+				}
 			}
 			
 			if(valid == false)
@@ -557,7 +564,7 @@ namespace Qetesh.Data {
 				vdr.Convert();
 				
 				dObj.setPropStr(dObj.PKeyName, vdr.InValue);
-				
+			
 				var val = Value(typeof(DataObject));
 				val.set_object((Object) dObj);
 				this.set_property(pName, val);
@@ -609,6 +616,8 @@ namespace Qetesh.Data {
 				Type propertyType = prop.value_type;
 				
 				if (datum.has_key(tName)) {
+					
+					if(datum[tName] == null) continue;
 						
 					_setPropStr(pName, datum[tName], propertyType);
 					
@@ -687,6 +696,8 @@ namespace Qetesh.Data {
 						
 						vdNode.Children.add(avNode);
 					}
+						
+					vdNode.Children.add(new DataNode("Mandatory") { BoolVal = validator.Mandatory });
 					
 					validatorList.Children.add(vdNode);
 				}
@@ -821,13 +832,18 @@ namespace Qetesh.Data {
 				this.get_property(pName, ref val);
 				var dObj = (DataObject) val.get_object();
 				
+				bool empty = false;
+				
 				if(dObj == null) {
 					
 					dObj = (DataObject) Object.new(propertyType);
 					dObj.__init();
+					empty = true;
 				}
 				
 				var fpkNode = dObj.GetPropertyNode(dObj.PKeyName, null, shallow);
+				
+				if(empty) fpkNode.IsNull = true;
 				
 				if(shallow == false) {
 
@@ -856,8 +872,9 @@ namespace Qetesh.Data {
 				foreach(var child in data.Children[0].Children) {
 					 
 					if(
-						child.Name != null && child.Name != "" &
-						child.Val != null & child.Val != ""
+						child.Name != null && child.Name != "" &&
+						child.Val != null & child.Val != "" &&
+						child.Val != "0"
 					){
 						this.TaintedProperties.add(child.Name);
 						setPropStr(child.Name, child.Val);

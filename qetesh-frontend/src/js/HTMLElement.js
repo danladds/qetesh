@@ -368,6 +368,8 @@ Qetesh.HTMLElement = {
 				fld.ObjElem = elem;
 				tag.__qBindField = fld;
 				
+				tag.className = tag.className.replace("{" + propName + "}", data.ClientName + "_" + data.GetPKeyVal() + "_" + propName + " " + data.ClientName + "_" + propName);
+				
 				fld.Init();
 				
 				this.__fields.push(fld);
@@ -612,6 +614,26 @@ Qetesh.HTMLElement = {
 			for(var i = 0; i < childLen; ++i) {
 				
 				this.__children[i].Update(true);
+			}
+		}
+	},
+	
+	UpdateState : function (deep = true) {
+		
+		var fieldCount = this.__fields.length;
+		
+		for(var m = 0; m < fieldCount; ++m) {
+			
+			this.__fields[m].UpdateState();
+		}
+		
+		if (deep) {
+			
+			var childLen = this.__children.length;
+			
+			for(var i = 0; i < childLen; ++i) {
+				
+				this.__children[i].UpdateState(true);
 			}
 		}
 	},

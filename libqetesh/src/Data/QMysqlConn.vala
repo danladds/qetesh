@@ -100,6 +100,8 @@ namespace Qetesh.Data {
 					for (int x = 0; x < fieldList.size; ++x) {
 						
 						hash.set(fieldList[x], row[x]);
+						
+						context.Err.WriteMessage("MySQL Connector raw result dump: %s = %s".printf(fieldList[x], row[x]), ErrorManager.QErrorClass.QETESH_DEBUG);
 					}
 					
 					result.add(hash);

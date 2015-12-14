@@ -25,6 +25,7 @@ namespace Qetesh {
 			public int? IntVal { get; set; }
 			public bool IsArray { get; set; }
 			public bool IsEnum { get; set; }
+			public bool IsNull { get; set; }
 			public string Name { get; set; }
 			public string Val { get; set; }
 		}
@@ -212,6 +213,7 @@ namespace Qetesh {
 			public string InValue { get; set; }
 			public bool Mandatory { get; set; }
 			public string Name { get; set; }
+			public bool NullOut { get; protected set; }
 			public TField OutValue { get; set; }
 			public bool Passed { get; set; }
 		}
@@ -225,7 +227,8 @@ namespace Qetesh {
 			INVALID_VALUE,
 			INVALID_DATETIME_STRING,
 			UNVALIDATED_FIELD,
-			INVALID_PATTERN
+			INVALID_PATTERN,
+			NULLABLE
 		}
 	}
 	namespace Webserver {

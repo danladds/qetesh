@@ -568,7 +568,8 @@ typedef enum  {
 	QETESH_DATA_VALIDATION_ERROR_INVALID_VALUE,
 	QETESH_DATA_VALIDATION_ERROR_INVALID_DATETIME_STRING,
 	QETESH_DATA_VALIDATION_ERROR_UNVALIDATED_FIELD,
-	QETESH_DATA_VALIDATION_ERROR_INVALID_PATTERN
+	QETESH_DATA_VALIDATION_ERROR_INVALID_PATTERN,
+	QETESH_DATA_VALIDATION_ERROR_NULLABLE
 } QeteshDataValidationError;
 #define QETESH_DATA_VALIDATION_ERROR qetesh_data_validation_error_quark ()
 struct _QeteshQDateTime {
@@ -1196,6 +1197,8 @@ gboolean qetesh_data_validator_get_Passed (QeteshDataValidator* self);
 void qetesh_data_validator_set_Passed (QeteshDataValidator* self, gboolean value);
 gboolean qetesh_data_validator_get_Mandatory (QeteshDataValidator* self);
 void qetesh_data_validator_set_Mandatory (QeteshDataValidator* self, gboolean value);
+gboolean qetesh_data_validator_get_NullOut (QeteshDataValidator* self);
+void qetesh_data_validator_set_NullOut (QeteshDataValidator* self, gboolean value);
 const gchar* qetesh_data_validator_get_InValue (QeteshDataValidator* self);
 void qetesh_data_validator_set_InValue (QeteshDataValidator* self, const gchar* value);
 gconstpointer qetesh_data_validator_get_OutValue (QeteshDataValidator* self);
@@ -1403,6 +1406,8 @@ gboolean* qetesh_data_data_node_get_BoolVal (QeteshDataDataNode* self);
 void qetesh_data_data_node_set_BoolVal (QeteshDataDataNode* self, gboolean* value);
 gboolean qetesh_data_data_node_get_IsEnum (QeteshDataDataNode* self);
 void qetesh_data_data_node_set_IsEnum (QeteshDataDataNode* self, gboolean value);
+gboolean qetesh_data_data_node_get_IsNull (QeteshDataDataNode* self);
+void qetesh_data_data_node_set_IsNull (QeteshDataDataNode* self, gboolean value);
 GeeLinkedList* qetesh_data_data_node_get_Children (QeteshDataDataNode* self);
 gboolean qetesh_data_data_node_get_IsArray (QeteshDataDataNode* self);
 void qetesh_data_data_node_set_IsArray (QeteshDataDataNode* self, gboolean value);

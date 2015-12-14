@@ -52,15 +52,20 @@ Qetesh.DataObject = {
 	
 	GetPKeyVal : function() {
 		
+		if (this[this.PKeyName] == null) return null
 		return this[this.PKeyName];
 	},
 	
 	GetProp : function(name) {
 		
+		if(this[name] == null) return null;
+		
 		if(this[name].ClientName != null) {
 			
 			// Done like this so it still works
 			// when the child item is a server stub
+			
+			if(this[name][this[name].PKeyName] == null) return null;
 			return this[name][this[name].PKeyName];
 		}
 		else {
@@ -187,8 +192,11 @@ Qetesh.DataObject = {
 		for (var prop in inObj) {
 			  
 			if( inObj.hasOwnProperty(prop) ) {
-				
-				if(inObj[prop].ClientName != null) {
+				if(inObj[prop] == null) {
+					
+					this[prop] == null
+				}
+				else if(inObj[prop].ClientName != null) {
 					
 					var pObj = Qetesh.Data[inObj[prop].ClientName].Obj();
 					

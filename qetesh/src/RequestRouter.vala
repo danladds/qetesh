@@ -49,9 +49,9 @@ namespace Qetesh.WebServer {
 			/// TODO: Obviously this breaks buildability on Windows
 			/// TODO: something about the module init stage
 			/// TODO: verify validity of drop
-			context.Err.WriteMessage("Dropping root", ErrorManager.QErrorClass.QETESH_DEBUG);
 			
 			if(Posix.getuid() == 0) {
+				
 				Posix.setgid(mod.ExecGroup);
 				Posix.setuid(mod.ExecUser);
 				
@@ -61,9 +61,10 @@ namespace Qetesh.WebServer {
 					
 					throw new QRouterError.USER("Unable to drop privilege");
 				}
-				else {
-					context.Err.WriteMessage("Not started as root. Can't switch user. Proceeding as existing user!", ErrorManager.QErrorClass.QETESH_WARNING);
-				}
+				
+			}
+			else {
+				context.Err.WriteMessage("Not started as root. Can't switch user. Proceeding as existing user!", ErrorManager.QErrorClass.QETESH_WARNING);
 			}
 			
 

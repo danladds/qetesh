@@ -32,7 +32,17 @@ Qetesh.ProxyFactory = {
 		
 		proxy.Obj = function () {
 			
-			var obj = Object.create(proxy);
+			var obj = Object.create(this);
+			
+			obj.Validators = { };
+			
+			for(var vx in this.Validators) {
+				
+				if(this.Validators.hasOwnProperty(vx)) {
+					
+					obj.Validators[vx] = this.Validators[vx].Obj();
+				}
+			}
 				
 			return obj;
 		};
@@ -66,6 +76,8 @@ Qetesh.ProxyFactory = {
 									}
 								}
 							}
+							
+							vdr.Mandatory = vDef.Mandatory;
 								
 							// Enum allowable values
 							if(vdr.Name == "EnumValidator") {
@@ -335,8 +347,11 @@ Qetesh.ProxyFactory = {
 								
 								var sendPassed = true;
 
-								// Always send primary key
-								this.SetTaint(this.PKeyName);
+								if(hMethod == "PUT") {
+									
+									// Always send primary key for update
+									this.SetTaint(this.PKeyName);
+								}
 								
 								var tLen = this.__tainted.length;
 								var outObj = { };
@@ -381,6 +396,8 @@ Qetesh.ProxyFactory = {
 				
 			} 
 		} 
+		
+		proxy[proxy.PKeyName] = null;
 		
 		Qetesh.Data[name] = proxy;
 	}

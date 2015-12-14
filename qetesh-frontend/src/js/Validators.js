@@ -78,6 +78,12 @@ Qetesh.Validator = {
 		
 		this.Passed = true;
 		
+		if(this.InValue == null && !this.Mandatory) {
+			
+			this.OutValue = null;
+			return this.Passed;
+		}
+		
 		var tLen = this.Tests.length;
 		
 		for(var i = 0; i < tLen; ++i) {
@@ -149,7 +155,7 @@ Qetesh.Validators = {
 			
 			_this.Name = "IntValidator";
 			
-			return _this;
+			return Object.create(_this);
 		},
 		
 		GreaterThan : function(comp) {
@@ -203,8 +209,16 @@ Qetesh.Validators = {
 		Convert : function() {
 			
 			var test = new Qetesh.ValidationTest.Obj();
-			
 			test.TestName = "Convert";
+			//this.Tests.push(test);
+			
+			if(!this.Mandatory && this.InValue == null) {
+				
+				this.OutValue = null;
+				this.Passed = true;
+				test.Passed = true;
+				return;
+			}
 			
 			var valRet = parseInt(this.InValue, 10);
 			
@@ -214,6 +228,7 @@ Qetesh.Validators = {
 			}
 			else {
 				test.Passed = true;
+				this.Passed = true;
 				this.OutValue = valRet;
 			}
 		}
@@ -234,7 +249,7 @@ Qetesh.Validators = {
 			
 			_this.Name = "EnumValidator";
 			
-			return _this;
+			return Object.create(_this);;
 		},
 		
 		Convert : function() {
@@ -278,7 +293,7 @@ Qetesh.Validators = {
 			
 			_this.Name = "StringValidator";
 			
-			return _this;
+			return Object.create(_this);;
 		},
 		
 		Equals : function(comp) {
@@ -366,11 +381,20 @@ Qetesh.Validators = {
 		Convert : function() {
 			
 			var test = new Qetesh.ValidationTest.Obj();
-			
 			test.TestName = "Convert";
+			//this.Tests.push(test);
+			
+			if(!this.Mandatory && this.InValue == null) {
+				
+				this.OutValue = null;
+				this.Passed = true;
+				test.Passed = true;
+				return;
+			}
 
 			test.Passed = true;
 			this.OutValue = this.InValue;
+			this.Passed = true;
 		}
 	},
 	
@@ -387,7 +411,7 @@ Qetesh.Validators = {
 			
 			_this.Name = "DoubleValidator";
 			
-			return _this;
+			return Object.create(_this);
 		},
 		
 		GreaterThan : function(comp) {
@@ -441,8 +465,16 @@ Qetesh.Validators = {
 		Convert : function() {
 			
 			var test = new Qetesh.ValidationTest.Obj();
-			
 			test.TestName = "Convert";
+			//this.Tests.push(test);
+			
+			if(!this.Mandatory && this.InValue == null) {
+				
+				this.OutValue = null;
+				this.Passed = true;
+				test.Passed = true;
+				return;
+			}
 			
 			var valRet = parseFloat(this.InValue, 10);
 			
@@ -466,23 +498,34 @@ Qetesh.Validators = {
 			
 			_this.Name = "BoolValidator";
 			
-			return _this;
+			return Object.create(_this);
 		},
 		
 		Convert : function() {
 			
 			var test = new Qetesh.ValidationTest.Obj();
-			
 			test.TestName = "Convert";
+			//this.Tests.push(test);
+			
+			if(!this.Mandatory && this.InValue == null) {
+				
+				this.OutValue = null;
+				this.Passed = true;
+				test.Passed = true;
+				return;
+			}
 			
 			if(this.InValue == "true" || this.InValue ===  true) {
 				
 				test.Passed = true;
+				this.Passed = true;
 				this.OutValue = true;
 			}
 			else if (this.InValue == "false" || this.InValue === false){
 				
 				test.Passed = true;
+				
+				this.Passed = true;
 				this.OutValue = false;
 			}
 			else {
@@ -500,7 +543,7 @@ Qetesh.Validators = {
 			
 			_this.Name = "QDateTimeValidator";
 			
-			return _this;
+			return Object.create(_this);
 		},
 		
 		Convert : function() {
@@ -523,6 +566,7 @@ Qetesh.Validators = {
 			test.TestName = "Convert";
 			
 			test.Passed = true;
+			this.Passed = true;
 			this.OutValue = dt.toISOString();
 		}
 	}

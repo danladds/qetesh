@@ -31,6 +31,7 @@ namespace Qetesh.Data {
 		
 		public bool Passed { get; set; default = false; }
 		public bool Mandatory { get; set; default = true; }
+		public bool NullOut { get; protected set; default = false; }
 		
 		public string InValue { get; set; }
 		public TField OutValue { get; set; }
@@ -48,7 +49,10 @@ namespace Qetesh.Data {
 			
 			foreach(ValidationTest<TField> t in Tests) {
 				
-				if(!t.Run()) {
+				if(NullOut) {
+					// Twiddle thumbs
+				}
+				else if(!t.Run()) {
 					
 					Passed = false;
 				}
@@ -176,6 +180,20 @@ namespace Qetesh.Data {
 			
 			var t = new ValidationTest<int?>();
 			t.TestName = "Convert";
+			
+			if(InValue == null || InValue == "") {
+				
+				if(Mandatory) {
+					t.Passed = false;
+				}
+				else {
+					t.Passed = true;
+					OutValue = null;
+					NullOut = true;
+				}
+				
+				return;
+			}
 			
 			if(InValue == "0") {
 				OutValue = 0;
@@ -344,12 +362,17 @@ namespace Qetesh.Data {
 			var t = new ValidationTest<string>();
 			t.TestName = "Convert";
 			
-			if(InValue != null) {
+			if(InValue != null || !Mandatory) {
 				OutValue = InValue;
 				t.Passed = true;
-			} else {
-				OutValue = "";
-				t.Passed = true;
+				
+				if(!Mandatory) NullOut = true;
+				
+				return;
+			} 
+			else {
+				t.Passed = false;
+				return;
 			}
 			
 			Tests.add(t);
@@ -423,6 +446,20 @@ namespace Qetesh.Data {
 			var t = new ValidationTest<double?>();
 			t.TestName = "Convert";
 			
+			if(InValue == null || InValue == "") {
+				
+				if(Mandatory) {
+					t.Passed = false;
+				}
+				else {
+					t.Passed = true;
+					OutValue = null;
+					NullOut = true;
+				}
+				
+				return;
+			}
+			
 			double res;
 			
 			t.Passed = double.try_parse(InValue, out res);
@@ -451,6 +488,20 @@ namespace Qetesh.Data {
 			
 			var t = new ValidationTest<bool?>();
 			t.TestName = "Convert";
+			
+			if(InValue == null || InValue == "") {
+				
+				if(Mandatory) {
+					t.Passed = false;
+				}
+				else {
+					t.Passed = true;
+					OutValue = null;
+					NullOut = true;
+				}
+				
+				return;
+			}
 			
 			if(val == "true") {
 				
@@ -496,6 +547,20 @@ namespace Qetesh.Data {
 			
 			var t = new ValidationTest<QDateTime>();
 			t.TestName = "Convert";
+			
+			if(InValue == null || InValue == "") {
+				
+				if(Mandatory) {
+					t.Passed = false;
+				}
+				else {
+					t.Passed = true;
+					OutValue = null;
+					NullOut = true;
+				}
+				
+				return;
+			}
 			
 			var dt = new QDateTime();
 			

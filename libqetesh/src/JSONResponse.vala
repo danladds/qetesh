@@ -78,7 +78,11 @@ namespace Qetesh {
 				Content.append(" : ");
 			}
 			
-			if(node.BoolVal != null) {
+			if(node.IsNull) {
+				
+				Content.append("null");
+			}
+			else if(node.BoolVal != null) {
 				
 				if(node.BoolVal) Content.append("true");
 				else Content.append("false");
