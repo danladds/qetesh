@@ -41,6 +41,7 @@ Qetesh.HTMLElement = {
 	__clickCallback : null,
 	__displayType : null,
 	__populateValues : { },
+	__populateLabels : { },
 	
 	addElement : function(elem) {
 		
@@ -60,6 +61,8 @@ Qetesh.HTMLElement = {
 		this.__elements = [];
 		this.__children = [];
 		this.__fields = [];
+		this.__populateValues = { };
+		this.__populateLabels = { };
 	},
 	
 	Click : function (callback) {
@@ -235,7 +238,13 @@ Qetesh.HTMLElement = {
 	
 	Populate : function(fieldName, labelName, values, deep = true) {
 		
-		this.__populateValues[fieldName] = values;
+		if(this.__populateValues[fieldName] == null) {
+			
+			this.__populateValues[fieldName] = [];
+		}
+		
+		this.__populateValues[fieldName].push(values);
+		this.__populateLabels[fieldName] = labelName;
 		
 		var fieldCount = this.__fields.length;
 		
@@ -374,9 +383,9 @@ Qetesh.HTMLElement = {
 				
 				this.__fields.push(fld);
 				
-				if(this.__populateValues[propName] != null) {
+				if(this.__populateLabels[propName] != null) {
 					
-					fld.Populate(propName, this.__populateValues[propName]);
+					fld.Populate(this.__populateLabels[propName], this.__populateValues[propName]);
 				}
 			}
 		}
@@ -508,6 +517,9 @@ Qetesh.HTMLElement = {
 					
 					subobj.__parent = this;
 					this.__children.push(subobj);
+					
+					subobj.__populateLabels = this.__populateLabels; 
+					subobj.__populateValues = this.__populateValues;
 					
 					subobj.Bind(item);
 					
