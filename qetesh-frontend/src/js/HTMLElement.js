@@ -384,11 +384,6 @@ Qetesh.HTMLElement = {
 				fld.Init();
 				
 				this.__fields.push(fld);
-				
-				if(this.__populateLabels[propName] != null) {
-					
-					fld.Populate(this.__populateLabels[propName], this.__populateValues[propName]);
-				}
 			}
 		}
 		

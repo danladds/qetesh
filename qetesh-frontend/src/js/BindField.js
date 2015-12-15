@@ -362,12 +362,23 @@ Qetesh.SelectField = {
 			
 			for(var x = 0; x < len; ++x) {
 				
-				this.__addItem(labelName, opts[x]);
+				if(opts[x].Label != null) {
+					this.__addItem("Label", opts[x]);
+				}
+				else {
+					this.__addItem(labelName, opts[x]);
+				}
 			}
 		}
 		
 		else {
-			this.__addItem(labelName, opts);
+			
+			if(opts.Label != null) {
+				this.__addItem("Label", opts);
+			}
+			else {
+				this.__addItem(labelName, opts);
+			}
 		}
 		
 		this.Update();
