@@ -382,6 +382,7 @@ Qetesh.SelectField = {
 		}
 		
 		this.Update();
+		this.UpdateState();
 	},
 	
 	// Expects DataObject
