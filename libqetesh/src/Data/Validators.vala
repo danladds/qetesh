@@ -185,6 +185,7 @@ namespace Qetesh.Data {
 				
 				if(Mandatory) {
 					t.Passed = false;
+					NullOut = true;
 				}
 				else {
 					t.Passed = true;
@@ -450,6 +451,7 @@ namespace Qetesh.Data {
 				
 				if(Mandatory) {
 					t.Passed = false;
+					NullOut = true;
 				}
 				else {
 					t.Passed = true;
@@ -493,6 +495,7 @@ namespace Qetesh.Data {
 				
 				if(Mandatory) {
 					t.Passed = false;
+					NullOut = true;
 				}
 				else {
 					t.Passed = true;
@@ -552,6 +555,7 @@ namespace Qetesh.Data {
 				
 				if(Mandatory) {
 					t.Passed = false;
+					NullOut = true;
 				}
 				else {
 					t.Passed = true;
