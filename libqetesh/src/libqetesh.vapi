@@ -19,6 +19,7 @@ namespace Qetesh {
 		[CCode (cheader_filename = "libqetesh.h")]
 		public class DataNode {
 			public DataNode (string name = "Data", string? val = null);
+			public string Dump ();
 			public bool? BoolVal { get; set; }
 			public Gee.LinkedList<Qetesh.Data.DataNode> Children { get; private set; }
 			public double? DoubleVal { get; set; }

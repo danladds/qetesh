@@ -262,6 +262,8 @@ namespace Qetesh {
 					
 					ret.Children.add(GetValidationResults(obj, e.message));
 					
+					req.ServerContext.Err.WriteMessage("Validation failed: \n %s Also check client return data!\n ".printf(e.message), ErrorManager.QErrorClass.MODULE_DEBUG);
+					
 					req.HResponse.ResponseCode = 400;
 				} catch (QDBError e) {
 						
@@ -304,6 +306,8 @@ namespace Qetesh {
 					req.HResponse.DataTree.Children.add(GetValidationResults(proto, e.message));
 					
 					req.HResponse.ResponseCode = 400;
+					
+					req.ServerContext.Err.WriteMessage("Validation failed: \n %s Also check client return data!\n ".printf(e.message), ErrorManager.QErrorClass.MODULE_DEBUG);
 				}
 				 catch (QDBError e) {
 						
@@ -349,6 +353,8 @@ namespace Qetesh {
 					ret.Children.add(GetValidationResults(obj, e.message));
 					
 					req.HResponse.ResponseCode = 400;
+					
+					req.ServerContext.Err.WriteMessage("Validation failed: \n %s Also check client return data!\n ".printf(e.message), ErrorManager.QErrorClass.MODULE_DEBUG);
 					
 				} catch (QDBError e) {
 						
@@ -411,6 +417,8 @@ namespace Qetesh {
 					ret.Children.add(GetValidationResults(obj, e.message));
 					
 					req.HResponse.ResponseCode = 400;
+					
+					req.ServerContext.Err.WriteMessage("Validation failed: \n %s Also check client return data!\n ".printf(e.message), ErrorManager.QErrorClass.MODULE_DEBUG);
 					
 				} catch (QDBError e) {
 						
@@ -485,6 +493,8 @@ namespace Qetesh {
 						req.HResponse.DataTree.Children.add(GetValidationResults(proto, e.message));
 						
 						req.HResponse.ResponseCode = 400;
+						
+						req.ServerContext.Err.WriteMessage("Validation failed: \n %s Also check client return data!\n ".printf(e.message), ErrorManager.QErrorClass.MODULE_DEBUG);
 						
 					} catch (QDBError e) {
 						

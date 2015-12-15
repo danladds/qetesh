@@ -49,5 +49,28 @@ namespace Qetesh.Data {
 			Name = name;
 			Children = new Gee.LinkedList<DataNode>();
 		}
+		
+		public string Dump() {
+			
+			var valDump = new StringBuilder(
+				"[%s] Val: %s IntVal: %s DoubleVal: %s BoolVal: %s IsEnum: %s IsNull: %s IsArray: %s \n".printf(
+					Name,
+					(Val == null ? "null" : Val),
+					(IntVal == null ? "null" : Val.to_string()),
+					(DoubleVal == null ? "null" : Val.to_string()),
+					(BoolVal == null ? "null" : (BoolVal == true ? "true" : "false")),
+					(IsEnum == true ? "true" : "false"),
+					(IsNull == true ? "true" : "false"),
+					(IsArray == true ? "true" : "false")
+				)
+			);
+			
+			foreach(var childNode in Children) {
+				
+				valDump.append(childNode.Dump());
+			}
+			
+			return valDump.str;
+		}
 	}
 }

@@ -45,6 +45,7 @@ namespace Qetesh.Data {
 		public string ClientName { get; set; }
 		
 		private Gee.LinkedList<string> TaintedProperties { get; set; }
+		private Gee.LinkedList<string> Nulled { get; set; }
 		
 		public DataObject (QDatabaseConn dbh) {
 			
@@ -69,6 +70,7 @@ namespace Qetesh.Data {
 			PKeyName = "Id";
 			
 			TaintedProperties = new Gee.LinkedList<string>();
+			Nulled = new Gee.LinkedList<string>();
 			Validators = new Gee.HashMap<string, Validator>();
 			
 			Init();
@@ -126,8 +128,8 @@ namespace Qetesh.Data {
 				
 				if(Validators[prop] == null) throw new ValidationError.INVALID_VALUE("Create() validation failed: no validator set for: %s".printf(prop));
 				
-				//bool validProp = Validators[prop].Validate();
-				bool validProp = true;
+				bool validProp = Validators[prop].Validate();
+				//bool validProp = true;
 				
 				if(!validProp) {
 					
@@ -318,7 +320,7 @@ namespace Qetesh.Data {
 			return _getPropStr(propName, propSpec.value_type);
 		}
 		
-		private void setPropStr(string propName, string val, bool mock = false) {
+		private void setPropStr(string propName, string? val, bool mock = false) throws ValidationError {
 			
 			var classObj = (ObjectClass) this.get_type().class_ref();
 			
@@ -401,9 +403,20 @@ namespace Qetesh.Data {
 			return strVal;
 		}
 		
-		private void _setPropStr(string pName, string inVal, Type propertyType, bool mock = false) {
+		private void _setPropStr(string pName, string? inVal, Type propertyType, bool mock = false) throws ValidationError {
 			
 			if(Validators == null) new Gee.HashMap<string, Validator>();
+			
+			if(pName == PKeyName && inVal == null) {
+				
+				// Just ignore setting PKey to null
+				return;
+			}
+			
+			if(inVal == null && Validators[pName] == null) {
+				
+				throw new ValidationError.NULLABLE("Validator not set for field %s but null value recieved".printf(pName));
+			}
 			
 			if (propertyType == typeof(string)) {
 				
@@ -418,6 +431,11 @@ namespace Qetesh.Data {
 					
 				vdr.InValue = inVal;
 				vdr.Convert();
+				
+				if(vdr.NullOut) {
+					Nulled.add(pName);
+					return;
+				}
 				
 				var val = Value(typeof(string));
 				val.set_string(vdr.OutValue);
@@ -439,6 +457,12 @@ namespace Qetesh.Data {
 				vdr.InValue = inVal;
 				vdr.Convert();
 				
+				if(vdr.NullOut) {
+
+					Nulled.add(pName);
+					return;
+				}
+				
 				var val = Value(typeof(int));
 				val.set_int(vdr.OutValue);
 				this.set_property(pName, val);
@@ -458,6 +482,12 @@ namespace Qetesh.Data {
 				
 				vdr.InValue = inVal;
 				vdr.Convert();
+				
+				if(vdr.NullOut) {
+
+					Nulled.add(pName);
+					return;
+				}
 				
 				if(vdr.ValidEnum) {
 					
@@ -481,6 +511,12 @@ namespace Qetesh.Data {
 				vdr.InValue = inVal;
 				vdr.Convert();
 				
+				if(vdr.NullOut) {
+
+					Nulled.add(pName);
+					return;
+				}
+				
 				var val = Value(typeof(bool));
 				val.set_boolean(vdr.OutValue);
 				this.set_property(pName, val);
@@ -499,6 +535,12 @@ namespace Qetesh.Data {
 				
 				vdr.InValue = inVal;
 				vdr.Convert();
+				
+				if(vdr.NullOut) {
+
+					Nulled.add(pName);
+					return;
+				}
 				
 				var val = Value(typeof(float));
 				val.set_float((float) vdr.OutValue);
@@ -519,6 +561,12 @@ namespace Qetesh.Data {
 				vdr.InValue = inVal;
 				vdr.Convert();
 				
+				if(vdr.NullOut) {
+
+					Nulled.add(pName);
+					return;
+				}
+				
 				var val = Value(typeof(double));
 				val.set_double(vdr.OutValue);
 				this.set_property(pName, val);
@@ -537,6 +585,12 @@ namespace Qetesh.Data {
 				
 				vdr.InValue = inVal;
 				vdr.Convert();
+				
+				if(vdr.NullOut) {
+
+					Nulled.add(pName);
+					return;
+				}
 				
 				var val = Value(typeof(QDateTime));
 				val.set_object((Object) vdr.OutValue);
@@ -562,6 +616,12 @@ namespace Qetesh.Data {
 			
 				vdr.InValue = inVal;
 				vdr.Convert();
+				
+				if(vdr.NullOut) {
+
+					Nulled.add(pName);
+					return;
+				}
 				
 				dObj.setPropStr(dObj.PKeyName, vdr.InValue);
 			
@@ -763,6 +823,13 @@ namespace Qetesh.Data {
 		
 		public DataNode? GetPropertyNode(string pName, Type? propertyType = null, bool shallow = false) {
 			
+			if(Nulled.contains(pName)) {
+				
+				var nullNode = new DataNode(pName);
+				nullNode.IsNull = true;
+				return nullNode;
+			}
+			
 			if(propertyType == null) {
 				
 				var classObj = (ObjectClass) this.get_type().class_ref();
@@ -862,6 +929,8 @@ namespace Qetesh.Data {
 		
 		public void FromRequest(HTTPRequest req) throws ValidationError {
 			
+			req.ServerContext.Err.WriteMessage(req.RequestData.DataTree.Dump(), ErrorManager.QErrorClass.QETESH_DEBUG);
+			
 			FromNode(req.RequestData.DataTree);
 		}
 		
@@ -870,13 +939,13 @@ namespace Qetesh.Data {
 			if (data.Children.size > 0) {
 			
 				foreach(var child in data.Children[0].Children) {
-					 
-					if(
-						child.Name != null && child.Name != "" &&
-						child.Val != null & child.Val != "" &&
-						child.Val != "0"
-					){
-						this.TaintedProperties.add(child.Name);
+										
+					this.TaintedProperties.add(child.Name);
+					
+					if(child.IsNull) {
+						setPropStr(child.Name, null);
+					}
+					else {
 						setPropStr(child.Name, child.Val);
 					}
 				}

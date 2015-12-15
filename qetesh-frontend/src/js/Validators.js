@@ -31,6 +31,9 @@ Qetesh.Validator = {
 	Mandatory : true,
 	Tests : [],
 	Value : "",
+	InValue : null,
+	OutValue : null,
+	NullOut : false,
 	
 	Obj : function() {
 	
@@ -109,8 +112,6 @@ Qetesh.ValidationTest = {
 	Passed : false,
 	Func : null,
 	Comparator : "",
-	InValue : "",
-	OutValue : "",
 	
 	Obj : function() {
 	
@@ -217,6 +218,7 @@ Qetesh.Validators = {
 				this.OutValue = null;
 				this.Passed = true;
 				test.Passed = true;
+				this.NullOut = true;
 				return;
 			}
 			
@@ -389,6 +391,7 @@ Qetesh.Validators = {
 				this.OutValue = null;
 				this.Passed = true;
 				test.Passed = true;
+				this.NullOut = true;
 				return;
 			}
 
@@ -473,6 +476,7 @@ Qetesh.Validators = {
 				this.OutValue = null;
 				this.Passed = true;
 				test.Passed = true;
+				this.NullOut = true;
 				return;
 			}
 			
@@ -512,6 +516,7 @@ Qetesh.Validators = {
 				this.OutValue = null;
 				this.Passed = true;
 				test.Passed = true;
+				this.NullOut = true;
 				return;
 			}
 			

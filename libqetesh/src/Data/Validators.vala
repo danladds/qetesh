@@ -50,7 +50,7 @@ namespace Qetesh.Data {
 			foreach(ValidationTest<TField> t in Tests) {
 				
 				if(NullOut) {
-					// Twiddle thumbs
+					t.Passed = true;
 				}
 				else if(!t.Run()) {
 					

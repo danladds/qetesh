@@ -139,7 +139,7 @@ Qetesh.BindField = {
 	
 	Commit : function() {
 			
-		if(this.Validator.OutValue == null) {
+		if(this.Validator.OutValue == null && !this.Validator.NullOut) {
 			
 			this.Validator.InValue = this.QElem.__bindDataState.GetProp(this.FieldName);
 			this.Validator.Convert();

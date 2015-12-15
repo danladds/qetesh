@@ -1394,6 +1394,7 @@ const gchar* qetesh_data_qmysql_query_mysql_query_param_get_FieldComparator (Qet
 GType qetesh_data_qmysql_query_mysql_query_result_get_type (void) G_GNUC_CONST;
 QeteshDataDataNode* qetesh_data_data_node_new (const gchar* name, const gchar* val);
 QeteshDataDataNode* qetesh_data_data_node_construct (GType object_type, const gchar* name, const gchar* val);
+gchar* qetesh_data_data_node_Dump (QeteshDataDataNode* self);
 const gchar* qetesh_data_data_node_get_Name (QeteshDataDataNode* self);
 void qetesh_data_data_node_set_Name (QeteshDataDataNode* self, const gchar* value);
 const gchar* qetesh_data_data_node_get_Val (QeteshDataDataNode* self);

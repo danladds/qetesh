@@ -199,7 +199,11 @@ namespace Qetesh.Data {
 			
 			protected void GetValue(DataNode node) {
 				
-				if(node.IsEnum) {
+				if(node.IsNull) {
+					
+					FieldValue = "null";
+				}
+				else if(node.IsEnum) {
 					
 					FieldValue = EscapeString(node.Val);
 				}
@@ -216,7 +220,7 @@ namespace Qetesh.Data {
 					
 					FieldValue = node.IntVal.to_string();
 				}
-				else if (node.Val != null && node.Val != "") {
+				else {
 					
 					FieldValue = EscapeString(node.Val);
 				}

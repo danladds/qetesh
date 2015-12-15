@@ -158,6 +158,13 @@ namespace Qetesh {
 			
 			if(index < 0) return;
 			
+			if(data[index] == '\"') {
+				
+				node.Children.add(new DataNode(name, ""));
+				index++;
+				return;
+			}
+			
 			var strNode = new DataNode(name);
 			
 			var close = data.index_of("\"", index);
