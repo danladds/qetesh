@@ -41,6 +41,15 @@ Qetesh.ProxyFactory = {
 				if(this.Validators.hasOwnProperty(vx)) {
 					
 					obj.Validators[vx] = this.Validators[vx].Obj();
+					
+					var testLen = this.Validators[vx].Tests.length;
+					
+					for(var _t = 0; _t < testLen; _t++) {
+					
+						var tst = this.Validators[vx].Tests[_t];
+						
+						obj.Validators[vx][tst.TestName](tst.Comparator);
+					}
 				}
 			}
 				

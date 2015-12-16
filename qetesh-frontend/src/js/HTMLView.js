@@ -87,6 +87,15 @@ Qetesh.HTMLView = {
 		var xh = new XMLHttpRequest();
 		var _view = this;
 		var pane = this.container;
+		
+		if(this.TplUri == null) {
+			
+			_view.RunFunc(_view, params);
+			_view.beenLoaded = true;
+			if (andShow) _view.Show();
+			
+			return;
+		}
 			
 		xh.onreadystatechange = function () {
 				
@@ -96,6 +105,8 @@ Qetesh.HTMLView = {
 				_view.RunFunc(_view, params);
 				_view.beenLoaded = true;
 				if (andShow) _view.Show();
+				
+				this.__cache = xh.responseText;
 			}
 		};
 			

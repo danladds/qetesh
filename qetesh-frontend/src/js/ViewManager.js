@@ -31,6 +31,7 @@ Qetesh.ViewManager = {
 	pane : null,
 	Views : [],
 	ActiveView : 0,
+	DefaultContent : "",
 	
 	
 	Obj : function(paneId) {
@@ -45,6 +46,7 @@ Qetesh.ViewManager = {
 		
 		this.PaneId = paneId;
 		this.pane = document.getElementById(paneId);
+		this.DefaultContent = this.pane.innerHTML;
 		this.pane.innerHTML = "";
 	},
 	
@@ -56,14 +58,28 @@ Qetesh.ViewManager = {
 		view.Operators.push(defaultOperator);
 		view.Manager = this;
 		
-		var container = document.createElement("div");
-		container.id = "_q-view-container-" + this.PaneId + "-" + name;
+		if(tpl != null) {
 		
-		view.container = container;
+			var container = document.createElement("div");
+			container.id = "_q-view-container-" + this.PaneId + "-" + name;
+			
+			view.container = container;
+			
+			this.pane.appendChild(container);
 		
-		this.pane.appendChild(container);
+		}
+		else {
+			
+			view.container = this.pane;
+			view.__cache = this.DefaultContent;
+		}
 		
 		this.Views.push(view);
+		
+		if(tpl == null) {
+			
+			this.Show(name);
+		}
 		
 		return view;
 	},
