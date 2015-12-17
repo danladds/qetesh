@@ -32,7 +32,7 @@ Qetesh.BindField = {
 	QElem : null,
 	ObjElem : null,
 	Type : "",
-	Tainted : false,
+	Taint : false,
 	__outTransform : function (propertyValue) { return propertyValue; },
 	__inTransform : function (propertyValue) { return propertyValue; },
 	Validator : null,
@@ -264,6 +264,7 @@ Qetesh.SelectField = {
 		_this.__addItem = this.__addItem;
 		_this.Reset = this.Reset;
 		_this.Items = {};
+		_this.Commit = this.Commit;
 		
 		return Object.create(_this);
 	},
@@ -320,6 +321,31 @@ Qetesh.SelectField = {
 			
 			if(this.__updateFunc != null) this.__updateFunc( { } );
 		}
+	},
+	
+	Commit : function() {
+			
+		if(this.Validator.OutValue == null && !this.Validator.NullOut) {
+			
+			this.Validator.InValue = this.QElem.__bindDataState.GetProp(this.FieldName);
+			this.Validator.Convert();
+			this.UpdateValidation();
+		}
+		
+		if((this.Taint == true || this.QElem.__bindData.GetPKeyVal() == null) && this.Validator.Passed) {
+			
+			if(this.Items[this.FieldElement.value] == null) {
+				
+				this.QElem.__bindData[this.FieldName] = this.Validator.OutValue;
+				this.Taint = false;
+			}
+			else {
+				this.QElem.__bindData[this.FieldName] = this.Items[this.FieldElement.value];
+				this.Taint = false;
+			}
+		}
+		
+		this.UpdateTaint();
 	},
 	
 	AddUnfilter : function(name) {
