@@ -116,7 +116,7 @@ Qetesh.BindField = {
 	
 	UpdateTaint : function() {
 		
-		if(this.QElem.__bindDataState[this.FieldName] != this.QElem.__bindData[this.FieldName]) {
+		if(this.QElem.__bindDataState.GetProp(this.FieldName) != this.QElem.__bindData.GetProp(this.FieldName)) {
 			this.Taint = true;
 			this.FieldElement.className += " q-taint";
 		}
@@ -168,6 +168,11 @@ Qetesh.BindField = {
 	InitOptions : function() {
 		
 		// Override for things like selects to initialise their options
+	},
+	
+	UpdateValues : function() {
+		
+		// Override for things like select to update their options
 	}
 };
 
@@ -265,6 +270,9 @@ Qetesh.SelectField = {
 		_this.Reset = this.Reset;
 		_this.Items = {};
 		_this.Commit = this.Commit;
+		_this.__populateSources = [];
+		_this.UpdateValues = this.UpdateValues;
+		_this.__populate = this.__populate;
 		
 		return Object.create(_this);
 	},
@@ -382,6 +390,16 @@ Qetesh.SelectField = {
 	// Expects DataObject or DataObject[]
 	Populate : function(labelName, opts) {
 		
+		this.__populateSources.push({
+			Label : labelName,
+			Opts : opts
+		});
+		
+		this.__populate(labelName, opts);
+	},
+	
+	__populate : function(labelName, opts) {
+		
 		if(opts instanceof Array) {
 			
 			var len = opts.length;
@@ -409,6 +427,20 @@ Qetesh.SelectField = {
 		
 		this.Update();
 		this.UpdateState();
+	},
+	
+	UpdateValues : function() {
+		
+		this.FieldElement.innerHTML = "";
+		
+		var sourcesLen = this.__populateSources.length;
+		
+		for(var _k = 0; _k < sourcesLen; _k++) {
+			
+			var source = this.__populateSources[_k];
+			
+			this.__populate(source.Label, source.Opts);
+		}
 	},
 	
 	// Expects DataObject

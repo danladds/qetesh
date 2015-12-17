@@ -590,6 +590,29 @@ Qetesh.HTMLElement = {
 				this.__children[i].Reset(true);
 			}
 		}
+		
+		this.UpdateValues();
+		
+	},
+	
+	UpdateValues : function(deep = true) {
+		
+		var fieldCount = this.__fields.length;
+		
+		for(var m = 0; m < fieldCount; ++m) {
+			
+			this.__fields[m].UpdateValues();
+		}
+		
+		if (deep) {
+			
+			var childLen = this.__children.length;
+			
+			for(var i = 0; i < childLen; ++i) {
+				
+				this.__children[i].UpdateValues();
+			}
+		}
 	},
 	
 	Commit : function (deep = true) {
