@@ -424,9 +424,6 @@ Qetesh.SelectField = {
 				this.__addItem(labelName, opts);
 			}
 		}
-		
-		this.Update();
-		this.UpdateState();
 	},
 	
 	UpdateValues : function() {
@@ -441,6 +438,9 @@ Qetesh.SelectField = {
 			
 			this.__populate(source.Label, source.Opts);
 		}
+		
+		this.Update();
+		this.UpdateState();
 	},
 	
 	// Expects DataObject
